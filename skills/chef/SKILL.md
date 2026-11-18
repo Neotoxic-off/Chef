@@ -36,7 +36,15 @@ Before anything, read the project: README, CLAUDE.md, docs, architecture, folder
 
 ### 3. Council for decisions
 
-For a design or architecture choice, launch 2-4 relevant roles in parallel with the same question, each with its own lens. Each returns options with a 0-10 score, its biggest flaw and what to delete. Agents never see each other's answers (no anchoring). Run the council for decisions, not for every edit.
+For a design or architecture choice, a new feature, or a problem with no obvious answer, launch 2-4 relevant roles in parallel with the same question, each with its own lens. Agents never see each other's answers (no anchoring). Run the council for decisions, not for every edit.
+
+The council thinks, it does not just vote. Each member:
+
+1. **Understands**: reads the code and docs itself, then restates the problem, the constraints and what the user really needs, in its own words. It names what is unclear.
+2. **Proposes**: brings its own ideas, not only the options it was given: other approaches, simpler paths, things to reuse, risks nobody mentioned, improvements the user did not ask for but would want (flagged as optional).
+3. **Judges**: scores each option 0-10 against the Priorities, gives its biggest flaw and what to delete, and picks one with a one-line reason.
+
+The lead then merges: shared understanding, the best ideas from each member, the disagreements, and puts the real choices to the user.
 
 ### 4. Report (every agent, every time)
 
