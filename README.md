@@ -55,6 +55,91 @@ Claude loads the skill by itself on coding tasks. To call it explicitly:
 
 To change a habit, edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or the stack's file in [`skills/chef/references/`](skills/chef/references/), then push.
 
+## With and without chef
+
+Same prompt, same model (Sonnet 5.5): *"Create a Python command-line tool that reads a TOML config file containing a list of endpoints (url, timeout in seconds), validates it, and prints which entries are invalid and why."* Below, the URL check from each output, unedited.
+
+**Without chef**: one 50-line `validate_entry` doing everything, no types, section comments, no tests, no lint config.
+
+```python
+def validate_entry(entry):
+    """Return a list of problems for one endpoint entry (empty if valid)."""
+    if not isinstance(entry, dict):
+        return [f"entry must be a table, got {type(entry).__name__}"]
+
+    problems = []
+
+    for key in entry.keys() - {"url", "timeout"}:
+        problems.append(f"unknown key '{key}'")
+
+    # url
+    if "url" not in entry:
+        problems.append("missing 'url'")
+    else:
+        url = entry["url"]
+        if not isinstance(url, str):
+            problems.append(f"'url' must be a string, got {type(url).__name__}")
+        elif not url.strip():
+            problems.append("'url' is empty")
+        else:
+            try:
+                parts = urlsplit(url)
+                host = parts.hostname
+                parts.port  # raises ValueError if out of range / not numeric
+            except ValueError as exc:
+                problems.append(f"'url' is malformed ({exc})")
+            else:
+                if parts.scheme.lower() not in ALLOWED_SCHEMES:
+                    ...
+    # timeout
+    ...
+```
+
+**With chef**: one small typed function per check, early returns, named constants, plus `pyproject.toml` with Ruff and `mypy --strict`, and 37 pytest tests that pass with 99% coverage.
+
+```python
+ENDPOINTS_KEY: str = "endpoints"
+ALLOWED_SCHEMES: frozenset[str] = frozenset({"http", "https"})
+ALLOWED_KEYS: frozenset[str] = frozenset({"url", "timeout"})
+
+EXIT_OK: int = 0
+EXIT_INVALID_ENTRIES: int = 1
+EXIT_UNREADABLE: int = 2
+
+
+@dataclass(frozen=True, slots=True)
+class Issue:
+    location: str
+    reason: str
+
+
+def validate_url(value: object) -> str | None:
+    """Return why the URL is invalid, or None when it is valid."""
+    if not isinstance(value, str):
+        return f"url must be a string, got {type(value).__name__}"
+    if not value.strip():
+        return "url is empty"
+    if any(char.isspace() for char in value):
+        return "url must not contain whitespace"
+    return validate_url_parts(value)
+
+
+def validate_url_parts(url: str) -> str | None:
+    try:
+        parts: SplitResult = urlsplit(url)
+        hostname: str | None = parts.hostname
+        port: int | None = parts.port
+    except ValueError as error:
+        return f"url is malformed ({error})"
+    if parts.scheme not in ALLOWED_SCHEMES:
+        return f"url scheme must be http or https, got {parts.scheme or 'none'!r}"
+    if not hostname:
+        return "url has no host"
+    if port == 0:
+        return "url port must not be 0"
+    return None
+```
+
 ## Benchmark
 
 Same prompt, same model (Sonnet 5.5), fresh folder each time. The only difference: the chef plugin. Every other plugin is off in both arms. 4 tasks × 2 runs per arm, measured by [`bench/run.py`](bench/run.py).
@@ -73,13 +158,14 @@ Same prompt, same model (Sonnet 5.5), fresh folder each time. The only differenc
 | TypeScript module | Test cases written | 0 | 6 |
 | | Tests pass | 0/1 | 0/2 |
 | | `strict` tsconfig | 1/2 | 2/2 |
+| | Untyped `const`/`let` | 2.5 | 2.5 |
 | Dockerfile + CI | `HEALTHCHECK` | 0/2 | 2/2 |
 | | Base image pinned by digest, actions pinned by SHA | 0/2 | 0/2 |
 | All tasks | Comment lines per code line | 0.05–0.11 | 0.01–0.03 |
 | | Cost per task | $0.08–0.12 | $0.15–0.29 |
 | | Time per task | 10–24 s | 18–69 s |
 
-Chef makes Claude write tests, explicit types and strict lint configs it otherwise skips, at about 2× the cost and 2.5× the time. Weak spots seen: the TypeScript tests it wrote did not pass, and the Docker/CI rules (digest and SHA pinning, multi-stage) were not applied.
+Chef makes Claude write tests, explicit types and strict lint configs it otherwise skips, at about 2× the cost and 2.5× the time. Weak spots seen: the TypeScript tests it wrote did not pass (cause not captured: this harness discarded the logs), TypeScript declarations were no more typed than without chef, and digest/SHA pinning was not applied. Chef did read the Docker rules (`HEALTHCHECK` comes only from them), but the benchmark gave Claude no tool to look up a real digest or SHA, so it did not invent one.
 
 Full table: [`bench/results.md`](bench/results.md). Raw data: [`bench/results.jsonl`](bench/results.jsonl). Re-run: `python bench/run.py run && python bench/run.py report`.
 
