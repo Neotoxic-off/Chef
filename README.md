@@ -42,16 +42,6 @@ In Claude Code:
 /plugin install chef@chef
 ```
 
-To install it automatically on every machine, add this to `~/.claude/settings.json`:
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "chef": { "source": { "source": "github", "repo": "Neotoxic-off/chef" } }
-  },
-  "enabledPlugins": { "chef@chef": true }
-}
-```
 
 Update: `/plugin marketplace update chef`.
 
