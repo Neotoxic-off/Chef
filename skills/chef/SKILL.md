@@ -36,15 +36,29 @@ Before anything, read the project: README, CLAUDE.md, docs, architecture, folder
 
 ### 3. Council for decisions
 
-For a design or architecture choice, a new feature, or a problem with no obvious answer, launch 2-4 relevant roles in parallel with the same question, each with its own lens. Agents never see each other's answers (no anchoring). Run the council for decisions, not for every edit.
+For a design or architecture choice, a new feature, or a problem with no obvious answer, convene the council. Run it for decisions, not for every edit.
 
-The council thinks, it does not just vote. Each member:
+The council is five agents shipped with this plugin, each with a fixed role:
 
-1. **Understands**: reads the code and docs itself, then restates the problem, the constraints and what the user really needs, in its own words. It names what is unclear.
-2. **Proposes**: brings its own ideas, not only the options it was given: other approaches, simpler paths, things to reuse, risks nobody mentioned, improvements the user did not ask for but would want (flagged as optional).
-3. **Judges**: scores each option 0-10 against the Priorities, gives its biggest flaw and what to delete, and picks one with a one-line reason.
+| Agent | Role |
+|---|---|
+| `council-senior` | Knows everything: reads the project, proposes the plan to ship and what to reuse. |
+| `council-researcher` | Searches the web: official docs, current versions, known issues, prior art, with sources. |
+| `council-outsider` | Does not know the project and does not read its code: says what is correct and appropriate from first principles. |
+| `council-novice` | Knows nothing: asks coherent, simple questions about the need that expose hidden assumptions. |
+| `council-skeptic` | Argues it will not work, with evidence (code, docs, issues, commands), to force the plan to hold up. |
 
-The lead then merges: shared understanding, the best ideas from each member, the disagreements, and puts the real choices to the user.
+The council thinks, it does not just vote. It runs in rounds:
+
+1. **Round 1, independent:** launch all five in one message, in parallel, with the same problem statement. Give the senior, researcher and skeptic the relevant paths; give the outsider and the novice only the statement. No one sees the others' answers (no anchoring). Each understands the problem in its own words, proposes its own ideas, and scores options 0-10.
+2. **Round 2, cross-examination:** send each member the other four reports (continue the same agent with SendMessage). The senior and the researcher answer the novice's questions and the skeptic's objections with evidence; the skeptic attacks the proposals and withdraws what was disproved; the outsider says where the plan drifts from what is appropriate; the novice asks what is still unclear.
+3. **Synthesis:** the lead merges: the shared understanding, the best ideas from each member, the objections still standing with their evidence, the open questions. Then the lead puts the real choices to the user.
+
+Two rounds maximum. If they still disagree, the disagreement goes to the user with both sides' evidence.
+
+### Unclear request
+
+If you do not understand what the user wants (vague, ambiguous, typo-heavy, missing context), do not guess and do not start building. Convene the council with the user's exact words and this question: *what does the user most likely want, and what would be logical given what already exists in this repo?* The senior and the skeptic read the repo to ground each reading in the existing code, conventions and recent history; the novice lists what is ambiguous; the outsider says what a reasonable person would mean. Then show the user the one or two most likely readings, with your recommended one first, and ask them to confirm before any work starts.
 
 ### 4. Report (every agent, every time)
 
