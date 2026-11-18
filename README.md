@@ -21,10 +21,14 @@
 Chef is a [Claude Code](https://claude.com/claude-code) plugin that makes Claude follow one set of house coding habits on every task, in every project, without being reminded:
 
 - **Priorities**: clarity, simplicity, maintainability, security. Too complex is wrong. Never assume, always verify.
+- **Not sure? Ask.** Claude asks before guessing what you want.
+- **Talk less, do what was asked**: answer first, no recap, no filler, no unrequested work.
 - **Explicit types** on every variable, parameter, return and field, in every typed language.
 - **SOLID**, readable code, few comments: if code needs many, it is not clear enough.
 - **Tests**: unit and integration, 90% line and branch coverage gate, mutation testing on critical logic.
-- **Never hide a warning or an error**: fix the cause, always.
+- **Never hide a warning or an error**: fix the cause, always. No suppression comments; lint rules that clash with these habits are turned off in config, with the reason.
+- **`try`/`catch` only when nothing else works**: check first (`TryParse`, `dict.get`, `Result` types), except for files and network, where the operation itself is the check.
+- **Strict mode**: on by default in new projects, asked first in existing ones.
 - **WPF / WinUI / MAUI / Avalonia**: CommunityToolkit, always.
 
 Each stack has its own reference (linter, formatter, test runner, coverage tool, configs), loaded only when Claude works in it. Anything not listed is still covered: Claude looks up its official docs and standard tools first, then applies every rule.
@@ -40,6 +44,20 @@ Each stack has its own reference (linter, formatter, test runner, coverage tool,
 | Data and AI | PostgreSQL, Redis/Valkey, MongoDB, Kafka/RabbitMQ, Elasticsearch/OpenSearch, ORMs, pandas/Polars, notebooks, PyTorch/scikit-learn, LLM apps, Airflow/Dagster/dbt/Spark, Flink |
 | Cross-cutting | REST/OpenAPI, GraphQL, gRPC, security (OWASP), accessibility (WCAG), i18n, WebSockets |
 
+## Council of agents
+
+For decisions, new features and unclear requests, Claude acts as the lead and convenes five agents shipped with the plugin. They work in parallel without seeing each other's answers, then cross-examine each other; the lead brings you the real choices.
+
+| Agent | Role |
+|---|---|
+| `council-senior` | Knows the stack and the project; proposes the plan and what to reuse. |
+| `council-researcher` | Searches official docs, versions, known issues; cites every source. |
+| `council-outsider` | Never reads the code; says what is correct and appropriate from first principles. |
+| `council-novice` | Knows nothing; asks the simple questions about the need that experts skip. |
+| `council-skeptic` | Argues it will not work, with evidence, until the plan holds. |
+
+Every agent ends with the same report: done, files, checks, not verified, risks, questions. A separate reviewer checks the code before you see it.
+
 ## Install
 
 In Claude Code:
@@ -49,8 +67,7 @@ In Claude Code:
 /plugin install chef@chef
 ```
 
-
-Update: `/plugin marketplace update chef`.
+Update: `/plugin marketplace update chef`, then `/reload-plugins`.
 
 ## Usage
 
