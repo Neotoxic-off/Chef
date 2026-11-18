@@ -15,13 +15,15 @@ opt_in_rules:
   - empty_count
   - first_where
   - sorted_first_last
+disabled_rules:
+  - redundant_void_return  # contradicts the house rule: explicit return types (`-> Void`)
 explicit_type_interface:
   allow_redundancy: true  # also require `let u: User = User()`
 ```
 
 - Do not enable `redundant_type_annotation`: it fights `explicit_type_interface`.
 - Run SwiftLint through `SwiftLintBuildToolPlugin` (package `SimplyDanny/SwiftLintPlugins`) or `swiftlint lint --strict` in CI.
-- Format with swift-format, bundled with the toolchain since Swift 6: `swift format --in-place --recursive Sources Tests`; CI: `swift format lint --strict --recursive Sources Tests`. Turn on `NeverForceUnwrap`, `NeverUseForceTry` and `NeverUseImplicitlyUnwrappedOptionals` in `.swift-format`.
+- Format with swift-format, bundled with the toolchain since Swift 6: `swift format --in-place --recursive Sources Tests`; CI: `swift format lint --strict --recursive Sources Tests`. Turn on `NeverForceUnwrap`, `NeverUseForceTry` and `NeverUseImplicitlyUnwrappedOptionals` in `.swift-format`, and turn off `NoVoidReturnOnFunctionSignature` (it strips the explicit `-> Void` the house rules require; JSON has no comments, so say why in the README).
 
 ## Warnings as errors
 

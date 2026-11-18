@@ -27,8 +27,13 @@ kotlin {
 }
 ```
 
-- Keep `.editorconfig` as the single source of style for ktlint and the IDE.
-- detekt fails on any finding by default (`maxIssues: 0`); do not raise it, fix or justify on the line.
+- Keep `.editorconfig` as the single source of style for ktlint and the IDE. Turn off the rule that contradicts explicit types:
+  ```ini
+  [*.{kt,kts}]
+  # contradicts the house rule: explicit return types (`: Unit`)
+  ktlint_standard_no-unit-return = disabled
+  ```
+- detekt fails on any finding by default (`maxIssues: 0`); do not raise it and never `@Suppress`: fix the cause, or ask the user.
 - Upgrade to detekt 2.x (`dev.detekt`) once it is stable; it is alpha as of late 2026.
 
 ## Code

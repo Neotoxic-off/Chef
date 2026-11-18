@@ -12,8 +12,8 @@
   <img src="https://img.shields.io/github/stars/Neotoxic-off/chef?style=flat-square&color=D97757&label=stars" alt="Stars">
   <img src="https://img.shields.io/github/last-commit/Neotoxic-off/chef?style=flat-square&color=D97757&label=last%20commit" alt="Last commit">
   <img src="https://img.shields.io/badge/Claude%20Code-plugin-D97757?style=flat-square" alt="Claude Code plugin">
-  <img src="https://img.shields.io/badge/languages-19-D97757?style=flat-square" alt="19 languages">
-  <img src="https://img.shields.io/badge/devops-6%20tools-D97757?style=flat-square" alt="6 DevOps tools">
+  <img src="https://img.shields.io/badge/languages-34-D97757?style=flat-square" alt="34 languages">
+  <img src="https://img.shields.io/badge/references-122-D97757?style=flat-square" alt="122 references">
 </p>
 
 ## What it is
@@ -27,11 +27,18 @@ Chef is a [Claude Code](https://claude.com/claude-code) plugin that makes Claude
 - **Never hide a warning or an error**: fix the cause, always.
 - **WPF / WinUI**: CommunityToolkit, always.
 
-Each stack has its own reference (linter, formatter, test runner, coverage tool, configs), loaded only when Claude works in it:
+Each stack has its own reference (linter, formatter, test runner, coverage tool, configs), loaded only when Claude works in it. Anything not listed is still covered: Claude looks up its official docs and standard tools first, then applies every rule.
 
-| Languages | DevOps and tools |
+| Area | Covered |
 |---|---|
-| C#/.NET, TypeScript/JS, Python, Rust, Go, C, C++, Java, Kotlin, Swift, Dart/Flutter, PHP, Ruby, Scala, Elixir, Lua, Bash, PowerShell, SQL | Docker, Kubernetes/Helm, Terraform/OpenTofu, CI/CD, Ansible, Git |
+| Languages | C#/.NET, TypeScript/JS, Python, Rust, Go, C, C++, Java, Kotlin, Swift, Dart, PHP, Ruby, Scala, Elixir, Lua, Bash, PowerShell, SQL, Zig, Haskell, OCaml, F#, Clojure, Erlang, R, Julia, Perl, Objective-C, Solidity, WebAssembly, CUDA, embedded C/C++, VHDL/Verilog |
+| Frontend | React, Next.js, Vue/Nuxt, Angular, Svelte/SvelteKit, Astro, React Router/Remix, SolidJS, Qwik, htmx, Blazor, Tailwind, Vite/webpack/Rolldown, Playwright/Cypress, Storybook |
+| Backend | ASP.NET Core, NestJS/Express/Fastify, Django, FastAPI/Flask, Spring Boot, Laravel, Rails, Symfony, Phoenix, Axum/Actix, Go web, Ktor, Quarkus/Micronaut, Deno/Bun/Hono |
+| Mobile, desktop, games | Flutter, React Native/Expo, Jetpack Compose, SwiftUI, WPF/WinUI, .NET MAUI, Avalonia, Electron, Tauri, Qt, Unity, Godot, Unreal |
+| Cloud and infrastructure | Docker, Kubernetes/Helm, Terraform/OpenTofu, Pulumi, Bicep, AWS CDK, AWS, Azure, GCP, serverless, GitOps, secrets, Ansible, Nginx/Caddy/Traefik, Linux/systemd, Nix, service mesh, CI/CD, Git, Make/just, monorepos, config files |
+| Observability | OpenTelemetry, Prometheus, Grafana, Loki, Tempo/Jaeger, logging, SLOs |
+| Data and AI | PostgreSQL, Redis/Valkey, MongoDB, Kafka/RabbitMQ, Elasticsearch/OpenSearch, ORMs, pandas/Polars, notebooks, PyTorch/scikit-learn, LLM apps, Airflow/Dagster/dbt/Spark, Flink |
+| Cross-cutting | REST/OpenAPI, GraphQL, gRPC, security (OWASP), accessibility (WCAG), i18n, WebSockets |
 
 ## Install
 
