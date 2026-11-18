@@ -54,3 +54,33 @@ Claude loads the skill by itself on coding tasks. To call it explicitly:
 ```
 
 To change a habit, edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or the stack's file in [`skills/chef/references/`](skills/chef/references/), then push.
+
+## Benchmark
+
+Same prompt, same model (Sonnet 5.5), fresh folder each time. The only difference: the chef plugin. Every other plugin is off in both arms. 4 tasks × 2 runs per arm, measured by [`bench/run.py`](bench/run.py).
+
+| Task | Metric | Without chef | With chef |
+|---|---|---|---|
+| C# library | Test cases written | 0 | 6.5 |
+| | Tests pass | no tests | 2/2 |
+| | `var` (inferred types) | 3 | 0 |
+| | `TreatWarningsAsErrors` | 0/2 | 2/2 |
+| Python CLI | Test cases written | 0 | 13.5 |
+| | Tests pass | no tests | 2/2 |
+| | Fully annotated functions | 0% | 100% |
+| | Ruff + strict type checker config | 0/2 | 2/2 |
+| | `try` blocks | 4 | 2 |
+| TypeScript module | Test cases written | 0 | 6 |
+| | Tests pass | 0/1 | 0/2 |
+| | `strict` tsconfig | 1/2 | 2/2 |
+| Dockerfile + CI | `HEALTHCHECK` | 0/2 | 2/2 |
+| | Base image pinned by digest, actions pinned by SHA | 0/2 | 0/2 |
+| All tasks | Comment lines per code line | 0.05–0.11 | 0.01–0.03 |
+| | Cost per task | $0.08–0.12 | $0.15–0.29 |
+| | Time per task | 10–24 s | 18–69 s |
+
+Chef makes Claude write tests, explicit types and strict lint configs it otherwise skips, at about 2× the cost and 2.5× the time. Weak spots seen: the TypeScript tests it wrote did not pass, and the Docker/CI rules (digest and SHA pinning, multi-stage) were not applied.
+
+Full table: [`bench/results.md`](bench/results.md). Raw data: [`bench/results.jsonl`](bench/results.jsonl). Re-run: `python bench/run.py run && python bench/run.py report`.
+
+Limits: 2 runs per arm is a small sample; type and comment metrics are regex heuristics, except Python annotations (parsed with `ast`).

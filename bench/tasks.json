@@ -1,0 +1,25 @@
+[
+  {
+    "id": "csharp",
+    "prompt": "Create a .NET 10 class library in this folder that parses CSV order lines (id,amount,date) and returns the total amount per day. Invalid lines must not crash the program.",
+    "seed": {}
+  },
+  {
+    "id": "typescript",
+    "prompt": "Create a small TypeScript Node module in this folder: a function that reads a JSON file of user records (name, email, country) and returns the users grouped by country, sorted by name. Handle a missing or malformed file.",
+    "seed": {}
+  },
+  {
+    "id": "python",
+    "prompt": "Create a Python command-line tool in this folder that reads a TOML config file containing a list of endpoints (url, timeout in seconds), validates it, and prints which entries are invalid and why.",
+    "seed": {}
+  },
+  {
+    "id": "devops",
+    "prompt": "Add a Dockerfile and a GitHub Actions CI workflow for this Node app.",
+    "seed": {
+      "package.json": "{\n  \"name\": \"hello-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\",\n  \"scripts\": { \"start\": \"node index.js\", \"test\": \"node --test\" }\n}\n",
+      "index.js": "const http = require('node:http');\nconst port = process.env.PORT || 3000;\nhttp.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'application/json' });\n  res.end(JSON.stringify({ ok: true }));\n}).listen(port);\n"
+    }
+  }
+]
