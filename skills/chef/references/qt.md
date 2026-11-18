@@ -19,7 +19,7 @@ qt_add_qml_module(shop URI Shop QML_FILES Main.qml ProfilePage.qml SOURCES profi
 - CI builds the generated `all_qmllint` target. Generate `.qmllint.ini` with `qmllint --write-defaults`, raise every category to `error`, and turn on the `compiler` category (off by default) so code that qmlsc cannot compile fails too.
 - Never write `// qmllint disable`: it is an inline suppression.
 - Format with `qmlformat -i`; CI reformats and fails on `git diff --exit-code`.
-- C++ follows `cpp.md`. If `cppcoreguidelines-owning-memory` fires on Qt parent-owned allocations (`new QLabel(parent)`), ask the user before changing the config: it is not a house-rule conflict.
+- C++ follows `cpp.md`. In `.clang-tidy`, turn off `cppcoreguidelines-owning-memory`: it flags Qt's parent-owned allocations (`new QLabel(parent)`), which are the correct Qt pattern. Write that reason on the line above.
 
 ## QML
 

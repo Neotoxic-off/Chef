@@ -360,9 +360,9 @@ Rules:
 - When you edit a file, type everything you add or touch. Leave untouched code alone unless the user asks.
 - Strict mode (`"strict": true` in tsconfig, `mypy --strict`, warnings as errors): on by default in a new project. In an existing project, ask the user first: it can flood the code with errors.
 
-## WPF / WinUI: CommunityToolkit, always
+## WPF / WinUI / MAUI / Avalonia: CommunityToolkit, always
 
-Every WPF or WinUI project uses the .NET Community Toolkit. This dependency is pre-approved: add it without asking.
+Every WPF, WinUI, .NET MAUI or Avalonia project uses the .NET Community Toolkit (`CommunityToolkit.Mvvm`, plus `CommunityToolkit.Maui` in MAUI). These dependencies are pre-approved: add them without asking.
 
 - MVVM: `CommunityToolkit.Mvvm`, in every project.
   - ViewModels inherit `ObservableObject` (or `ObservableValidator` / `ObservableRecipient` when needed) and are `partial`.

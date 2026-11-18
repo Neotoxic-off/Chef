@@ -33,7 +33,7 @@ Builds on `csharp.md` (project settings, `.editorconfig`, tests). Verified again
   builder.Services.AddTransient<ProfileViewModel>();
   builder.Services.AddTransient<ProfilePage>();
   ```
-- `CommunityToolkit.Maui` (behaviors, converters, popups) is a separate dependency: ask before adding it.
+- `CommunityToolkit.Maui` (behaviors, converters, popups) is pre-approved like `CommunityToolkit.Mvvm`: add it without asking.
 
 ## UI and platform
 

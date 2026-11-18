@@ -25,7 +25,7 @@ Chef is a [Claude Code](https://claude.com/claude-code) plugin that makes Claude
 - **SOLID**, readable code, few comments: if code needs many, it is not clear enough.
 - **Tests**: unit and integration, 90% line and branch coverage gate, mutation testing on critical logic.
 - **Never hide a warning or an error**: fix the cause, always.
-- **WPF / WinUI**: CommunityToolkit, always.
+- **WPF / WinUI / MAUI / Avalonia**: CommunityToolkit, always.
 
 Each stack has its own reference (linter, formatter, test runner, coverage tool, configs), loaded only when Claude works in it. Anything not listed is still covered: Claude looks up its official docs and standard tools first, then applies every rule.
 
