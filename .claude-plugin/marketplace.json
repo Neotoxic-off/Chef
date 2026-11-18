@@ -1,0 +1,11 @@
+{
+  "name": "chef",
+  "owner": { "name": "Neotoxic-off" },
+  "plugins": [
+    {
+      "name": "chef",
+      "source": "./",
+      "description": "Chef mode: house coding habits and machine-aware build guards."
+    }
+  ]
+}
