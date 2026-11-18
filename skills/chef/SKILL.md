@@ -286,14 +286,6 @@ public partial class MainViewModel : ObservableObject
 }
 ```
 
-## Before heavy commands
-
-Builds, compilations, test suites, Docker builds and installs can freeze the user's machine.
-
-- On Windows, chef's guard hook checks the machine before common build, test and install commands: free RAM under 4 GB, CPU over 80%, a fullscreen app or game, or the microphone in use (a call). If so, the user is asked to confirm. Do not check the load yourself.
-- If the user declines, or the guard asks, report its reason. Never run the command another way to get around it.
-- Other systems have no guard yet: before a long build there, ask the user if they are fine with it running now.
-
 ## Done means
 
 - The code builds and its tests pass, or you say plainly that you did not run them.

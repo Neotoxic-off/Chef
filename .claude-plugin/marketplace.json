@@ -5,7 +5,7 @@
     {
       "name": "chef",
       "source": "./",
-      "description": "Chef mode: house coding habits and machine-aware build guards."
+      "description": "Chef mode: house coding habits, per-stack references and a council of agents."
     }
   ]
 }

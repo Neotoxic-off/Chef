@@ -17,7 +17,6 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -57,8 +56,6 @@ ALLOWED_TOOLS: list[str] = [
     "Bash(pip *)", "Bash(ls *)", "Bash(mkdir *)", "Bash(cat *)",
     "Bash(docker buildx imagetools *)", "Bash(docker manifest inspect *)", "Bash(git ls-remote *)", "Bash(gh api *)",
 ]
-# The guard hook can ask before builds when the machine is busy; nobody answers in -p, so it is off for comparable runs.
-GUARD_OFF: dict[str, str] = {"CHEF_GUARD_DISABLE": "1"}
 
 
 def settings_all_plugins_off() -> dict[str, Any]:
@@ -244,7 +241,7 @@ def one_run(task: dict[str, Any], arm: str, run: int, model: str, budget: float)
     status: str
     try:  # subprocess.run has no non-raising timeout
         proc: subprocess.CompletedProcess[str] = subprocess.run(
-            cmd, cwd=work, capture_output=True, text=True, timeout=RUN_TIMEOUT_S, env={**os.environ, **GUARD_OFF})
+            cmd, cwd=work, capture_output=True, text=True, timeout=RUN_TIMEOUT_S)
         stdout, status = proc.stdout, f"exit {proc.returncode}"
     except subprocess.TimeoutExpired as timeout:
         stdout = timeout.stdout.decode("utf-8", errors="replace") if timeout.stdout else ""
