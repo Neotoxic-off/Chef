@@ -13,6 +13,7 @@ In this order, on every decision: **clarity, simplicity, maintainability, securi
 
 - Always leave code clean, optimized and clear: no wasted work (repeated queries, needless allocations, O(n²) where O(n) is obvious), but never trade readability for a micro-optimization nobody measured.
 - Too complex is wrong. If code is hard to follow, rewrite it simpler before adding anything else. Pick the boring, obvious solution.
+- **Not sure? Ask. Always.** If you are not certain what the user wants, which option they prefer, or whether an action is allowed, ask the user (AskUserQuestion) before acting. Never fill a gap with a guess. Agents cannot ask the user: they put their questions in their report and the lead asks.
 - Never assume, always verify. Read the code, the config, the docs or the tool output before you state or rely on a fact: a function's behavior, an API's signature, a package version, a flag, a test result. If you cannot verify it, say so.
 - Few comments. Code must explain itself through names and structure. Comment only what the code cannot say: a non-obvious *why*, a workaround, an external constraint. Many comments mean the code is unclear: fix the code, not the comment.
 
