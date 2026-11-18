@@ -22,16 +22,25 @@ Write TypeScript, not JavaScript, for any new file.
 - ESLint flat config (`eslint.config.mjs`) with typescript-eslint `strictTypeChecked` and `stylisticTypeChecked`:
   ```js
   import eslint from "@eslint/js";
+  import { defineConfig } from "eslint/config";
   import tseslint from "typescript-eslint";
 
-  export default tseslint.config(
+  export default defineConfig(
     eslint.configs.recommended,
-    ...tseslint.configs.strictTypeChecked,
-    ...tseslint.configs.stylisticTypeChecked,
+    tseslint.configs.strictTypeChecked,
+    tseslint.configs.stylisticTypeChecked,
     { languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } } },
+    {
+      rules: {
+        "@typescript-eslint/no-inferrable-types": "off", // contradicts the house rule: explicit types (`const n: number = 0`)
+        "@typescript-eslint/explicit-function-return-type": "error",
+        "@typescript-eslint/explicit-module-boundary-types": "error",
+      },
+    },
   );
   ```
-- Add `@typescript-eslint/explicit-function-return-type` and `@typescript-eslint/typedef` to enforce explicit types.
+- Typed linting needs a TypeScript version that typescript-eslint supports: check its `peerDependencies` (`npm view typescript-eslint peerDependencies`). In Nov 2026 that is `<6.1.0`, so pin `typescript` to `~6.0` until it supports 7: TS 7 crashes typed linting.
+- No lint rule enforces annotations on every variable (`typedef` is deprecated): write them anyway and check them in review.
 - Format with Prettier (or Biome if the project already uses it). CI checks formatting.
 
 ## Code
@@ -39,7 +48,7 @@ Write TypeScript, not JavaScript, for any new file.
 - Explicit types everywhere (see SKILL.md). No `any`; use `unknown` and narrow it.
 - Validate external data (HTTP, JSON, env) at the boundary with a schema library (e.g. zod), then trust the typed result.
 - `const` over `let`, never `var`. `readonly` on fields and arrays that do not change.
-- Named exports, no default exports.
+- Named exports, no default exports, except where a framework or tool requires one (config files, Next.js `page`/`layout`/`route` files).
 - `async`/`await`, no floating promises.
 
 ## Tests

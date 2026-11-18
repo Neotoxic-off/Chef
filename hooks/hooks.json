@@ -1,0 +1,18 @@
+{
+  "description": "Chef guard: before a build, test or install command, ask the user to confirm when the machine is busy (low RAM, high CPU, fullscreen app or game, microphone in use).",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v powershell.exe >/dev/null || exit 0; input=$(cat); pattern=$(tr -d '\\r' < \"${CLAUDE_PLUGIN_ROOT}/hooks/heavy-commands.regex\"); printf '%s' \"$input\" | grep -qiE \"$pattern\" || exit 0; ROOT=$(printf %s \"${CLAUDE_PLUGIN_ROOT}\" | sed 's|^/\\([a-zA-Z]\\)/|\\1:/|'); printf '%s' \"$input\" | powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"$ROOT/hooks/guard.ps1\"",
+            "timeout": 15,
+            "statusMessage": "Chef: checking machine load..."
+          }
+        ]
+      }
+    ]
+  }
+}

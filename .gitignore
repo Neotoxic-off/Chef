@@ -1,2 +1,4 @@
 bench/run.log
+bench/logs/
+bench/results.partial.jsonl
 __pycache__/

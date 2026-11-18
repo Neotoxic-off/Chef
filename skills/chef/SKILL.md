@@ -80,6 +80,17 @@ A `reviewer` agent, separate from the authors, checks the changed code against t
 
 Merge the reports: what is done, where agents disagree, what breaks a house rule (drop it and say why). Then ask the user for feedback on the real choices (AskUserQuestion, max 4 questions, recommended option first). Never treat an agent's report as the user's approval.
 
+## Talk less, do what was asked
+
+Every word costs the user tokens and attention.
+
+- Do what was asked, nothing more. No unrequested features, refactors, files or explanations. A good idea nobody asked for gets one line at the end, not code.
+- Answer first. Then only what the user needs: what changed, what was not checked, the risks. No greeting, no recap of the question, no "I will now...", no closing offer.
+- Short sentences, plain words. Lists and tables only when they are shorter than prose.
+- Between tool calls, say nothing unless it changes what the user should know.
+- Code, commands, paths and errors stay exact; compress the prose around them, never them.
+- Agents' reports follow the same rules: facts, files, checks, risks, questions. No narration.
+
 ## Language
 
 - Code, identifiers, comments, commit messages: English.
@@ -131,6 +142,47 @@ DevOps and tools:
 | Ansible | `references/ansible.md` |
 | Git, commits, hooks | `references/git.md` |
 
+Frameworks (read with the language file they build on):
+
+| Tech | File |
+|---|---|
+| React, TanStack Query, Zustand | `references/react.md` |
+| Next.js | `references/nextjs.md` |
+| Vue, Nuxt, Pinia | `references/vue.md` |
+| Angular | `references/angular.md` |
+| Svelte, SvelteKit | `references/svelte.md` |
+| Tailwind CSS | `references/tailwind.md` |
+| ASP.NET Core | `references/aspnetcore.md` |
+| NestJS, Express, Fastify | `references/nestjs.md` |
+| Django, DRF | `references/django.md` |
+| FastAPI, Flask | `references/fastapi.md` |
+| Spring Boot | `references/spring-boot.md` |
+| Laravel | `references/laravel.md` |
+| Rails | `references/rails.md` |
+
+Observability:
+
+| Tech | File |
+|---|---|
+| OpenTelemetry, Collector | `references/opentelemetry.md` |
+| Prometheus, alerting rules | `references/prometheus.md` |
+| Grafana, dashboards | `references/grafana.md` |
+| Loki, Alloy | `references/loki.md` |
+| Tracing, Tempo, Jaeger | `references/tracing.md` |
+| Application logging | `references/logging.md` |
+| SLOs, error budgets | `references/slo.md` |
+
+Data and messaging:
+
+| Tech | File |
+|---|---|
+| PostgreSQL, PgBouncer | `references/postgres.md` |
+| Redis, Valkey | `references/redis.md` |
+| MongoDB | `references/mongodb.md` |
+| Kafka, RabbitMQ, outbox | `references/messaging.md` |
+| Elasticsearch, OpenSearch | `references/elasticsearch.md` |
+| ORMs: EF Core, Prisma, SQLAlchemy, Hibernate | `references/orm.md` |
+
 For any stack not listed, apply the general rules below with that ecosystem's standard linter, formatter, test runner and coverage tool.
 
 ## SOLID and readable code
@@ -146,7 +198,7 @@ A human must be able to read, change and own every line.
 - Names say what a thing is or does. No abbreviations, no `data`, `info`, `manager`, `helper`, `utils` dumping grounds.
 - Functions: about 20 lines, 3 parameters at most, one level of abstraction each. Cyclomatic complexity under 10.
 - No magic numbers or strings: name them as constants.
-- `try`/`catch` only when there is no other way: the call can throw and nothing lets you avoid it. Otherwise prevent the error instead: check first (`TryParse`, `TryGetValue`, `File.Exists`, `dict.get`, optional chaining, `Result`/`Option` types, validation at the boundary).
+- `try`/`catch` only when there is no other way: the call can throw and nothing lets you avoid it. Otherwise prevent the error instead: check first (`TryParse`, `TryGetValue`, `dict.get`, optional chaining, `Result`/`Option` types, validation at the boundary). Exception: files, network and other shared resources can change between the check and the use (a race, CWE-367), so there the `try` around the operation itself is the right way.
 - When a `try`/`catch` is unavoidable: smallest possible `try` block, catch the specific exception, handle it where you can act on it. Never catch-all, never swallow it silently, never use exceptions for normal control flow.
 - Comments explain *why*, never *what* (see Priorities). Doc comments only on a library's public API used by other projects.
 - SOLID is a tool, not a goal. Do not add an interface with one implementation and no test seam.
@@ -159,7 +211,7 @@ Every change ships with tests. Code without tests is not done.
 - **Integration tests** for every boundary: database, HTTP, filesystem, message queues, other services. Use real dependencies in containers (Testcontainers) over mocks where possible.
 - **Coverage**: aim for 100% branch coverage of business logic. CI fails under 90% line *and* branch coverage. Exclude only generated code and thin UI views, with a comment saying why.
 - **Mutation testing** on critical logic (money, security, parsing): Stryker (.NET, JS/TS), mutmut (Python), cargo-mutants (Rust). Coverage proves code ran, mutation proves tests check it.
-- Test names state the behavior: `Withdraw_WithInsufficientFunds_ThrowsInsufficientFundsException`.
+- Test names state the behavior, in the language's convention: `Withdraw_WithInsufficientFunds_ThrowsInsufficientFundsException` (C#, Java), `test_withdraw_with_insufficient_funds_raises` (Python), `withdraw with insufficient funds throws` (JS/TS).
 - Arrange / Act / Assert, one behavior per test, no logic (`if`, loops) in tests.
 - Tests are deterministic: no real clock, random, network or sleep. Inject them.
 - Mock only what you own and only at boundaries. Do not mock the class under test.
@@ -169,9 +221,9 @@ Every change ships with tests. Code without tests is not done.
 
 - Every project has a linter and a formatter, configured in the repo and run in CI.
 - Warnings are errors. Never hide a warning or an error: fix its cause, always.
-- Forbidden ways to hide one: suppression comments or attributes (`// eslint-disable`, `# noqa`, `# type: ignore`, `#pragma warning disable`, `@SuppressWarnings`, `[SuppressMessage]`, `#[allow(...)]`, `@ts-ignore`), empty `catch` blocks, `|| true`, redirecting errors to `/dev/null` or `$null`, `-ErrorAction SilentlyContinue`, skipping or deleting failing tests, lowering a coverage or lint threshold, excluding a file from the linter.
+- Forbidden ways to hide one: suppression comments or attributes (`// eslint-disable`, `# noqa`, `# type: ignore`, `#pragma warning disable`, `@SuppressWarnings`, `[SuppressMessage]`, `#[allow(...)]`, `@ts-ignore`), empty `catch` blocks, `|| true`, redirecting errors to `/dev/null` or `$null` (a presence check such as `command -v x >/dev/null` is fine: it hides nothing), `-ErrorAction SilentlyContinue`, skipping or deleting failing tests, lowering a coverage or lint threshold, excluding a file from the linter.
 - If a warning cannot be fixed (e.g. it comes from a third-party package or a tool bug), stop and tell the user. Never suppress it on your own.
-- The only allowed exception: a rule disabled in the project's lint config because it contradicts a house rule in this skill (e.g. `modernize-use-auto` vs explicit types), with the reason on the same line.
+- The only allowed exception: a rule disabled in the project's lint config because it contradicts a house rule in this skill (e.g. `modernize-use-auto` vs explicit types), with the reason on the same line or the line above.
 - Run the formatter, the linter, the type checker and the tests before saying a task is done. Report anything you did not run.
 
 ## Explicit types, always
@@ -185,7 +237,7 @@ Annotate all of these:
 - Return types, including `void` / `None` / `()`.
 - Class fields, struct fields and properties.
 - Lambda and closure parameters and returns.
-- Generics: write the type arguments (`new Map<string, number>()`, not `new Map()`).
+- Generics: write the type arguments (`new Map<string, number>()`, not `new Map()`). A declaration whose type is fixed by an explicit type argument counts as typed, with the callback parameters that argument types (`defineProps<Props>()`, `create<CartState>()((set) => ...)`).
 
 Per language:
 
@@ -205,7 +257,7 @@ Rules:
 - Use precise types. No `any`, `object`, `Object`, `interface{}` or `dynamic` unless the value truly is untyped (e.g. raw JSON). In that case, narrow it right away.
 - Where the syntax cannot hold a type (e.g. Go `for i, x := range`), annotate the nearest possible place instead.
 - When you edit a file, type everything you add or touch. Leave untouched code alone unless the user asks.
-- Turn on the strict mode the project allows (`"strict": true` in tsconfig, `mypy --strict`) only if the user agrees.
+- Strict mode (`"strict": true` in tsconfig, `mypy --strict`, warnings as errors): on by default in a new project. In an existing project, ask the user first: it can flood the code with errors.
 
 ## WPF / WinUI: CommunityToolkit, always
 
@@ -238,9 +290,9 @@ public partial class MainViewModel : ObservableObject
 
 Builds, compilations, test suites, Docker builds and installs can freeze the user's machine.
 
-1. Check the load first (Windows: `Get-CimInstance Win32_OperatingSystem` for free RAM, `Get-CimInstance Win32_Processor` for CPU).
-2. Free RAM under 4 GB or CPU over 80%: stop and ask the user before running.
-3. If a hook blocks the command, report its reason to the user. Never retry it another way to get around the block.
+- On Windows, chef's guard hook checks the machine before common build, test and install commands: free RAM under 4 GB, CPU over 80%, a fullscreen app or game, or the microphone in use (a call). If so, the user is asked to confirm. Do not check the load yourself.
+- If the user declines, or the guard asks, report its reason. Never run the command another way to get around it.
+- Other systems have no guard yet: before a long build there, ask the user if they are fine with it running now.
 
 ## Done means
 

@@ -18,6 +18,16 @@ linters:
     - revive
     - unparam
     - wrapcheck
+  settings:
+    revive:
+      enable-default-rules: true  # needs golangci-lint v2.12+; check with `golangci-lint config verify`
+      rules:
+        - name: var-declaration  # contradicts the house rule: explicit types (`var n int = 0`)
+          disabled: true
+        - name: exported  # contradicts the house rule: doc comments only on a library's public API
+          disabled: true
+        - name: package-comments  # same reason as `exported`
+          disabled: true
 formatters:
   enable:
     - gofumpt
@@ -36,7 +46,7 @@ Upgrade an old v1 config with `golangci-lint migrate`.
 
 ## Tests
 
-- Table-driven tests with `t.Run`; `t.Parallel()` where safe.
+- Table-driven tests with `t.Run`; `t.Parallel()` where safe. The loop over cases is the Go idiom and the allowed exception to "no loops in tests".
 - Always run with the race detector: `go test -race -coverprofile=cover.out -covermode=atomic ./...`.
 - Gate coverage in CI (e.g. `go tool cover -func=cover.out` and fail under 90%).
 - Integration tests behind a build tag (`//go:build integration`) using `testcontainers-go`.
