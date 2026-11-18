@@ -142,7 +142,7 @@ def validate_url_parts(url: str) -> str | None:
 
 ## Benchmark
 
-Same prompt, same model (Sonnet 5.5), fresh folder each time. The only difference: the chef plugin. Every other plugin is off in both arms. 4 tasks × 2 runs per arm, measured by [`bench/run.py`](bench/run.py).
+Same prompt, same model (Sonnet 5.5), fresh folder each time. The only difference: the chef plugin. Every other plugin is off in both arms. 4 tasks × 2 runs per arm.
 
 | Task | Metric | Without chef | With chef |
 |---|---|---|---|
@@ -166,7 +166,5 @@ Same prompt, same model (Sonnet 5.5), fresh folder each time. The only differenc
 | | Time per task | 10–24 s | 18–69 s |
 
 Chef makes Claude write tests, explicit types and strict lint configs it otherwise skips, at about 2× the cost and 2.5× the time. Weak spots seen: the TypeScript tests it wrote did not pass (cause not captured: this harness discarded the logs), TypeScript declarations were no more typed than without chef, and digest/SHA pinning was not applied. Chef did read the Docker rules (`HEALTHCHECK` comes only from them), but the benchmark gave Claude no tool to look up a real digest or SHA, so it did not invent one.
-
-Full table: [`bench/results.md`](bench/results.md). Raw data: [`bench/results.jsonl`](bench/results.jsonl). Re-run: `python bench/run.py run && python bench/run.py report`.
 
 Limits: 2 runs per arm is a small sample; type and comment metrics are regex heuristics, except Python annotations (parsed with `ast`).
