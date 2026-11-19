@@ -1,5 +1,5 @@
 {
-  "description": "Route every development prompt through the chef skill.",
+  "description": "Route every development prompt through the chef skill and block unpinned GitHub Actions.",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -8,6 +8,17 @@
             "type": "command",
             "command": "echo 'chef: if this prompt involves writing, fixing, debugging, refactoring, reviewing, testing or building code, config, scripts, infrastructure or CI, invoke the chef:chef skill before your first edit or command (once per session; skip if already loaded) and follow it, including in the briefs you give agents.'",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pin-gate.sh\"",
+            "timeout": 10
           }
         ]
       }

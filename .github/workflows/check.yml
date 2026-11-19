@@ -27,5 +27,9 @@ jobs:
         run: npx --yes bats@1.13.0 tests/check.bats
       - name: Test transform stop gate
         run: npx --yes bats@1.13.0 tests/stop-gate.bats
+      - name: Test action pin gate
+        run: npx --yes bats@1.13.0 tests/pin-gate.bats
+      - name: Test status usage report
+        run: npx --yes bats@1.13.0 tests/usage.bats
       - name: Check plugin consistency
         run: bash scripts/check.sh

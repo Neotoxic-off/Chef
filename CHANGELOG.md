@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.0 (2026-11-19)
+
+- Levels `lite | full | max`, set with `/chef:level`. `full` stays the default. `lite` keeps every code rule but drops the council and the reviewer; `max` runs both on every non-trivial change.
+- Per-project `.chef.md`: level, strict mode, coverage target, council, and a `## Decisions` list so an answered question is not asked again.
+- `/chef:status`: active level, overrides, detected stacks, and the session's tokens, subagents and elapsed time.
+- Stop hook `pin-gate.sh`: blocks once when a changed GitHub workflow uses an action not pinned by a full commit SHA.
+- Transform stop gate: once a batch is `[x]`, `TRANSFORM.md` needs `Target:` and `## Council`, and every ticked batch needs its own commit.
+- "Talk less" tightened: about 10 lines per reply, result first, closing line on what was skipped and the risk.
+- Benchmark rerun with real checks: hidden tests, coverage, `mypy --strict`, `tsc --strict`, hadolint.
+
 ## 0.7.0 (2026-11-19)
 
 - `/chef:transform <goal>`: upgrades and migrations in the AWS Transform style. Baseline, plan in a committed `TRANSFORM.md`, council review, user approval, then batches that are validated, reviewed and committed one by one, with resume and a before/after report.

@@ -92,6 +92,23 @@ To upgrade or migrate a repository (.NET, Java, Python, Node versions, TypeScrip
 
 It works like AWS Transform, inside one repository: it measures a baseline build and test run, writes a plan of small batches to `TRANSFORM.md`, has the council check it, and waits for your approval. Then each batch is edited, validated, reviewed and committed. A Stop hook, active only during a transform, keeps Claude from stopping while a batch is edited but not validated. The plan is committed, so a later session resumes where it stopped. Mainframe, VMware and multi-repo migrations are out of scope.
 
+To pick how much ceremony chef uses, per project:
+
+```
+/chef:level lite|full|max
+/chef:status
+```
+
+| Level | What changes |
+|---|---|
+| `lite` | Every code rule (types, tests, lint, security), no council, no reviewer agent. Cheapest. |
+| `full` | Default. Council for decisions, reviewer on changes. |
+| `max` | Council on every non-trivial change, reviewer always. |
+
+The level and other answers (strict mode, coverage target, council on or off) are kept in `.chef.md` at the project root, so chef does not ask twice. `/chef:status` shows the level, the overrides, the detected stacks and the session's token use.
+
+Two Stop hooks check what prose rules could not enforce. `pin-gate.sh` blocks once if a changed GitHub workflow uses an action not pinned by commit SHA. During `/chef:transform`, the stop gate requires a `Target:` runtime, a `## Council` section and one commit per ticked batch.
+
 To change a habit, edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or the stack's file in [`skills/chef/references/`](skills/chef/references/) (listed in [`INDEX.md`](skills/chef/references/INDEX.md)). Run `bash scripts/check.sh` before you push; CI runs it too.
 
 ## With and without chef
@@ -183,49 +200,139 @@ def validate_url_parts(url: str) -> str | None:
 
 Same prompt, same model (Sonnet 5.5), fresh git folder each time. The only difference: the chef plugin. Every other plugin is off in both arms. 5 tasks × 2 runs per arm, run on Nov 19, 2026.
 
+Every result is checked by running real tools on the output, with the same settings for both arms:
+
+- **Hidden tests:** each prompt names a function, and after the run a test Claude never saw calls it.
+- **Strict checkers:** `mypy --strict`, `tsc --strict`, compiler warnings, ruff and hadolint.
+- **Coverage:** measured line coverage of the project's own tests.
+
+### At a glance
+
+Share of runs that meet each check, across all tasks it applies to.
+
+| Check | Without chef | With chef |
+|---|---|---|
+| **Correct**: hidden tests pass (8 code runs) | `████████████████████` 100% | `████████████████████` 100% |
+| **Tested**: tests written and passing (8 code runs) | `░░░░░░░░░░░░░░░░░░░░` 0% | `██████████████████░░` 88% |
+| **Covered**: average line coverage (8 code runs) | `░░░░░░░░░░░░░░░░░░░░` 0% | `█████████████████░░░` 86% |
+| **Typed**: no inferred or unannotated declarations (C#, TS, Python) | `░░░░░░░░░░░░░░░░░░░░` 0% | `█████████████████░░░` 83% |
+| **Clean under strict checkers**: 0 compiler warnings, `tsc --strict`, `mypy --strict` errors | `█████████████░░░░░░░` 67% | `████████████████████` 100% |
+| **Strict tooling set up**: warnings as errors, ESLint, Ruff + strict type checker | `░░░░░░░░░░░░░░░░░░░░` 0% | `████████████████████` 100% |
+| **Hardened container and CI**: 7 checks per run (digest, healthcheck, permissions, ...) | `██████████░░░░░░░░░░` 50% | `█████████████████░░░` 86% |
+| **Safe migration**: tests first, plan, commits per batch, review | `░░░░░░░░░░░░░░░░░░░░` 0% | `██████████████████░░` 88% |
+
+Both arms write code that works. The difference is everything around it: tests, coverage, types and strict tooling.
+
+In the charts below, bars are with chef and the line is without.
+
+```mermaid
+xychart-beta
+    title "Line coverage (%)"
+    x-axis ["C#", "TypeScript", "Python", "Transform"]
+    y-axis "Coverage %" 0 --> 100
+    bar [50, 100, 97.8, 95.2]
+    line [0, 0, 0, 0]
+```
+
+```mermaid
+xychart-beta
+    title "Test cases written per run"
+    x-axis ["C#", "TypeScript", "Python", "Transform"]
+    y-axis "Test cases" 0 --> 12
+    bar [8.5, 4.5, 11, 11]
+    line [0, 0, 0, 0]
+```
+
+```mermaid
+xychart-beta
+    title "Cost per task (USD)"
+    x-axis ["C#", "TypeScript", "Python", "Docker + CI", "Transform"]
+    y-axis "USD" 0 --> 0.4
+    bar [0.29, 0.26, 0.24, 0.26, 0.37]
+    line [0.10, 0.12, 0.11, 0.09, 0.10]
+```
+
+```mermaid
+xychart-beta
+    title "Time per task (seconds)"
+    x-axis ["C#", "TypeScript", "Python", "Docker + CI", "Transform"]
+    y-axis "Seconds" 0 --> 200
+    bar [111.9, 185.9, 127.9, 184.7, 92.6]
+    line [56.3, 66.5, 39, 72.5, 53.3]
+```
+
+```mermaid
+xychart-beta
+    title "Comment lines per 100 code lines"
+    x-axis ["C#", "TypeScript", "Python", "Transform"]
+    y-axis "Comment lines" 0 --> 15
+    bar [0, 0, 11.5, 0]
+    line [4, 12.5, 11.5, 3]
+```
+
+Fewer comments is the intended effect: chef's rule is self-explaining code, with comments only for a non-obvious *why*.
+
 ### Comparison: new code
 
 | Task | Metric | Without chef | With chef |
 |---|---|---|---|
-| C# library | Test cases written | 1.5 | 8.5 |
-| | Tests pass | 1/1 | 2/2 |
-| | `var` (inferred types) | 5.5 | 0 |
+| C# library | Hidden tests pass | 2/2 | 2/2 |
+| | Test cases written | 0 | 8.5 |
+| | Tests pass | no tests | 1/2 |
+| | Line coverage | 0% | 100% / 0% |
+| | `var` (inferred types) | 2 | 0 |
+| | Build warnings | 0 | 0 |
 | | `TreatWarningsAsErrors` | 0/2 | 2/2 |
-| Python CLI | Test cases written | 0 | 14.5 |
-| | Tests pass | no tests | 2/2 |
-| | Fully annotated functions | 0% | 100% |
-| | Ruff + strict type checker config | 0/2 | 2/2 |
-| | `try` blocks | 3.5 | 2 |
-| TypeScript module | Test cases written | 4 | 6 |
-| | Tests pass | 2/2 | 2/2 |
-| | Untyped `const`/`let` | 7.5 | 0 |
+| TypeScript module | Hidden tests pass | 2/2 | 2/2 |
+| | Test cases written | 0 | 4.5 |
+| | Line coverage | 0% | 100% |
+| | Untyped `const`/`let` | 4.5 | 0.5 |
+| | `tsc --strict` errors | 0 | 0 |
 | | ESLint config | 0/2 | 2/2 |
-| Dockerfile + CI | `HEALTHCHECK`, `permissions:` block | 0/2 | 2/2 |
-| | Base image pinned by digest | 0/2 | 2/2 |
+| Python CLI | Hidden tests pass | 2/2 | 2/2 |
+| | Test cases written | 0 | 11 |
+| | Line coverage | 0% | 97.8% |
+| | `mypy --strict` errors | 2 | 0 |
+| | Ruff findings (default rules) | 3 | 2 |
+| | Ruff + strict type checker config | 0/2 | 2/2 |
+| Dockerfile + CI | `HEALTHCHECK`, base image pinned by digest | 0/2 | 2/2 |
+| | `permissions:` block | 1/2 | 2/2 |
 | | Actions pinned by SHA | 0/2 | 0/2 |
-| All four | Comment lines per code line | 0.10–0.16 | 0.04–0.07 |
-| | Cost per task | $0.10–0.14 | $0.22–0.30 |
-| | Time per task | 24–33 s | 43–143 s |
+| | Hadolint findings | 1 | 1 |
+| All four | Cost per task | $0.09–0.12 | $0.24–0.29 |
+| | Time per task | 39–73 s | 112–186 s |
 
 ### Transformation: Python 3.8 to 3.13
 
-The seed is a small legacy module (`distutils.util.strtobool`, `datetime.utcnow()`, `typing.List`, `python_requires=">=3.8"`) with no tests. Prompt: upgrade it to Python 3.13, keep the public functions and their behavior. With chef, the same prompt starts with `/chef:transform`. After each run, a hidden check calls the public functions on Python 3.13 with `DeprecationWarning` as an error. The untouched seed fails it.
+The seed is a small legacy module with no tests. It uses `distutils.util.strtobool`, `datetime.utcnow()`, `typing.List` and `python_requires=">=3.8"`. Prompt: upgrade it to Python 3.13, keep the public functions and their behavior. With chef, the same prompt starts with `/chef:transform`. The hidden test runs on Python 3.13 with `DeprecationWarning` as an error. The untouched seed fails it.
 
 | Metric | Without chef | With chef |
 |---|---|---|
-| Hidden behavior check on 3.13 | 2/2 | 2/2 |
+| Hidden tests pass on 3.13 | 2/2 | 2/2 |
 | `distutils` and `utcnow()` removed, `python_requires>=3.13` | 2/2 | 2/2 |
-| Characterization tests written | 0 | 9.5, all pass |
+| Characterization tests written | 0 | 11, all pass |
+| Line coverage | 0% | 95.2% |
 | `TRANSFORM.md` with baseline, batches and report | 0/2 | 2/2 |
-| Commits | 0 | 3.5 |
-| `reviewer` agent on the diff | 0/2 | 2/2 |
-| Legacy `typing.List`/`Dict` left as is | 0/2 | 2/2 |
-| Cost per task | $0.10 | $0.39–0.47 |
-
-Both arms do the migration correctly. Chef adds the safety net around it: tests written before the change, one plan with a baseline, one commit per batch and a review. Legacy `typing` imports stay because migration mode keeps the diff to what 3.13 needs. Weak spots seen: one run merged batches 2–4 into one commit, against the skill's rule. Neither run convened the council: both said there was no user and the scope was small. Both validated on Python 3.14, the only one installed; the hidden check covered 3.13.
+| Commits | 0 | 4 |
+| `reviewer` agent on the diff | 0/2 | 1/2 |
+| Council on the plan | 0/2 | 0/2 |
+| Cost per task | $0.10 | $0.37 |
 
 ### Takeaways
 
-Chef makes Claude write tests, explicit types and strict lint configs it otherwise skips, at about 2× the cost (4× for a transformation) and 1.2–4× the time. Since the last run, chef now looks up real digests (`docker buildx imagetools inspect`), and the TypeScript tests pass. Actions are still not pinned by SHA: the benchmark did not allow `curl`, the command Claude tried for the lookup.
+Without chef, Claude writes working code with no tests at all, in every run. With chef, the same code ships with tests (86% average line coverage), explicit types and strict tooling. It costs about 2.5× more (3.7× for a transformation) and takes 1.7–3.3× as long.
 
-Limits: 2 runs per arm is a small sample. Type and comment metrics are regex heuristics, except Python annotations (parsed with `ast`). The harness is not in the repo.
+Weak spots seen:
+
+- **C# run without tests:** in one run, the `dotnet add package` calls never reached the test project, so its tests do not build.
+- **Actions not pinned by SHA:** they are still pinned by tag only, even though the rule is in `ci.md`.
+- **Transform steps skipped:** `/chef:transform` never convened the council and ran the reviewer in only one run of two.
+
+These steps are written rules that the model skipped. Hook-based gates are planned to enforce them.
+
+Limits:
+
+- 2 runs per arm is a small sample.
+- Times are inflated by the checks running in parallel on the same machine. Compare the arms, not the absolute seconds.
+- `docker build` and actionlint were not run.
+- The harness is not in the repo.

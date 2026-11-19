@@ -59,11 +59,16 @@ Write `TRANSFORM.md` at the project root, the folder Claude Code was started in 
 ```markdown
 # Transform: <goal>
 
+Target: <runtime and version, e.g. Python 3.13>
+
 ## Inventory
 <versions, dependencies, tests, coverage from the assessment>
 
 ## Baseline
 <commands, result, failing tests, warnings, date and commit>
+
+## Council
+<members, and what changed in the plan because of them>
 
 ## Batches
 - [ ] Batch 1: <one small change>. Validate: `<command>`
@@ -75,14 +80,15 @@ Write `TRANSFORM.md` at the project root, the folder Claude Code was started in 
 
 - Batches are small and ordered: each one builds and passes its validation on its own. Dependencies before the code that needs them.
 - Every batch names its validation command: build plus the tests it touches, or the full suite when unsure.
+- Validation runs on the `Target:` runtime, never on whatever is installed: e.g. `uv run --python 3.13 pytest`, `nvm exec 22 npm test`, a pinned container image.
 
-Before the user sees it, convene the council on the plan (chef's section 3): core plus the specialists the migration calls for. Fix the plan with what holds up; put the open disagreements in front of the user.
+Before the user sees it, convene the council on the plan (chef's section 3): core plus the specialists the migration calls for. Fix the plan with what holds up; put the open disagreements in front of the user. Record the members and what changed in `## Council`. At `lite` or with `council: off`, when the user declines the council, write `Skipped: <level or setting>` under `## Council` instead.
 
 Show the plan and ask the user to approve it (AskUserQuestion). Do not edit code or commit before they approve. Their approval covers the plan commit (`chore: transform plan for <goal>`) and one commit per batch.
 
 ## 3. Batches
 
-Batch markers in `TRANSFORM.md`: `[ ]` not started, `[~]` in progress, `[x]` validated and committed. A Stop hook blocks the end of your turn while a batch is `[~]`.
+Batch markers in `TRANSFORM.md`: `[ ]` not started, `[~]` in progress, `[x]` validated and committed. A Stop hook blocks the end of your turn while a batch is `[~]`, while a batch is `[x]` and the plan lacks `Target:` or `## Council`, and while there are more `[x]` batches than commits with `transform batch` in the subject: one commit per batch, never merged.
 
 For each batch, in order:
 
