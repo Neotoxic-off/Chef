@@ -31,6 +31,7 @@ Chef is a [Claude Code](https://claude.com/claude-code) plugin that makes Claude
 - **Strict mode**: on by default in new projects, asked first in existing ones.
 - **Before heavy commands** (builds, test suites, installs): check free RAM and CPU first, and ask if the machine is loaded.
 - **WPF / WinUI / MAUI / Avalonia**: CommunityToolkit, always.
+- **Transform** (`/chef:transform <goal>`): upgrades and migrations in the AWS Transform style. Baseline, plan in a committed `TRANSFORM.md`, your approval, then small batches that are each validated, reviewed and committed.
 
 Each stack has its own reference (linter, formatter, test runner, coverage tool, configs), loaded only when Claude works in it. Anything not listed is still covered: Claude looks up its official docs and standard tools first, then applies every rule.
 
@@ -44,6 +45,7 @@ Each stack has its own reference (linter, formatter, test runner, coverage tool,
 | Observability | OpenTelemetry, Prometheus, Grafana, Loki, Tempo/Jaeger, logging, SLOs |
 | Data and AI | PostgreSQL, Redis/Valkey, MongoDB, Kafka/RabbitMQ, Elasticsearch/OpenSearch, ORMs, pandas/Polars, notebooks, PyTorch/scikit-learn, LLM apps, Airflow/Dagster/dbt/Spark, Flink |
 | Cross-cutting | REST/OpenAPI, GraphQL, gRPC, security (OWASP), accessibility (WCAG), i18n, WebSockets |
+| Transformations | .NET Framework and .NET upgrades, Java and Spring Boot upgrades (OpenRewrite), Python version upgrades, TypeScript strict mode and Node/framework majors, raising test coverage to 90% |
 
 ## Council of agents
 
