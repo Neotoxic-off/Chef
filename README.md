@@ -82,6 +82,23 @@ Median per task, with the min–max over 5 runs. Cost is what `claude -p` report
 
 The ranges of 0.9.0 and 0.10.0 overlap on every task, so the −5% is a trend, not a proven saving.
 
+**What the extra cost buys.** The same tasks and runs, scored on quality: the share of each task's checks that pass, averaged over 5 runs.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/quality-dark.svg">
+    <img src="assets/bench/quality.svg" width="880" alt="Quality per task, share of the task's checks passed, mean over 5 runs. Python CLI: 27% without chef, 90% with chef 0.9.0, 97% with chef 0.10.0. Dockerfile and compose: 85%, 92%, 92%. Prometheus: 70%, 100%, 100%.">
+  </picture>
+</p>
+
+| Task | Checks counted | Without chef | Chef 0.10.0 |
+|---|---|---|---|
+| Python CLI | 6: hidden test, tests written, coverage ≥ 90%, `mypy --strict` clean, Ruff clean, strict tool config | 27% | 97% |
+| Dockerfile + compose | 8: digest pin, non-root, healthcheck, `.dockerignore`, valid compose, hardened compose, resource limits, hadolint clean | 85% | 92% |
+| Prometheus | 10: config valid, rules valid, `histogram_quantile`, `for`, `severity`, `summary`, `runbook_url` on every alert, rule tests pass, valid compose, pinned image | 70% | 100% |
+
+So chef costs about 2.5× per task, and the first answer is the finished one: tested, typed, pinned, with tested alert rules. Without chef, the code works but the missing tests, types, pins and rule tests are left for a follow-up prompt or a review. The cost of those follow-ups was not measured here.
+
 **Where the money goes.** A per-call trace of one chef run (Prometheus, $0.239) splits as follows, with the official cache multipliers for Sonnet 5.5 (1-hour cache write 2× input, cache read 0.05× input):
 
 <p align="center">
