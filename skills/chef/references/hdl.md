@@ -12,7 +12,7 @@ Verified Nov 2026: Verilator 5.054, Verible v0.0-4302, cocotb 2.1, VSG 3.36; che
 ## Code
 
 - First line of every Verilog/SystemVerilog file: `` `default_nettype none `` (no implicit nets); restore `` `default_nettype wire `` at the end for third-party files that need it.
-- Explicit types and widths everywhere (see SKILL.md): `logic [7:0] data_q;`, `localparam int unsigned FIFO_DEPTH = 16;`. No bare `parameter N = 4`.
+- Explicit types and widths everywhere: `logic [7:0] data_q;`, `localparam int unsigned FIFO_DEPTH = 16;`. No bare `parameter N = 4`.
 - Name every width, depth and timing constant with a `localparam`; derive widths with `$clog2`.
 - `always_ff` with nonblocking (`<=`) for registers; `always_comb` with blocking (`=`) for logic; assign every output in every branch (Verilator `LATCH` catches misses).
 - One clock domain per module unless it is a synchronizer; cross domains only through a reviewed synchronizer or async FIFO.

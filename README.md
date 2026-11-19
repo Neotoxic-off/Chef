@@ -248,7 +248,7 @@ The house rules, in priority order: **clarity, simplicity, maintainability, secu
 
 - **Not sure? Ask.** Claude asks before guessing what you want, and remembers the answer in `.chef.md`.
 - **Talk less.** Result first, about 10 lines, then what was skipped and the risk. No recap, no filler.
-- **Explicit types** on every variable, parameter, return and field, in every typed language.
+- **Typed signatures:** every function signature and public field typed, locals per the language's idiom, no `any`.
 - **Tests with every change:** unit and integration, a 90% line and branch coverage gate, mutation testing on critical logic.
 - **Never hide a warning.** Fix the cause. No suppression comments, no `|| true`, no lowered thresholds.
 - **SOLID, few comments.** If code needs many, it is not clear enough.

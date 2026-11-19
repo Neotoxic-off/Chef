@@ -47,7 +47,7 @@ repos:
 
 - Ruff lints and formats `.ipynb` directly: the `python.md` commands already cover them.
 - Type-check notebooks with nbqa: `uv run nbqa mypy notebooks/`.
-- Same rules as any Python: explicit types, no `warnings.filterwarnings("ignore")`, no `# noqa`.
+- Same rules as any Python: typed signatures, no `warnings.filterwarnings("ignore")`, no `# noqa`.
 
 ## Parameterized runs: papermill
 

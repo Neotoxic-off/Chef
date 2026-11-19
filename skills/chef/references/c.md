@@ -34,7 +34,7 @@ Add an `asan` preset with `-fsanitize=address,undefined -fno-omit-frame-pointer`
 
 ## Code
 
-- Explicit types on every declaration: `size_t count = 0;` `uint32_t flags = 0U;`. Never C23 `auto` inference (see SKILL.md).
+- Explicit types on every declaration: `size_t count = 0;` `uint32_t flags = 0U;`. Never C23 `auto` inference.
 - Fixed-width types (`<stdint.h>`) for data with a size contract; `size_t` for sizes and indexes; `bool` from `<stdbool.h>`.
 - Every function has a full prototype: `void f(void)`, never `void f()`. `static` for everything not in a header.
 - Check every return value. Return error codes (an `enum`), output through pointer parameters.

@@ -5,7 +5,7 @@ Builds on `typescript.md`. Verified against Deno 2.9.8, Bun 1.4.4, Hono 4.13.19,
 ## Deno
 
 - Use the built-in tools, not ESLint/Prettier/Vitest: `deno fmt --check`, `deno lint`, `deno check`, `deno test`.
-- `deno.json` lint config. `no-inferrable-types` has no tag, so it stays off; never include it (contradicts explicit types).
+- `deno.json` lint config:
   ```json
   {
     "lint": {

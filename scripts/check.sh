@@ -103,6 +103,30 @@ check_sizes() {
   done
 }
 
+core_rules() {
+  sed -n '/^## Core rules$/,/^## /p' "$1" | grep -E '^- '
+}
+
+check_agents_md() {
+  local -r root="$1"
+  local -r export_path="${root}/export/AGENTS.md"
+  local core=""
+  local exported=""
+  [[ -f "${export_path}" ]] || die "${export_path}: missing"
+  core="$(core_rules "${root}/skills/chef/SKILL.md")" || die "SKILL.md: no '## Core rules' bullets"
+  exported="$(grep -E '^- ' "${export_path}")" || die "${export_path}: no rules"
+  [[ "${core}" == "${exported}" ]] || die "export/AGENTS.md rules differ from SKILL.md '## Core rules'"
+}
+
+check_version() {
+  local -r root="$1"
+  local manifest_version=""
+  local changelog_heading=""
+  manifest_version="$(jq -r .version "${root}/.claude-plugin/plugin.json")"
+  changelog_heading="$(grep -m1 -oE '^## [0-9]+\.[0-9]+\.[0-9]+' "${root}/CHANGELOG.md")" || die "CHANGELOG.md: no version heading"
+  [[ "${manifest_version}" == "${changelog_heading#\#\# }" ]] || die "plugin.json version ${manifest_version} differs from CHANGELOG ${changelog_heading#\#\# }"
+}
+
 check_json() {
   local -r root="$1"
   local json_path=""
@@ -118,6 +142,8 @@ main() {
   check_skills "${root}"
   check_badge "${root}"
   check_sizes "${root}"
+  check_agents_md "${root}"
+  check_version "${root}"
   check_json "${root}"
   printf 'check: all good\n'
 }

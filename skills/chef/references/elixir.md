@@ -30,7 +30,7 @@ CI: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix cre
 
 ## Types
 
-- Explicit types (see SKILL.md): `@spec` on every public and private function, `@type t :: %__MODULE__{...}` on every struct. Dialyzer (via `dialyxir`) checks them.
+- Explicit types: `@spec` on every public and private function, `@type t :: %__MODULE__{...}` on every struct. Dialyzer (via `dialyxir`) checks them.
   ```elixir
   @spec withdraw(Account.t(), pos_integer()) :: {:ok, Account.t()} | {:error, :insufficient_funds}
   ```

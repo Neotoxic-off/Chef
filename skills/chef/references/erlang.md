@@ -25,7 +25,7 @@ Verified against Erlang/OTP 29 (29.0 released May 2026), rebar3 3.28.0, erlfmt 1
 
 ## Code
 
-- Explicit types (see SKILL.md): `-spec` on every function, `-type` for every domain value, `-opaque` to hide representation. Erlang cannot type a variable, so the spec is the nearest place.
+- Explicit types: `-spec` on every function, `-type` for every domain value, `-opaque` to hide representation. Erlang cannot type a variable, so the spec is the nearest place.
   ```erlang
   -type amount() :: non_neg_integer().
   -spec withdraw(amount(), amount()) -> {ok, amount()} | {error, insufficient_funds}.

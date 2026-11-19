@@ -52,7 +52,7 @@ func apply_damage(amount: int) -> void:
 ## C#
 
 - Every script class is `partial` (`public partial class Player : CharacterBody2D`); Godot's source generators need it.
-- Signals as `[Signal] public delegate void ChangedEventHandler(int current);`, exports with `[Export]`. Explicit types and nullable as in `csharp.md`.
+- Signals as `[Signal] public delegate void ChangedEventHandler(int current);`, exports with `[Export]`. Types and nullable as in `csharp.md`.
 - Use the .NET SDK the Godot release notes require; `TreatWarningsAsErrors` as in `csharp.md`. Logic in a separate class library with no Godot reference, tested with xUnit v3.
 
 ## Tests

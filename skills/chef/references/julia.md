@@ -21,14 +21,14 @@ One package per project (`Project.toml`, `Manifest.toml` committed for applicati
 
 ## Code
 
-- Type every declaration (see SKILL.md): arguments, returns, fields, and locals.
+- Type struct fields, and the arguments and returns where dispatch or performance needs them. Locals rely on inference.
   ```julia
   struct Account
       balance::Int
   end
 
   function withdraw(account::Account, amount::Int)::Account
-      remaining::Int = account.balance - amount
+      remaining = account.balance - amount
       remaining < 0 && throw(InsufficientFunds(amount))
       return Account(remaining)
   end

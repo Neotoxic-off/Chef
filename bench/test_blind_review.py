@@ -41,7 +41,7 @@ def test_read_review_missing_file_returns_none(tmp_path: Path) -> None:
 
 def test_anonymize_hides_history_caches_and_scoring_files(tmp_path: Path) -> None:
     workspace: Path = tmp_path / "out" / "none" / "python" / "1" / "workspace"
-    for name in (".git/HEAD", ".venv/x", ".bench-coverage.json", "endpoints.py"):
+    for name in (".git/HEAD", ".venv/x", ".bench-coverage.json", ".chef.md", "CLAUDE.md", "endpoints.py"):
         (workspace / name).parent.mkdir(parents=True, exist_ok=True)
         (workspace / name).write_text("x", encoding="utf-8")
 

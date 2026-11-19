@@ -105,7 +105,7 @@ Two fixes in a row fail, or the batch needs a decision? Leave it `[~]`, tell the
 The diff holds only what the migration needs.
 
 - Do not restyle, reformat or retype legacy lines the migration does not touch, even when they break chef's rules.
-- Chef's style rules (explicit types, SOLID, naming) apply to new code and to lines you must change anyway.
+- Chef's style rules (types per the chef skill: signatures and public fields typed, locals per the language's idiom, SOLID, naming) apply to new code and to lines you must change anyway.
 - A problem you see on the way goes in the report as a follow-up, not in the diff.
 
 ## 4. Report

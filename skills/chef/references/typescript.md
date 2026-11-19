@@ -34,7 +34,6 @@ Write TypeScript, not JavaScript, for any new file.
     { languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } } },
     {
       rules: {
-        "@typescript-eslint/no-inferrable-types": "off", // contradicts the house rule: explicit types (`const n: number = 0`)
         "@typescript-eslint/explicit-function-return-type": "error",
         "@typescript-eslint/explicit-module-boundary-types": "error",
       },
@@ -42,12 +41,11 @@ Write TypeScript, not JavaScript, for any new file.
   );
   ```
 - Typed linting needs a TypeScript version that typescript-eslint supports: check its `peerDependencies` (`npm view typescript-eslint peerDependencies`). In Nov 2026 that is `<6.1.0`, so pin `typescript` to `~6.0` until it supports 7: TS 7 crashes typed linting.
-- No lint rule enforces annotations on every variable (`typedef` is deprecated): write them anyway. Before saying done, list the untyped declarations you added and annotate each one: `git diff -U0 | grep -E '^\+\s*(export\s+)?(const|let)\s+\w+\s*='`.
 - Format with Prettier (or Biome if the project already uses it). CI checks formatting.
 
 ## Code
 
-- Explicit types everywhere (see SKILL.md). No `any`; use `unknown` and narrow it.
+- Type every function signature and exported value; let inference type initialized locals. No `any`; use `unknown` and narrow it.
 - Validate external data (HTTP, JSON, env) at the boundary with a schema library (e.g. zod), then trust the typed result.
 - `const` over `let`, never `var`. `readonly` on fields and arrays that do not change.
 - Named exports, no default exports, except where a framework or tool requires one (config files, Next.js `page`/`layout`/`route` files).

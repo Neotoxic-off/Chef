@@ -5,6 +5,8 @@ Needs pytest, pytest-cov, mypy, ruff and PyYAML in the running interpreter, and 
 hadolint, promtool and the container health check.
 """
 
+import importlib.machinery
+import importlib.util
 import json
 import shutil
 import statistics
@@ -16,6 +18,7 @@ import urllib.request
 from collections.abc import Callable
 from http import HTTPStatus
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import yaml
@@ -392,8 +395,24 @@ SCORERS: dict[str, Callable[[Path], Metrics]] = {
 }
 
 
-def score_run(run_dir: Path, task: str) -> Metrics:
-    return {**usage_metrics(run_dir / "stream.jsonl"), **SCORERS[task](run_dir / "workspace")}
+def task_scorer(task: str) -> Callable[[Path], Metrics] | None:
+    """Built-in scorer, or the `score(workspace)` function of bench/tasks/<task>/scorer.py."""
+    if task in SCORERS:
+        return SCORERS[task]
+    scorer_path: Path = BENCH_DIR / "tasks" / task / "scorer.py"
+    if not scorer_path.is_file():
+        return None
+    spec: importlib.machinery.ModuleSpec | None = importlib.util.spec_from_file_location(f"scorer_{task}", scorer_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {scorer_path}")
+    module: ModuleType = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    scorer: Callable[[Path], Metrics] = module.score
+    return scorer
+
+
+def score_run(run_dir: Path, scorer: Callable[[Path], Metrics]) -> Metrics:
+    return {**usage_metrics(run_dir / "stream.jsonl"), **scorer(run_dir / "workspace")}
 
 
 def central_value(values: list[float | int | bool]) -> float:
@@ -425,8 +444,12 @@ def main(out_dir: Path) -> None:
     require_docker()
     report: dict[str, dict[str, dict[str, Any]]] = {}
     for arm_dir in sorted(path for path in out_dir.iterdir() if path.is_dir()):
-        for task_dir in sorted(path for path in arm_dir.iterdir() if path.name in SCORERS):
-            runs: list[Metrics] = [score_run(run_dir, task_dir.name) for run_dir in sorted(task_dir.iterdir())]
+        for task_dir in sorted(path for path in arm_dir.iterdir() if path.is_dir()):
+            scorer: Callable[[Path], Metrics] | None = task_scorer(task_dir.name)
+            if scorer is None:
+                print(f"score: no scorer for task {task_dir.name}, skipped", file=sys.stderr)
+                continue
+            runs: list[Metrics] = [score_run(run_dir, scorer) for run_dir in sorted(task_dir.iterdir())]
             report.setdefault(arm_dir.name, {})[task_dir.name] = {"runs": runs, "summary": summarize(runs)}
     print(json.dumps(report, indent=2))
 

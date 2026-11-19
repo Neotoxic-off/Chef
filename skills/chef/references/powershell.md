@@ -33,7 +33,7 @@ Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host require
   $ErrorActionPreference = 'Stop'
   ```
 - Every function is advanced: `[CmdletBinding()]`, a `param()` block and `[OutputType([Type])]`.
-- Explicit types (see SKILL.md): type every parameter and variable. `[int]$count = 0`, `[string[]]$names = @()`, `[System.Collections.Generic.List[string]]$items = [System.Collections.Generic.List[string]]::new()`.
+- Type every parameter. Locals are optional: type one when the value could change type. `[int]$count = 0`, `[System.Collections.Generic.List[string]]$items = [System.Collections.Generic.List[string]]::new()`.
 - Validate at the boundary: `[Parameter(Mandatory)]`, `[ValidateNotNullOrEmpty()]`, `[ValidateSet()]`, `[ValidateRange()]`.
 - Names are `Verb-Noun` with an approved verb (`Get-Verb`) and a singular noun. PSScriptAnalyzer enforces it.
 - `SupportsShouldProcess` on anything that changes state; call `$PSCmdlet.ShouldProcess()` before the change.

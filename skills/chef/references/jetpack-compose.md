@@ -17,11 +17,6 @@ dependencies {
 
 - Versions only through the BOM; override one library only with a reason.
 - Android Lint gates warnings as errors (`kotlin.md`); the Compose lint checks run inside it.
-- House-rule clashes, fixed in config with the reason on the line:
-  ```ini
-  # .editorconfig: house rule writes every return type, including Unit
-  ktlint_standard_no-unit-return = disabled
-  ```
   ```yaml
   # config/detekt.yml: composables are PascalCase by Compose convention
   naming:

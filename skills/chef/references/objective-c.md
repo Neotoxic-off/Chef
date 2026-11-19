@@ -29,7 +29,7 @@ CI also runs `xcodebuild analyze` (Clang Static Analyzer) and fails on any findi
 
 ## Code
 
-- Explicit types everywhere (see SKILL.md): `NSInteger count = 0;`. Never `__auto_type`.
+- Explicit types on declarations, as ObjC code is written: `NSInteger count = 0;`. Never `__auto_type`.
 - Lightweight generics on every collection: `NSArray<NSString *> *names`, `NSDictionary<NSString *, NSNumber *> *totals`.
 - Wrap every header in `NS_ASSUME_NONNULL_BEGIN` / `NS_ASSUME_NONNULL_END`; mark the exceptions `nullable`.
 - `id` only for truly untyped values; prefer `id<Protocol>`.

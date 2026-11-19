@@ -4,11 +4,14 @@ setup() {
   mkdir -p "${root}/skills/chef/references" "${root}/agents" "${root}/.claude-plugin" "${root}/hooks"
   printf '| Go | `go.md` |\n' > "${root}/skills/chef/references/INDEX.md"
   printf '# Go\n' > "${root}/skills/chef/references/go.md"
-  printf -- '---\nname: chef\ndescription: Habits.\n---\n' > "${root}/skills/chef/SKILL.md"
+  printf -- '---\nname: chef\ndescription: Habits.\n---\n## Core rules\n\n- Rule one.\n\n## Other\n' > "${root}/skills/chef/SKILL.md"
   printf -- '---\nname: reviewer\ndescription: Reviews.\ntools: Read\n---\n' > "${root}/agents/reviewer.md"
   printf 'badge/references-1-D97757\n' > "${root}/README.md"
-  printf '{}\n' > "${root}/.claude-plugin/plugin.json"
+  printf '{"version": "1.0.0"}\n' > "${root}/.claude-plugin/plugin.json"
   printf '{}\n' > "${root}/hooks/hooks.json"
+  mkdir -p "${root}/export"
+  printf '# Rules\n\n- Rule one.\n' > "${root}/export/AGENTS.md"
+  printf '# Changelog\n\n## 1.0.0 (2026-11-20)\n' > "${root}/CHANGELOG.md"
 }
 
 teardown() {
@@ -127,4 +130,50 @@ name: transform
   run check_sizes "${root}"
   [ "${status}" -eq 1 ]
   [[ "${output}" == *"team.md: 6145 bytes, budget is 6144"* ]]
+}
+
+@test "check_agents_md fails when a rule is not in SKILL.md" {
+  printf '# Rules\n\n- Rule one.\n- Rule two.\n' > "${root}/export/AGENTS.md"
+  run check_agents_md "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"export/AGENTS.md rules differ from SKILL.md"* ]]
+}
+
+@test "check_version fails when plugin.json and CHANGELOG differ" {
+  printf '{"version": "1.0.1"}\n' > "${root}/.claude-plugin/plugin.json"
+  run check_version "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"plugin.json version 1.0.1 differs from CHANGELOG 1.0.0"* ]]
+}
+
+@test "check_agents_md fails when a core rule is missing from AGENTS.md" {
+  printf -- '---
+name: chef
+description: Habits.
+---
+## Core rules
+
+- Rule one.
+- Rule two.
+
+## Other
+' > "${root}/skills/chef/SKILL.md"
+  run check_agents_md "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"export/AGENTS.md rules differ from SKILL.md"* ]]
+}
+
+@test "check_agents_md fails when AGENTS.md is missing" {
+  rm "${root}/export/AGENTS.md"
+  run check_agents_md "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"export/AGENTS.md: missing"* ]]
+}
+
+@test "check_version fails when CHANGELOG has no version heading" {
+  printf '# Changelog
+' > "${root}/CHANGELOG.md"
+  run check_version "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"CHANGELOG.md: no version heading"* ]]
 }

@@ -36,7 +36,7 @@ Verified against Rust 1.100, cargo-nextest 0.9.152, cargo-llvm-cov 0.9.1, cargo-
 
 ## Code
 
-- Explicit types on every `let` and closure (see SKILL.md).
+- Type every function signature and public field; let `let` bindings and closures infer when the type is obvious.
 - Errors: `Result` with `thiserror` in libraries, `anyhow` in binaries. No `unwrap()`/`expect()` outside tests.
 - Small modules, traits for seams that tests need to replace.
 - Newtypes for domain values (`struct UserId(u64)`), not bare primitives.

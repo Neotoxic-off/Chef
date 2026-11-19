@@ -24,7 +24,7 @@ common warnings
 
 ## Code
 
-- Explicit types (see SKILL.md): a signature on every top-level and local binding, including `where` and `let`:
+- A type signature on every top-level binding. Signatures on local `where` and `let` bindings are optional; add one where it helps the reader:
   ```haskell
   withdraw :: Balance -> Amount -> Either WithdrawError Balance
   withdraw balance amount

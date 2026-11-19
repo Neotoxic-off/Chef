@@ -24,7 +24,7 @@ Linter: selene, or luacheck if the project already uses it.
 
 ## Types: LuaLS annotations
 
-- Explicit types (see SKILL.md): annotate every function, field and local with LuaCATS comments.
+- Annotate every function and field with LuaCATS comments. Locals are optional: annotate one when inference cannot type it.
   ```lua
   ---@class Account
   ---@field id integer

@@ -25,7 +25,7 @@ Verified against .NET SDK 10.0.401, FSharp.Core 11.0.101 on NuGet, Fantomas 8.1.
 
 ## Code
 
-- Explicit types (see SKILL.md) on every `let`, parameter, return and lambda:
+- Explicit types on public functions (parameters and return) and values; let inference type local bindings and lambdas:
   ```fsharp
   let withdraw (balance: decimal) (amount: decimal) : Result<decimal, WithdrawError> =
       if amount > balance then Error InsufficientFunds else Ok(balance - amount)

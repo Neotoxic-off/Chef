@@ -26,7 +26,7 @@ select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "C4", "RET", "PTH", "ANN", 
   [tool.mypy]
   strict = true
   ```
-- Annotate every variable, parameter, return and attribute (see SKILL.md). No `Any`; use `object` and narrow, or a `Protocol`.
+- Annotate every parameter, return and attribute; annotate a local only when mypy cannot infer it. No `Any`; use `object` and narrow, or a `Protocol`.
 - Data: `@dataclass(frozen=True, slots=True)`, or pydantic models at I/O boundaries to validate input.
 
 ## Code

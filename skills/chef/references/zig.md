@@ -12,7 +12,7 @@ Verified against Zig 0.17.1 (Nov 2026). Zig is pre-1.0: the standard library and
 
 ## Code
 
-- Explicit types (see SKILL.md): `const max_retries: u8 = 3;`, `var total: u64 = 0;`, `fn parse(input: []const u8) ParseError!Header`. Struct literals take the type from the declaration: `const origin: Point = .{ .x = 0, .y = 0 };`.
+- Type every function signature and struct field: `fn parse(input: []const u8) ParseError!Header`. Locals use Zig's inference (`const header = try parse(input);`) unless the value needs a type (`var total: u64 = 0;`). Struct literals take the type from the declaration: `const origin: Point = .{ .x = 0, .y = 0 };`.
 - Errors are values. Return an explicit error set (`error{ InsufficientFunds, AccountClosed }!Balance`), not `anyerror`.
 - `try` propagates an error; it is not an exception handler. Use `catch` only where you can act on the error, never `catch unreachable` on input you do not control.
 - Pass an `std.mem.Allocator` to every function that allocates. Free with `defer` / `errdefer` right after the allocation.

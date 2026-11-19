@@ -29,18 +29,13 @@ kotlin {
 }
 ```
 
-- Keep `.editorconfig` as the single source of style for ktlint and the IDE. Turn off the rule that contradicts explicit types:
-  ```ini
-  [*.{kt,kts}]
-  # contradicts the house rule: explicit return types (`: Unit`)
-  ktlint_standard_no-unit-return = disabled
-  ```
+- Keep `.editorconfig` as the single source of style for ktlint and the IDE.
 - detekt fails on any finding by default (`maxIssues: 0`); do not raise it and never `@Suppress`: fix the cause, or ask the user.
 - detekt 1.23.8 is built against Kotlin 2.0.21; on newer Kotlin expect some false positives. Upgrade to detekt 2.x (`dev.detekt`, built against Kotlin 2.4) once it is stable; it is alpha as of Nov 2026.
 
 ## Code
 
-- Explicit types: `val count: Int = 0`, `fun name(): String`, typed lambda parameters `{ user: User -> user.id }` (see SKILL.md). `explicitApi()` enforces visibility and return types on the public API; type locals by hand.
+- `explicitApi()` enforces visibility and return types on the public API; let locals and lambda parameters infer when the type is obvious.
 - `val` over `var`; read-only collections (`List`, `Map`) in signatures.
 - No `!!`. Model absence with nullable types and `?.`/`?:`; model failure with sealed result types or exceptions at the boundary.
 - `data class` for values, `sealed interface` for closed hierarchies with exhaustive `when`.

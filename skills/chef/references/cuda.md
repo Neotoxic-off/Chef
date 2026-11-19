@@ -18,7 +18,7 @@ target_compile_options(kernels PRIVATE
 
 ## Code
 
-- Explicit types (see SKILL.md): `const unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;`, `dim3 block{kThreadsPerBlock};`. No `auto` except lambdas.
+- Explicit types: `const unsigned int threadIndex = blockIdx.x * blockDim.x + threadIdx.x;`, `dim3 block{kThreadsPerBlock};`. `auto` only as in `cpp.md`: when the type is spelled on the right side or cannot be named.
 - Check every runtime call and every launch. One host helper, not a macro per call site:
   ```cpp
   void check(cudaError_t status, std::source_location where = std::source_location::current()) {

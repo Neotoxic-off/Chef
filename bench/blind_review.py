@@ -34,6 +34,11 @@ EXCLUDED: tuple[str, ...] = (
     ".bench-coverage.json",
     "htmlcov",
     "uv.lock",
+    # Files that name the tool or carry its rules would tell the judge which arm wrote the code.
+    ".chef.md",
+    "CLAUDE.md",
+    "AGENTS.md",
+    "TRANSFORM.md",
 )
 PARALLEL_JUDGES: int = 4
 ROLES: dict[str, str] = {
@@ -103,8 +108,12 @@ def read_review(review_path: Path) -> dict[str, Any] | None:
     if not review_path.is_file():
         print(f"blind_review: {review_path} is missing, skipped", file=sys.stderr)
         return None
-    result: dict[str, Any] = json.loads(review_path.read_text(encoding="utf-8"))
-    structured: Any = result.get("structured_output")
+    try:
+        result: Any = json.loads(review_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        print(f"blind_review: {review_path} is not JSON (judge crashed?), skipped", file=sys.stderr)
+        return None
+    structured: Any = result.get("structured_output") if isinstance(result, dict) else None
     if isinstance(structured, dict):
         return structured
     print(f"blind_review: {review_path} has no structured review, skipped", file=sys.stderr)

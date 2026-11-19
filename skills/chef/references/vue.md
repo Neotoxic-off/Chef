@@ -13,7 +13,6 @@ Builds on `typescript.md`. Verified against Vue 3.5, Nuxt 4.6, Pinia 4.1, vue-ts
     pluginVue.configs["flat/recommended"],
     vueTsConfigs.strictTypeChecked,
     vueTsConfigs.stylisticTypeChecked,
-    { rules: { "@typescript-eslint/no-inferrable-types": "off" } }, // house rule: explicit types everywhere
   );
   ```
 - Nuxt: the `@nuxt/eslint` module generates the config; extend it in `eslint.config.mjs` with `withNuxt(...)` from `./.nuxt/eslint.config.mjs`.
@@ -22,15 +21,15 @@ Builds on `typescript.md`. Verified against Vue 3.5, Nuxt 4.6, Pinia 4.1, vue-ts
 ## Components
 
 - Composition API with `<script setup lang="ts">` only. No Options API, no mixins.
-- Type-based macros, explicit types:
+- Type-based macros:
   ```vue
   <script setup lang="ts">
-  import { computed, type ComputedRef } from "vue";
+  import { computed } from "vue";
 
   const props = defineProps<{ readonly user: User }>();
   const emit = defineEmits<{ select: [id: string] }>();
   const model = defineModel<string>({ required: true });
-  const label: ComputedRef<string> = computed((): string => props.user.name.trim());
+  const label = computed((): string => props.user.name.trim());
   </script>
   ```
 - `ref<T>()` with an explicit type argument; `useTemplateRef<T>("name")` for template refs.

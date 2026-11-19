@@ -30,7 +30,7 @@ test_framework = unity
 
 ## Code
 
-- Fixed-width types everywhere (`uint32_t`, `int16_t`); explicit types on every declaration (see SKILL.md). No `auto` in C++.
+- Fixed-width types everywhere (`uint32_t`, `int16_t`), named on every integer declaration. Other C++ `auto` as in `cpp.md`.
 - No dynamic allocation after init: static buffers, pools, or RTOS static APIs.
 - `volatile` for memory-mapped registers and variables shared with ISRs; protect multi-byte shared data with a critical section or atomics.
 - ISRs are short: acknowledge, copy data, signal a task. No blocking calls, no logging, no floating point unless the port saves FPU context.

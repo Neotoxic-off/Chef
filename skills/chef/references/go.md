@@ -24,9 +24,7 @@ linters:
     revive:
       enable-default-rules: true  # needs golangci-lint v2.12+; check with `golangci-lint config verify`
       rules:
-        - name: var-declaration  # contradicts the house rule: explicit types (`var n int = 0`)
-          disabled: true
-        - name: exported  # contradicts the house rule: doc comments only on a library's public API
+        - name: exported  # doc comments only on a library's public API
           disabled: true
         - name: package-comments  # same reason as `exported`
           disabled: true
@@ -40,7 +38,7 @@ Upgrade an old v1 config with `golangci-lint migrate`.
 
 ## Code
 
-- Explicit types: `var n int = 0`, not `n := 0` (see SKILL.md).
+- `:=` for locals, as Go expects; explicit types on exported identifiers, struct fields and function signatures.
 - Always check errors. Wrap with context: `fmt.Errorf("load user %d: %w", id, err)`. Compare with `errors.Is` / `errors.As`.
 - Accept interfaces, return structs. Define interfaces where they are used, keep them small.
 - Pass `context.Context` as the first parameter of anything that does I/O.

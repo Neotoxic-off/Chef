@@ -18,21 +18,20 @@
 - `.editorconfig` must enforce the house rules and turn off the analyzer rule that contradicts them:
   ```ini
   [*.cs]
-  csharp_style_var_for_built_in_types = false
-  csharp_style_var_when_type_is_apparent = false
-  csharp_style_var_elsewhere = false
-  dotnet_diagnostic.IDE0008.severity = error
+  csharp_style_var_for_built_in_types = false:warning
+  csharp_style_var_when_type_is_apparent = true:warning
+  csharp_style_var_elsewhere = false:warning
 
   [{*Tests,**/*Tests}/**.cs]
-  # CA1707 contradicts the house rule: test names are Method_Condition_Result
+  # test names are Method_Condition_Result, which CA1707 rejects
   dotnet_diagnostic.CA1707.severity = none
   ```
-  Verified with .NET 10: `var` fails the build (IDE0008), and underscore test names build in `X.Tests` projects.
+  Underscore test names build in `X.Tests` projects (verified with .NET 10).
 - Central package versions: `Directory.Packages.props`.
 
 ## Code
 
-- Explicit types, never `var` (see SKILL.md).
+- `var` when the type is apparent on the right side (`var users = new List<User>();`), explicit types otherwise.
 - Nullable reference types on. No `!` null-forgiving operator: it hides a warning. Narrow with a null check or fix the type.
 - `async` all the way: `Task`/`ValueTask`, pass `CancellationToken`, never `.Result` or `.Wait()`. Async method names end in `Async`.
 - `sealed` classes by default, `record` for immutable data, `readonly` fields.

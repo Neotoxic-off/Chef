@@ -38,7 +38,7 @@ scalacOptions ++= (if (insideCI.value) Seq("-Werror") else Nil)  // scalafix mus
 
 ## Code
 
-- Explicit types (see SKILL.md): `val count: Int = 0`, `def find(id: UserId): Option[User]`, `(x: Int) => x + 1`. Scalafix `ExplicitResultTypes` adds missing result types.
+- Explicit result types on public members (`def find(id: UserId): Option[User]`); Scalafix `ExplicitResultTypes` adds missing ones. Locals infer.
 - `val` only, no `var`. Immutable collections. No `null`: use `Option`.
 - Errors as values: `Either[DomainError, A]` or the effect's error channel. Throw only for bugs.
 - Model data with `case class` and closed hierarchies with `enum` or `sealed trait`. Match exhaustively.

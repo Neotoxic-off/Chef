@@ -22,7 +22,7 @@ Verified against OCaml 5.5.2, dune 3.25, ocamlformat 0.29.0, alcotest 1.10, qche
 
 ## Code
 
-- Explicit types (see SKILL.md): an `.mli` for every module, and annotations on every `let`, including locals and closures:
+- An `.mli` for every module, and annotations on top-level function parameters and returns. Local `let` bindings and closures may rely on inference:
   ```ocaml
   let withdraw (balance : int) (amount : int) : (int, withdraw_error) result =
     if amount > balance then Error Insufficient_funds

@@ -13,11 +13,7 @@ Builds on `typescript.md`. Verified against Angular 22.3, angular-eslint 22.8 (N
     "strictInputAccessModifiers": true
   }
   ```
-- `ng add angular-eslint` also adds typescript-eslint `stylistic`, which enables `no-inferrable-types`. Turn it off in the `**/*.ts` block:
-  ```js
-  rules: { "@typescript-eslint/no-inferrable-types": "off" }, // house rule: explicit types everywhere
-  ```
-  Keep `angular.configs.templateRecommended` and `templateAccessibility` on `**/*.html`.
+- Keep `angular.configs.templateRecommended` and `templateAccessibility` on `**/*.html`.
 
 ## Code
 

@@ -1,18 +1,6 @@
 # SwiftUI
 
-Builds on `swift.md`. Verified against the SwiftLint rule docs (`redundant_void_return`), swift-format `main` rule registry, and Apple's Observation docs (Nov 2026). Current toolchain: `swift --version`; current SwiftLint: its GitHub releases page.
-
-## Lint: house-rule clashes
-
-Both tools strip `-> Void`, which the house rule writes. Turn them off in config, with the reason:
-
-```yaml
-# .swiftlint.yml: house rule writes every return type, including Void
-disabled_rules:
-  - redundant_void_return
-```
-
-In `.swift-format` (JSON allows no comments, so state the reason in the PR or a README line), set `"rules": { "NoVoidReturnOnFunctionSignature": false }` next to the rules `swift.md` turns on.
+Builds on `swift.md`. Verified against Apple's Observation docs (Nov 2026). Current toolchain: `swift --version`; current SwiftLint: its GitHub releases page.
 
 ## State and data flow
 

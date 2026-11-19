@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Runs every task in bench/tasks once per arm and per run, in a fresh git folder each time.
-# Usage: bench/run.sh <out-dir> <runs> <arm>=<plugin-dir or empty> ...
+# Usage: bench/run.sh <out-dir> <runs> <arm>=<plugin-dir, a .md file used as CLAUDE.md, or empty> ...
 # Example: bench/run.sh /tmp/bench 2 none= old=/tmp/chef-0.8.1 new=/tmp/chef-new
+# Set TASKS="python bugfix" to run only those tasks.
 set -euo pipefail
 shopt -s inherit_errexit nullglob
 
 readonly MODEL="claude-sonnet-5-5"
-readonly MAX_BUDGET_USD="3"
+readonly MAX_BUDGET_USD="1"
 TASKS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/tasks"
 readonly TASKS_DIR
 
@@ -18,10 +19,12 @@ die() {
 prepare_workspace() {
   local -r task_dir="$1"
   local -r workspace="$2"
+  local -r claude_md="$3"
   mkdir -p "${workspace}"
   if [[ -d "${task_dir}/seed" ]]; then
     cp -r "${task_dir}/seed/." "${workspace}/"
   fi
+  [[ -z "${claude_md}" ]] || cp "${claude_md}" "${workspace}/CLAUDE.md"
   git -C "${workspace}" init -q
   git -C "${workspace}" add -A
   git -C "${workspace}" -c user.name=bench -c user.email=bench@localhost commit -q --allow-empty -m seed
@@ -30,11 +33,16 @@ prepare_workspace() {
 run_one() {
   local -r task_dir="$1"
   local -r run_dir="$2"
-  local -r plugin_dir="$3"
+  local -r arm_source="$3"
   local -a plugin_args=()
+  local claude_md=""
   [[ ! -e "${run_dir}" ]] || die "${run_dir} exists: use a new out-dir"
-  [[ -z "${plugin_dir}" ]] || plugin_args=(--plugin-dir "${plugin_dir}")
-  prepare_workspace "${task_dir}" "${run_dir}/workspace"
+  if [[ "${arm_source}" == *.md ]]; then
+    claude_md="${arm_source}"
+  elif [[ -n "${arm_source}" ]]; then
+    plugin_args=(--plugin-dir "${arm_source}")
+  fi
+  prepare_workspace "${task_dir}" "${run_dir}/workspace" "${claude_md}"
   (
     cd "${run_dir}/workspace"
     claude -p "$(cat "${task_dir}/prompt.md")" \
@@ -76,6 +84,7 @@ main() {
   } >"${out_dir}/versions.txt"
   for task_dir in "${TASKS_DIR}"/*/; do
     task_dir="${task_dir%/}"
+    [[ -z "${TASKS:-}" || " ${TASKS} " == *" $(basename "${task_dir}") "* ]] || continue
     for ((run = 1; run <= runs; run++)); do
       pids=()
       for arm in "$@"; do

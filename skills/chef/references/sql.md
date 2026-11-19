@@ -35,7 +35,7 @@ extended_capitalisation_policy = lower
 ## Code
 
 - Parameterized queries only. Never build SQL by string concatenation or interpolation of input. Dynamic identifiers come from an allow-list.
-- Explicit types (see SKILL.md): declare every column with a precise type and nullability. `NOT NULL` by default. `numeric(12, 2)` for money, `timestamptz` (or `datetimeoffset`) for time, never floats for money.
+- Explicit types: declare every column with a precise type and nullability. `NOT NULL` by default. `numeric(12, 2)` for money, `timestamptz` (or `datetimeoffset`) for time, never floats for money.
 - Every table has a primary key. Foreign keys are declared, not implied. Add `CHECK` and `UNIQUE` constraints for business rules.
 - Naming: `snake_case`, plural tables (`orders`), `id` primary key, `<table_singular>_id` foreign keys (`customer_id`). Name constraints and indexes: `pk_orders`, `fk_orders_customer_id`, `ix_orders_created_at`, `uq_users_email`.
 - Index every foreign key and every column used in a frequent `WHERE`, `JOIN` or `ORDER BY`. Check plans with `EXPLAIN (ANALYZE)` before and after.

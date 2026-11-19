@@ -5,7 +5,7 @@ Builds on `csharp.md` for style and naming, with Unity's limits. Verified agains
 ## What differs from `csharp.md`
 
 - Unity compiles C# 9 against .NET Standard 2.1 / .NET Framework profiles: no file-scoped namespaces, no `required`, no `ArgumentNullException.ThrowIfNull`. Write guard checks by hand.
-- Unity's compiler does not run the IDE rules (IDE0008): the explicit-types rule is checked by the IDE (Rider, Visual Studio) and review. Commit the `.editorconfig` from `csharp.md` anyway.
+- Unity's compiler does not run the IDE rules (IDE0007, IDE0008): the `var` rule from `csharp.md` is checked by the IDE (Rider, Visual Studio) and review. Commit the `.editorconfig` from `csharp.md` anyway.
 - Rulesets and `.editorconfig` severities do apply to Roslyn analyzers: `Assets/Default.ruleset` for all assemblies, or one ruleset per assembly next to its `.asmdef`.
 - Warnings as errors: `-warnaserror+` in a `csc.rsp` (or Player Settings > Additional Compiler Arguments). Nullable: `-nullable:enable` in the `csc.rsp` next to an `.asmdef`. Both come from community sources: verify in your Unity version before relying on them.
 - Records: never in serialized types (Unity serialization does not support them).

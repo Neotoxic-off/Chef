@@ -17,12 +17,6 @@ analyzer:
   exclude:
     - "**/*.g.dart"        # generated
     - "**/*.freezed.dart"  # generated
-
-linter:
-  rules:
-    always_specify_types: true
-    omit_local_variable_types: false  # very_good_analysis enables it; contradicts explicit types
-    avoid_types_on_closure_parameters: false  # same reason: closure parameters are typed
 ```
 
 - very_good_analysis already sets the three strict language modes; keep them in the file so a switch to another rule set does not drop them.
@@ -31,7 +25,7 @@ linter:
 
 ## Code
 
-- Explicit types: `final int count = 0;`, `final List<String> names = <String>[];`, `Future<User> load(String id) async`. Type closure parameters: `(String s) => s.length`.
+- Type public APIs and signatures (`Future<User> load(String id) async`); omit local variable types (`final count = 0;`).
 - No `dynamic`. Decode JSON into `Map<String, Object?>` and narrow it right away with patterns or a typed `fromJson`.
 - Sound null safety: no `!` unless a check right above proves non-null. Prefer `if (x case final T v)` and `switch` patterns.
 - Immutable models: `final` fields, `const` constructors, `sealed class` for closed hierarchies with exhaustive `switch`.

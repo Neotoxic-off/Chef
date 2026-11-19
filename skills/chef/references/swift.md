@@ -9,21 +9,15 @@ Use `swift-tools-version: 6.2` or later so the package builds in the Swift 6 lan
 ```yaml
 strict: true  # warnings fail the run
 opt_in_rules:
-  - explicit_type_interface
   - force_unwrapping
   - implicitly_unwrapped_optional
   - empty_count
   - first_where
   - sorted_first_last
-disabled_rules:
-  - redundant_void_return  # contradicts the house rule: explicit return types (`-> Void`)
-explicit_type_interface:
-  allow_redundancy: true  # also require `let u: User = User()`
 ```
 
-- Do not enable `redundant_type_annotation`: it fights `explicit_type_interface`.
 - Run SwiftLint through `SwiftLintBuildToolPlugin` (package `SimplyDanny/SwiftLintPlugins`) or `swiftlint lint --strict` in CI.
-- Format with swift-format, bundled with the toolchain since Swift 6: `swift format --in-place --recursive Sources Tests`; CI: `swift format lint --strict --recursive Sources Tests`. Turn on `NeverForceUnwrap`, `NeverUseForceTry` and `NeverUseImplicitlyUnwrappedOptionals` in `.swift-format`, and turn off `NoVoidReturnOnFunctionSignature` (it strips the explicit `-> Void` the house rules require; JSON has no comments, so say why in the README).
+- Format with swift-format, bundled with the toolchain since Swift 6: `swift format --in-place --recursive Sources Tests`; CI: `swift format lint --strict --recursive Sources Tests`. Turn on `NeverForceUnwrap`, `NeverUseForceTry` and `NeverUseImplicitlyUnwrappedOptionals` in `.swift-format`.
 
 ## Warnings as errors
 
@@ -35,7 +29,7 @@ Xcode: `SWIFT_TREAT_WARNINGS_AS_ERRORS = YES` and `GCC_TREAT_WARNINGS_AS_ERRORS 
 
 ## Code
 
-- Explicit types: `let count: Int = 0`, `var names: [String] = []`, `func load(id: UUID) async throws -> User`.
+- Type function signatures and stored properties (`func load(id: UUID) async throws -> User`); let local constants infer.
 - Value types (`struct`, `enum`) by default. Use `final class` only for identity or shared mutable state.
 - No `!` force unwraps, `try!` or `as!` outside tests. Use `guard let ... else { throw ... }`.
 - Concurrency: `async`/`await` and actors, not completion handlers or `DispatchQueue`. Mark UI types `@MainActor`. App targets: `.defaultIsolation(MainActor.self)`. Types crossing actors are `Sendable`. No `@unchecked Sendable` or `nonisolated(unsafe)` without a comment saying why.

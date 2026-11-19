@@ -12,7 +12,7 @@ Builds on `csharp.md` and `aspnetcore.md`. Verified against .NET 10 (LTS), .NET 
 ## Components
 
 - Markup in `.razor`, logic in a `.razor.cs` partial class, so the C# analyzers and house rules apply in full. Unverified: which analyzers also run on `@code` blocks.
-- Explicit types in `@code` and code-behind, as everywhere (see SKILL.md). Inject services through the constructor (as in the .NET 10 docs), not `[Inject]` with `= default!`: `!` is banned (`csharp.md`). `[Parameter]` properties are set by the framework only; never assign them from inside the component.
+- Types in `@code` and code-behind as in `csharp.md`: `var` when the type is apparent, explicit types otherwise. Inject services through the constructor (as in the .NET 10 docs), not `[Inject]` with `= default!`: `!` is banned (`csharp.md`). `[Parameter]` properties are set by the framework only; never assign them from inside the component.
   ```csharp
   public sealed partial class OrderDetails(IOrderService orders) : IDisposable
   {

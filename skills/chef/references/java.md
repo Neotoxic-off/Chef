@@ -39,7 +39,7 @@ jacoco { toolVersion = "0.8.16" }
 
 ## Code
 
-- Explicit types, never `var`: `List<String> names = new ArrayList<String>();` and typed lambda parameters `(String name) -> name.length()` (see SKILL.md).
+- `var` for locals when the type is apparent on the right side (`var names = new ArrayList<String>();`); explicit types on fields, parameters and return types.
 - Nullness: annotate with JSpecify (`@NullMarked` packages, `@Nullable` where null is allowed). Return `Optional` instead of null from lookups; never `Optional` fields or parameters.
 - Immutable data: `record`. Closed hierarchies: `sealed` interfaces with pattern-matching `switch`.
 - `final` fields, constructor injection, no field injection, no static mutable state.

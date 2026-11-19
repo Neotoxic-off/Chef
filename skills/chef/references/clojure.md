@@ -18,7 +18,7 @@ Verified against Clojure 1.12.7, clj-kondo 2026.10.26, cljfmt 0.16.6, kaocha 1.9
 
 ## Types
 
-Clojure is dynamically typed, so the "explicit types" house rule maps to schemas:
+Clojure is dynamically typed, so the house type rule maps to schemas:
 
 - Malli schemas on every public function at a boundary (HTTP, DB, queue, config). Validate input there with `m/validate` / `m/coerce` and return an error value on failure.
 - Function schemas with `:malli/schema` metadata; turn on `malli.dev/start!` in dev and tests so calls are checked.

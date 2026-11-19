@@ -39,7 +39,7 @@ CI: `shfmt --diff .` (fails on any diff). Locally: `shfmt --write .`.
   shopt -s inherit_errexit
   ```
 - Quote every expansion: `"$var"`, `"${array[@]}"`, `"$(cmd)"`. Unquoted only where splitting is the goal, with a comment.
-- Bash has no static types: declare intent instead (see SKILL.md). `local -i count=0`, `local -r name="$1"`, `local -a files=()`, `local -A by_id=()`, `readonly MAX_RETRIES=3`.
+- Bash has no static types: declare intent instead. `local -i count=0`, `local -r name="$1"`, `local -a files=()`, `local -A by_id=()`, `readonly MAX_RETRIES=3`.
 - Every variable inside a function is `local`. Name parameters at the top: `local -r path="$1"`.
 - `[[ ... ]]` over `[ ... ]` in bash; `$(...)` over backticks; `printf` over `echo` for data.
 - Arrays for argument lists, never a string you split later.

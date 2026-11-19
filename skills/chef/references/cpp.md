@@ -10,14 +10,14 @@ Build with CMake and `CMakePresets.json` (committed). Target C++20 or later. Eve
 Checks: >
   -*, bugprone-*, cert-*, clang-analyzer-*, concurrency-*, cppcoreguidelines-*,
   misc-*, modernize-*, performance-*, portability-*, readability-*,
-  -modernize-use-auto, -modernize-use-trailing-return-type
+  -modernize-use-trailing-return-type
 WarningsAsErrors: '*'
 HeaderFilterRegex: '^(src|include)/'
 CheckOptions:
   readability-function-cognitive-complexity.Threshold: 10
 ```
 
-`modernize-use-auto` is off because it fights the explicit-types rule. `.clang-format`: `BasedOnStyle: Google` (or the project's style), `ColumnLimit: 100`. CI runs `clang-format --dry-run --Werror` and `clang-tidy -p build`.
+`.clang-format`: `BasedOnStyle: Google` (or the project's style), `ColumnLimit: 100`. CI runs `clang-format --dry-run --Werror` and `clang-tidy -p build`.
 
 ## Warnings as errors: CMake presets
 
@@ -40,7 +40,7 @@ CheckOptions:
 
 ## Code
 
-- Explicit types: `int count = 0;` `std::vector<std::string> names{};`. `auto` only where the type cannot be named (lambdas, structured bindings) (see SKILL.md).
+- `auto` when the type is spelled on the right side or cannot be named (lambdas, iterators, structured bindings); explicit types otherwise.
 - RAII for every resource. No raw `new`/`delete`: `std::unique_ptr`, `std::make_unique`, containers.
 - `const` and `constexpr` by default. Pass large inputs by `const&`, sinks by value then `std::move`.
 - No C casts, no `using namespace` in headers, no macros for constants (`constexpr`).
