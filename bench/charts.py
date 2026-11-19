@@ -168,6 +168,62 @@ def pairwise_chart(theme: Theme, summary: dict[str, Any]) -> str:
     return rows_chart(theme, Chart(title, label, 100.0, "%"), rows, present)
 
 
+OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
+    ("Would merge as is (blind review)", "merge"),
+    ("Changes required (fewer is better)", "major"),
+    ("Median cost per task", "cost"),
+)
+PANEL_WIDTH: float = 150.0
+PANEL_STEP: float = 230.0
+
+
+def overview_values(summary: dict[str, Any], arm: str) -> dict[str, float]:
+    review: dict[str, float] = summary["reviews"][arm]
+    return {
+        "merge": 100 * review["merge_as_is"],
+        "major": review["major_changes"],
+        "cost": summary["overall"][arm]["median_cost_usd"],
+    }
+
+
+def overview_cell(theme: Theme, x: float, y: float, value: float, scale: tuple[float, str, str]) -> list[str]:
+    top, unit, color = scale
+    shown: str = {"%": f"{value:.0f}%", "$": f"${value:.3f}", "": f"{value:.2f}"}[unit]
+    return [
+        rect(x, y, PANEL_WIDTH, 16, theme.track),
+        rect(x, y, max(PANEL_WIDTH * value / top, 1.0), 16, color),
+        text(x + PANEL_WIDTH + 8, y + 13, shown, theme.ink, 13, 600),
+    ]
+
+
+def overview_chart(theme: Theme, summary: dict[str, Any]) -> str:
+    """Headline chart: each arm on the three numbers a reader decides on."""
+    arms: list[str] = [arm for arm in ARM_NAMES if arm in summary["reviews"]]
+    values: dict[str, dict[str, float]] = {arm: overview_values(summary, arm) for arm in arms}
+    tops: dict[str, tuple[float, str]] = {
+        "merge": (100.0, "%"),
+        "major": (max(values[arm]["major"] for arm in arms), ""),
+        "cost": (max(values[arm]["cost"] for arm in arms), "$"),
+    }
+    body: list[str] = [text(0, 26, "Same tasks, same model: what each setup gives you", theme.ink, 18, 600)]
+    for index, (title, _) in enumerate(OVERVIEW_PANELS):
+        body += [text(LABEL_WIDTH + index * PANEL_STEP, 62, title, theme.muted, 13, 600)]
+    colors: dict[str, str] = arm_colors(theme)
+    y: float = 80.0
+    for arm in arms:
+        body += [text(0, y + 13, ARM_NAMES[arm], theme.ink, 15, 600)]
+        for index, (_, key) in enumerate(OVERVIEW_PANELS):
+            top, unit = tops[key]
+            body += overview_cell(theme, LABEL_WIDTH + index * PANEL_STEP, y, values[arm][key], (top, unit, colors[arm]))
+        y += 34
+    label: str = "; ".join(
+        f"{ARM_NAMES[arm]}: merged as is {values[arm]['merge']:.0f}%, {values[arm]['major']:.2f} changes required per review, "
+        f"median cost ${values[arm]['cost']:.3f} per task"
+        for arm in arms
+    )
+    return svg(int(y + 6), label, body)
+
+
 def split_chart(theme: Theme) -> str:
     label: str = "Where one chef run's cost goes: cache writes 57%, output 28%, cache reads 15%"
     body: list[str] = [text(0, 26, "Where the cost of a chef run goes", theme.ink, 18, 600)]
@@ -185,6 +241,7 @@ def main() -> None:
     summary: dict[str, Any] = json.loads(SUMMARY.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
     for theme in (LIGHT, DARK):
+        (OUT / f"overview{theme.suffix}.svg").write_text(overview_chart(theme, summary), encoding="utf-8")
         (OUT / f"cost{theme.suffix}.svg").write_text(cost_chart(theme, summary), encoding="utf-8")
         (OUT / f"pairwise{theme.suffix}.svg").write_text(pairwise_chart(theme, summary), encoding="utf-8")
         (OUT / f"cost-split{theme.suffix}.svg").write_text(split_chart(theme), encoding="utf-8")

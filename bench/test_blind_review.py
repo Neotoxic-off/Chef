@@ -53,7 +53,7 @@ def test_anonymize_hides_history_caches_and_scoring_files(tmp_path: Path) -> Non
 
 
 def test_judge_prompt_names_the_seat_and_the_task_only() -> None:
-    prompt: str = blind_review.judge_prompt("docker", "security")
+    prompt: str = blind_review.judge_prompt("docker", blind_review.ROLES["security"])
 
     assert blind_review.ROLES["security"] in prompt
     assert "Dockerfile" in prompt

@@ -53,6 +53,27 @@ def public_versions(versions: str) -> list[str]:
     return lines
 
 
+def review_rollup(pairwise: list[dict[str, Any]]) -> dict[str, dict[str, float]]:
+    """Per arm, over every blind verdict it appeared in: share merged as is and changes required per review."""
+    totals: dict[str, dict[str, float]] = {}
+    for summary in pairwise:
+        for side in ("a", "b"):
+            arm: str = summary[f"arm_{side}"]
+            entry: dict[str, float] = totals.setdefault(arm, {"merge": 0.0, "major": 0.0, "verdicts": 0.0})
+            for counts in summary["per_task"].values():
+                entry["merge"] += counts[f"merge_{side}"]
+                entry["major"] += counts[f"major_{side}"]
+                entry["verdicts"] += counts["verdicts"]
+    return {
+        arm: {
+            "merge_as_is": round(entry["merge"] / entry["verdicts"], 3),
+            "major_changes": round(entry["major"] / entry["verdicts"], 2),
+        }
+        for arm, entry in totals.items()
+        if entry["verdicts"]
+    }
+
+
 def build(scores: dict[str, dict[str, dict[str, Any]]], versions: str, pairwise: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "versions": public_versions(versions),
@@ -60,6 +81,7 @@ def build(scores: dict[str, dict[str, dict[str, Any]]], versions: str, pairwise:
         "tasks": {arm: task_summary(arm_tasks) for arm, arm_tasks in scores.items()},
         "overall": {arm: overall(arm_tasks) for arm, arm_tasks in scores.items()},
         "pairwise": {f"{summary['arm_b']}_vs_{summary['arm_a']}": summary for summary in pairwise},
+        "reviews": review_rollup(pairwise),
     }
 
 

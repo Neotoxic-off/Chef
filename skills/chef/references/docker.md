@@ -54,6 +54,9 @@ ENTRYPOINT ["/app"]
 - Pin the scanner itself (action by SHA, binary by version and checksum): scanners are supply-chain targets too.
 - Generate an SBOM (`docker buildx build --sbom=true` or `syft`) and sign release images (`cosign`).
 - Compose and runtime: `read_only: true`, `cap_drop: [ALL]`, `security_opt: ["no-new-privileges:true"]` where the app allows it.
+- An app that does not handle SIGTERM (most Python and Node servers) must not run as PID 1: `init: true` in Compose, or `tini` as `ENTRYPOINT`, so `docker stop` stops it cleanly instead of killing it after the timeout.
+- Set memory and CPU limits, and log rotation (`logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}`).
+- A digest you could not look up is worse than a tag: pin only digests read from the registry in this session, and say so.
 
 ## Tests
 

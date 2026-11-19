@@ -42,6 +42,7 @@ select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "C4", "RET", "PTH", "ANN", 
   [tool.pytest.ini_options]
   addopts = "--cov --cov-branch --cov-report=term-missing:skip-covered --cov-fail-under=90"
   ```
+- `--cov` in `addopts` needs `pytest-cov` in the dev dependencies, or every `pytest` run fails where it is missing.
 - Mark slow tests: `@pytest.mark.integration`; integration with `testcontainers`.
 - Property-based tests with Hypothesis for parsers and pure logic.
 - Mutation testing: mutmut.

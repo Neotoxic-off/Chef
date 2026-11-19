@@ -601,5 +601,19 @@
       "tasks_a_ahead": 0,
       "task_sign_test_p": 0.0005
     }
+  },
+  "reviews": {
+    "none": {
+      "merge_as_is": 0.474,
+      "major_changes": 0.81
+    },
+    "chef": {
+      "merge_as_is": 0.891,
+      "major_changes": 0.13
+    },
+    "control": {
+      "merge_as_is": 0.564,
+      "major_changes": 0.73
+    }
   }
 }

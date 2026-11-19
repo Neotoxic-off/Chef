@@ -82,15 +82,15 @@ def anonymize(out_dir: Path, arms: list[str]) -> dict[str, dict[str, str]]:
     return key
 
 
-def judge_prompt(task: str, role: str) -> str:
+def judge_prompt(task: str, seat: str) -> str:
     template: str = (BENCH_DIR / "judge.md").read_text(encoding="utf-8")
     task_text: str = (BENCH_DIR / "tasks" / task / "prompt.md").read_text(encoding="utf-8").strip()
-    return template.replace("{role}", ROLES[role]).replace("{task}", task_text)
+    return template.replace("{role}", seat).replace("{task}", task_text)
 
 
-def run_judge(submission: Path, task: str, role: str, review_path: Path) -> None:
+def run_judge(submission: Path, task: str, seat: str, review_path: Path) -> None:
     command: list[str] = [
-        "claude", "-p", judge_prompt(task, role),
+        "claude", "-p", judge_prompt(task, seat),
         "--model", JUDGE_MODEL,
         "--output-format", "json",
         "--json-schema", json.dumps(REVIEW_SCHEMA),
@@ -162,7 +162,7 @@ def judge_all(key: dict[str, dict[str, str]], review_dir: Path) -> None:
                 run_judge,
                 Path(key[sample_id]["submission"]),
                 key[sample_id]["task"],
-                role,
+                ROLES[role],
                 review_dir / f"{sample_id}-{role}.json",
             ): f"{sample_id}-{role}"
             for sample_id, role in jobs

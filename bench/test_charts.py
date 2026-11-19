@@ -5,6 +5,8 @@ import charts
 SUMMARY: dict[str, Any] = {
     "tasks": {arm: {"go": {"cost_usd": cost}} for arm, cost in (("none", 0.05), ("control", 0.08), ("chef", 0.2))},
     "pairwise": {"chef_vs_none": {"per_task": {"go": {"b": 2, "a": 0, "tie": 1}}}},
+    "reviews": {"none": {"merge_as_is": 0.47, "major_changes": 0.81}, "chef": {"merge_as_is": 0.88, "major_changes": 0.12}},
+    "overall": {"none": {"median_cost_usd": 0.063}, "chef": {"median_cost_usd": 0.155}},
 }
 
 
@@ -26,3 +28,10 @@ def test_pairwise_chart_skips_missing_comparisons() -> None:
 
 def test_win_rate_counts_ties_as_half() -> None:
     assert charts.win_rate({"b": 1.0, "a": 1.0, "tie": 2.0}) == 50.0
+
+
+def test_overview_chart_lists_each_reviewed_arm() -> None:
+    svg: str = charts.overview_chart(charts.LIGHT, SUMMARY)
+
+    assert "Plain Claude: merged as is 47%, 0.81 changes required per review, median cost $0.063 per task" in svg
+    assert "Control" not in svg
