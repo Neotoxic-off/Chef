@@ -25,5 +25,7 @@ jobs:
         run: git ls-files -z '*.sh' | xargs -0 shellcheck
       - name: Test check script
         run: npx --yes bats@1.13.0 tests/check.bats
+      - name: Test transform stop gate
+        run: npx --yes bats@1.13.0 tests/stop-gate.bats
       - name: Check plugin consistency
         run: bash scripts/check.sh

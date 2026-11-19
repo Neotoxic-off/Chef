@@ -4,6 +4,7 @@ setup() {
   mkdir -p "${root}/skills/chef/references" "${root}/agents" "${root}/.claude-plugin" "${root}/hooks"
   printf '| Go | `go.md` |\n' > "${root}/skills/chef/references/INDEX.md"
   printf '# Go\n' > "${root}/skills/chef/references/go.md"
+  printf -- '---\nname: chef\ndescription: Habits.\n---\n' > "${root}/skills/chef/SKILL.md"
   printf -- '---\nname: reviewer\ndescription: Reviews.\ntools: Read\n---\n' > "${root}/agents/reviewer.md"
   printf 'badge/references-1-D97757\n' > "${root}/README.md"
   printf '{}\n' > "${root}/.claude-plugin/plugin.json"
@@ -59,6 +60,24 @@ teardown() {
   run check_agents "${root}"
   [ "${status}" -eq 1 ]
   [[ "${output}" == *"no agents"* ]]
+}
+
+@test "check_skills fails when description is missing" {
+  mkdir -p "${root}/skills/transform"
+  printf -- '---
+name: transform
+---
+' > "${root}/skills/transform/SKILL.md"
+  run check_skills "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"transform/SKILL.md: missing 'description:'"* ]]
+}
+
+@test "check_skills fails when there are no skills" {
+  rm "${root}/skills/chef/SKILL.md"
+  run check_skills "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"no skills"* ]]
 }
 
 @test "check_badge fails when the README has no badge" {

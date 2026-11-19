@@ -37,7 +37,7 @@ Before anything, read the project: README, CLAUDE.md, docs, architecture, folder
 
 ### 3. Council for decisions
 
-For a design or architecture choice, a new feature, or a problem with no obvious answer, convene the council. Run it for decisions, not for every edit.
+For a design or architecture choice, a new feature, or a problem with no obvious answer, convene the council. A new project, started from scratch, always goes through the council before its first file: stack, structure, tooling and scope. Run it for decisions, not for every edit.
 
 The council is nine agents shipped with this plugin, each with a fixed role. Three sit on every council:
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Consistency checks for the chef plugin: index, agents, README badge, JSON manifests.
+# Consistency checks for the chef plugin: index, agents, skills, README badge, JSON manifests.
 set -euo pipefail
 shopt -s inherit_errexit nullglob
 
@@ -35,16 +35,17 @@ check_index() {
   [[ -z "${missing_on_disk}" ]] || die "listed in ${INDEX_NAME} but missing: ${missing_on_disk//$'\n'/ }"
 }
 
-check_agent() {
-  local -r agent_path="$1"
+check_frontmatter() {
+  local -r file_path="$1"
+  shift
   local first_line=""
   local frontmatter=""
   local key=""
-  first_line="$(head -n 1 "${agent_path}")"
-  [[ "${first_line}" == "---" ]] || die "${agent_path}: no frontmatter"
-  frontmatter="$(sed -n '2,/^---$/p' "${agent_path}")"
-  for key in name description tools; do
-    grep -qE "^${key}: ." <<<"${frontmatter}" || die "${agent_path}: missing '${key}:'"
+  first_line="$(head -n 1 "${file_path}")"
+  [[ "${first_line}" == "---" ]] || die "${file_path}: no frontmatter"
+  frontmatter="$(sed -n '2,/^---$/p' "${file_path}")"
+  for key in "$@"; do
+    grep -qE "^${key}: ." <<<"${frontmatter}" || die "${file_path}: missing '${key}:'"
   done
 }
 
@@ -54,7 +55,17 @@ check_agents() {
   local agent_path=""
   ((${#agent_paths[@]} > 0)) || die "${agents_dir}: no agents"
   for agent_path in "${agent_paths[@]}"; do
-    check_agent "${agent_path}"
+    check_frontmatter "${agent_path}" name description tools
+  done
+}
+
+check_skills() {
+  local -r skills_dir="$1/skills"
+  local -a skill_paths=("${skills_dir}"/*/SKILL.md)
+  local skill_path=""
+  ((${#skill_paths[@]} > 0)) || die "${skills_dir}: no skills"
+  for skill_path in "${skill_paths[@]}"; do
+    check_frontmatter "${skill_path}" name description
   done
 }
 
@@ -83,6 +94,7 @@ main() {
   local -r root="${1:-.}"
   check_index "${root}"
   check_agents "${root}"
+  check_skills "${root}"
   check_badge "${root}"
   check_json "${root}"
   printf 'check: all good\n'

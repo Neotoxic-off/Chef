@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/github/last-commit/Neotoxic-off/chef?style=flat-square&color=D97757&label=last%20commit" alt="Last commit">
   <img src="https://img.shields.io/badge/Claude%20Code-plugin-D97757?style=flat-square" alt="Claude Code plugin">
   <img src="https://img.shields.io/badge/languages-34-D97757?style=flat-square" alt="34 languages">
-  <img src="https://img.shields.io/badge/references-122-D97757?style=flat-square" alt="122 references">
+  <img src="https://img.shields.io/badge/references-127-D97757?style=flat-square" alt="127 references">
 </p>
 
 ## What it is
@@ -47,7 +47,7 @@ Each stack has its own reference (linter, formatter, test runner, coverage tool,
 
 ## Council of agents
 
-For decisions, new features and unclear requests, Claude acts as the lead and convenes a council from nine agents shipped with the plugin: three core members always, plus the two or three specialists the problem calls for. They work in parallel without seeing each other's answers, then cross-examine each other; the lead brings you the real choices.
+For decisions, new projects, new features and unclear requests, Claude acts as the lead and convenes a council from nine agents shipped with the plugin: three core members always, plus the two or three specialists the problem calls for. They work in parallel without seeing each other's answers, then cross-examine each other; the lead brings you the real choices.
 
 | Agent | Seat | Role |
 |---|---|---|
@@ -81,6 +81,14 @@ A `UserPromptSubmit` hook reminds Claude, on every prompt, to load the skill bef
 ```
 /chef:chef
 ```
+
+To upgrade or migrate a repository (.NET, Java, Python, Node versions, TypeScript strict mode, test coverage), run:
+
+```
+/chef:transform <goal>
+```
+
+It works like AWS Transform, inside one repository: it measures a baseline build and test run, writes a plan of small batches to `TRANSFORM.md`, has the council check it, and waits for your approval. Then each batch is edited, validated, reviewed and committed. A Stop hook, active only during a transform, keeps Claude from stopping while a batch is edited but not validated. The plan is committed, so a later session resumes where it stopped. Mainframe, VMware and multi-repo migrations are out of scope.
 
 To change a habit, edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or the stack's file in [`skills/chef/references/`](skills/chef/references/) (listed in [`INDEX.md`](skills/chef/references/INDEX.md)). Run `bash scripts/check.sh` before you push; CI runs it too.
 

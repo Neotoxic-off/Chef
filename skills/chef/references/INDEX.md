@@ -178,3 +178,13 @@ Data and AI:
 | LLM and AI apps | `llm-apps.md` |
 | Airflow, Dagster, dbt, Spark | `data-engineering.md` |
 | Flink, Kafka Streams | `streaming.md` |
+
+Transformations (used by `/chef:transform`):
+
+| Tech | File |
+|---|---|
+| .NET Framework to .NET, .NET majors | `dotnet-upgrade.md` |
+| TypeScript strict, TypeScript, Node and framework majors | `ts-strict.md` |
+| Raise coverage to the 90% gate | `test-coverage.md` |
+| Java 8/11/17 to 21/25, Spring Boot majors | `java-upgrade.md` |
+| Python minor upgrades | `python-upgrade.md` |

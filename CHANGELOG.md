@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0 (2026-11-19)
+
+- `/chef:transform <goal>`: upgrades and migrations in the AWS Transform style. Baseline, plan in a committed `TRANSFORM.md`, council review, user approval, then batches that are validated, reviewed and committed one by one, with resume and a before/after report.
+- Migration mode: the diff holds only what the migration needs; chef's style rules apply to new and changed lines only.
+- Stop hook scoped to the transform skill: blocks the end of a turn once while a batch is marked `[~]`. Not active outside a transform.
+- 5 recipes: `dotnet-upgrade.md`, `ts-strict.md`, `test-coverage.md`, `java-upgrade.md`, `python-upgrade.md`.
+- A new project goes through the council before its first file.
+- CI: `scripts/check.sh` checks every skill's frontmatter; bats tests for the stop hook.
+
 ## 0.6.0 (2026-11-19)
 
 - Council grows to nine members: `council-security`, `council-ops`, `council-user` and `council-maintainer` join.
