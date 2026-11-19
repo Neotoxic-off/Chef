@@ -47,17 +47,21 @@ Each stack has its own reference (linter, formatter, test runner, coverage tool,
 
 ## Council of agents
 
-For decisions, new features and unclear requests, Claude acts as the lead and convenes five agents shipped with the plugin. They work in parallel without seeing each other's answers, then cross-examine each other; the lead brings you the real choices.
+For decisions, new features and unclear requests, Claude acts as the lead and convenes a council from nine agents shipped with the plugin: three core members always, plus the two or three specialists the problem calls for. They work in parallel without seeing each other's answers, then cross-examine each other; the lead brings you the real choices.
 
-| Agent | Role |
-|---|---|
-| `council-senior` | Knows the stack and the project; proposes the plan and what to reuse. |
-| `council-researcher` | Searches official docs, versions, known issues; cites every source. |
-| `council-outsider` | Never reads the code; says what is correct and appropriate from first principles. |
-| `council-novice` | Knows nothing; asks the simple questions about the need that experts skip. |
-| `council-skeptic` | Argues it will not work, with evidence, until the plan holds. |
+| Agent | Seat | Role |
+|---|---|---|
+| `council-senior` | core | Knows the stack and the project; proposes the plan and what to reuse. |
+| `council-skeptic` | core | Argues it will not work, with evidence, until the plan holds. |
+| `council-novice` | core | Knows nothing; asks the simple questions about the need that experts skip. |
+| `council-researcher` | specialist | Searches official docs, versions, known issues; cites every source. |
+| `council-outsider` | specialist | Never reads the code; says what is correct and appropriate from first principles. |
+| `council-security` | specialist | Attacks it: threat model, inputs, secrets, auth, supply chain. |
+| `council-ops` | specialist | Runs it in production: deploy, observability, failure modes, rollback, cost. |
+| `council-user` | specialist | Speaks for whoever uses the result: real need, UX, accessibility. |
+| `council-maintainer` | specialist | Owns the code in two years: readability, tests, dependencies, cost of change. |
 
-A sixth agent, `reviewer`, did not write the code: it checks the changes against the house rules before you see them. Every working agent ends with the same report: done, files, checks, not verified, risks, questions.
+One more agent, `reviewer`, did not write the code: it checks the changes against the house rules before you see them. Every working agent ends with the same report: done, files, checks, not verified, risks, questions.
 
 ## Install
 

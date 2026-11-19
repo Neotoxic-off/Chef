@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 (2026-11-19)
+
+- Council grows to nine members: `council-security`, `council-ops`, `council-user` and `council-maintainer` join.
+- Core (senior, skeptic, novice) sits on every council; the lead adds two or three specialists that fit the problem.
+- Rust `unsafe_code` in a dedicated crate, with the user's agreement, is an explicit lint exception in `SKILL.md`.
+
 ## 0.5.0 (2026-11-19)
 
 - `UserPromptSubmit` hook: every development prompt goes through the chef skill.

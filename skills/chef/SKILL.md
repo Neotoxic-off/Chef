@@ -39,27 +39,36 @@ Before anything, read the project: README, CLAUDE.md, docs, architecture, folder
 
 For a design or architecture choice, a new feature, or a problem with no obvious answer, convene the council. Run it for decisions, not for every edit.
 
-The council is five agents shipped with this plugin, each with a fixed role:
+The council is nine agents shipped with this plugin, each with a fixed role. Three sit on every council:
 
-| Agent | Role |
+| Core | Role |
 |---|---|
 | `council-senior` | Knows everything: reads the project, proposes the plan to ship and what to reuse. |
-| `council-researcher` | Searches the web: official docs, current versions, known issues, prior art, with sources. |
-| `council-outsider` | Does not know the project and does not read its code: says what is correct and appropriate from first principles. |
-| `council-novice` | Knows nothing: asks coherent, simple questions about the need that expose hidden assumptions. |
 | `council-skeptic` | Argues it will not work, with evidence (code, docs, issues, commands), to force the plan to hold up. |
+| `council-novice` | Knows nothing: asks coherent, simple questions about the need that expose hidden assumptions. |
+
+The lead adds the two or three specialists the problem calls for, and says which and why:
+
+| Specialist | Role | Add when |
+|---|---|---|
+| `council-researcher` | Searches the web: official docs, current versions, known issues, prior art, with sources. | New library, tool, API or version; anything outside the project. |
+| `council-outsider` | Does not know the project and does not read its code: says what is correct and appropriate from first principles. | The project's habits may be the problem; a fresh design. |
+| `council-security` | Looks at it as an attacker: threat model, inputs, secrets, auth, supply chain. | Input from outside, auth, secrets, money, personal data, new dependencies, CI or cloud permissions. |
+| `council-ops` | Runs it in production: deploy, config, observability, failure modes, rollback, cost. | Services, infrastructure, migrations, anything deployed or scheduled. |
+| `council-user` | Speaks for the person who uses the result: real need, workflow, UX, accessibility. | UI, CLI, API or anything a person or another team touches. |
+| `council-maintainer` | Owns the code in two years: readability, tests, dependencies, cost of change. | Refactors, new abstractions or modules, new dependencies, long-lived code. |
 
 The council thinks, it does not just vote. It runs in rounds:
 
-1. **Round 1, independent:** launch all five in one message, in parallel, with the same problem statement. Give the senior, researcher and skeptic the relevant paths; give the outsider and the novice only the statement. No one sees the others' answers (no anchoring). Each understands the problem in its own words, proposes its own ideas, and scores options 0-10.
-2. **Round 2, cross-examination:** send each member the other four reports (continue the same agent with SendMessage). The senior and the researcher answer the novice's questions and the skeptic's objections with evidence; the skeptic attacks the proposals and withdraws what was disproved; the outsider says where the plan drifts from what is appropriate; the novice asks what is still unclear.
+1. **Round 1, independent:** launch every chosen member in one message, in parallel, with the same problem statement. Give the paths to those who read the project; give the outsider and the novice only the statement. No one sees the others' answers (no anchoring). Each understands the problem in its own words, proposes its own ideas, and scores options 0-10.
+2. **Round 2, cross-examination:** send each member the other members' reports (continue the same agent with SendMessage). The senior and the researcher answer the novice's questions and the objections with evidence; the skeptic, security, ops and maintainer attack the proposals from their angle and withdraw what was disproved; the outsider and the user say where the plan drifts from what is appropriate or needed; the novice asks what is still unclear.
 3. **Synthesis:** the lead merges: the shared understanding, the best ideas from each member, the objections still standing with their evidence, the open questions. Then the lead puts the real choices to the user.
 
 Two rounds maximum. If they still disagree, the disagreement goes to the user with both sides' evidence.
 
 ### Unclear request
 
-If you do not understand what the user wants (vague, ambiguous, typo-heavy, missing context), do not guess and do not start building. Convene the council with the user's exact words and this question: *what does the user most likely want, and what would be logical given what already exists in this repo?* The senior and the skeptic read the repo to ground each reading in the existing code, conventions and recent history; the novice lists what is ambiguous; the outsider says what a reasonable person would mean. Then show the user the one or two most likely readings, with your recommended one first, and ask them to confirm before any work starts.
+If you do not understand what the user wants (vague, ambiguous, typo-heavy, missing context), do not guess and do not start building. Convene the core plus the outsider and the user, with the user's exact words and this question: *what does the user most likely want, and what would be logical given what already exists in this repo?* The senior and the skeptic read the repo to ground each reading in the existing code, conventions and recent history; the novice lists what is ambiguous; the outsider says what a reasonable person would mean; the user says what the person asking most likely needs. Then show the user the one or two most likely readings, with your recommended one first, and ask them to confirm before any work starts.
 
 ### 4. Report (every agent, every time)
 
@@ -147,7 +156,9 @@ Every change ships with tests. Code without tests is not done.
 - Warnings are errors. Never hide a warning or an error: fix its cause, always.
 - Forbidden ways to hide one: suppression comments or attributes (`// eslint-disable`, `# noqa`, `# type: ignore`, `#pragma warning disable`, `@SuppressWarnings`, `[SuppressMessage]`, `#[allow(...)]`, `@ts-ignore`), empty `catch` blocks, `|| true`, redirecting errors to `/dev/null` or `$null` (a presence check such as `command -v x >/dev/null` is fine: it hides nothing), `-ErrorAction SilentlyContinue`, skipping or deleting failing tests, lowering a coverage or lint threshold, excluding a file from the linter.
 - If a warning cannot be fixed (e.g. it comes from a third-party package or a tool bug), stop and tell the user. Never suppress it on your own.
-- The only allowed exception: a rule disabled in the project's lint config because it contradicts a house rule in this skill (e.g. `modernize-use-auto` vs explicit types), with the reason on the same line or the line above.
+- The only allowed exceptions, each with the reason on the same line or the line above:
+  - A rule disabled in the project's lint config because it contradicts a house rule in this skill (e.g. `modernize-use-auto` vs explicit types).
+  - Rust `unsafe_code`, lifted only in the `[lints.rust]` of a dedicated crate that holds the unsafe code, after the user agrees (see `references/rust.md`).
 - Run the formatter, the linter, the type checker and the tests before saying a task is done. Report anything you did not run.
 
 ## Explicit types, always
