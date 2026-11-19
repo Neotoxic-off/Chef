@@ -1,6 +1,6 @@
 # GraphQL
 
-Checked November 2026 against the GraphQL spec (September 2025 edition), the GraphQL over HTTP draft, @graphql-eslint/eslint-plugin 4.4 and the OWASP GraphQL Cheat Sheet.
+Verified against the GraphQL spec (September 2026 edition), the GraphQL over HTTP draft, @graphql-eslint/eslint-plugin 4.4, GraphQL Inspector 7.0 and the OWASP GraphQL Cheat Sheet (Nov 2026).
 
 ## Schema
 
@@ -8,7 +8,7 @@ Checked November 2026 against the GraphQL spec (September 2025 edition), the Gra
 - Fail CI on breaking schema changes: `graphql-inspector diff <base-schema> schema.graphql`.
 - Non-null (`!`) only when the server can always return the value; a null in a non-null field nulls the whole parent.
 - Mutations take one input and return a payload: `createOrder(input: CreateOrderInput!): CreateOrderPayload!`.
-- Input unions: `@oneOf` input objects (in the September 2025 spec), not ad hoc nullable fields.
+- Input unions: `@oneOf` input objects (in the spec since September 2025), not ad hoc nullable fields.
 - Lists that can grow use cursor connections (Relay Cursor Connections spec) with a capped `first`.
 - Deprecate with `@deprecated(reason: "...")`. Remove only after usage metrics show no clients.
 

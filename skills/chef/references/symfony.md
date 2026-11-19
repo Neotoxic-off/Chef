@@ -1,6 +1,6 @@
 # Symfony
 
-Builds on `php.md`. Checked against Symfony 8.1 (stable, needs PHP 8.4) and 7.4 (LTS); 8.2 was in beta in November 2026. Current versions: `https://symfony.com/releases.json`; installed ones: `composer show 'symfony/*'`.
+Builds on `php.md`. Verified against Symfony 8.1.11 (stable, needs PHP 8.4), 7.4.23 (LTS), phpstan-symfony 2.1.1, phpstan-doctrine 2.1.2, dama/doctrine-test-bundle 8.8.0, Foundry 2.17.0 (Nov 2026); 8.2.0-BETA2 is the next release. Current versions: `https://symfony.com/releases.json`; installed ones: `composer show 'symfony/*'`.
 
 ## Controllers and input
 

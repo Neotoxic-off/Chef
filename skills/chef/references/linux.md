@@ -1,11 +1,13 @@
 # Linux servers (systemd, users, packages, logs, firewall, SSH)
 
+Verified against systemd 262, OpenSSH 10.6p2 (Nov 2026).
+
 ## Lint and validate
 
 - Units: `systemd-analyze verify app.service`; hardening score: `systemd-analyze security app.service` (`--offline=yes` on a unit file in CI).
 - SSH: `sshd -t` before every reload. Sudo: `visudo -c`. nftables: `nft -c -f /etc/nftables.conf`.
 - Shell scripts: ShellCheck (see `bash.md`).
-- Versions checked Nov 2026: systemd 260+ (262 per LWN, unverified; quarterly releases), OpenSSH 10.6p2. Use what the distro ships; check with `systemctl --version`, `ssh -V`.
+- Use what the distro ships; check with `systemctl --version`, `ssh -V`.
 
 ## Practices
 

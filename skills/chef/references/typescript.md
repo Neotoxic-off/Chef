@@ -1,5 +1,7 @@
 # TypeScript / JavaScript
 
+Verified against TypeScript 6.0 (7.0 is out; see the typed linting pin below), ESLint 10.15, typescript-eslint 8.73, Prettier 3.10, Vitest 5.1, @vitest/eslint-plugin 1.6, Playwright 1.65, StrykerJS 10.1 (Nov 2026).
+
 Write TypeScript, not JavaScript, for any new file.
 
 ## tsconfig
@@ -40,7 +42,7 @@ Write TypeScript, not JavaScript, for any new file.
   );
   ```
 - Typed linting needs a TypeScript version that typescript-eslint supports: check its `peerDependencies` (`npm view typescript-eslint peerDependencies`). In Nov 2026 that is `<6.1.0`, so pin `typescript` to `~6.0` until it supports 7: TS 7 crashes typed linting.
-- No lint rule enforces annotations on every variable (`typedef` is deprecated): write them anyway and check them in review.
+- No lint rule enforces annotations on every variable (`typedef` is deprecated): write them anyway. Before saying done, list the untyped declarations you added and annotate each one: `git diff -U0 | grep -E '^\+\s*(export\s+)?(const|let)\s+\w+\s*='`.
 - Format with Prettier (or Biome if the project already uses it). CI checks formatting.
 
 ## Code

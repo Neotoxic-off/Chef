@@ -1,6 +1,6 @@
 # Application security
 
-Checked November 2026 against OWASP Top 10:2025, the OWASP Cheat Sheet Series, RFC 9700, RFC 8725 and the OAuth 2.1 draft.
+Verified against OWASP Top 10:2025, the OWASP Cheat Sheet Series, RFC 9700, RFC 8725, the OAuth 2.1 draft (-17), jose 6.2 (Nov 2026).
 
 ## OWASP Top 10:2025
 

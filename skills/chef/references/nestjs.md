@@ -1,6 +1,6 @@
 # Node backends: NestJS, Express, Fastify
 
-Builds on `typescript.md`. Checked against NestJS 12 (ESM-only packages; apps need Node.js 20.19+ or 22.12+).
+Builds on `typescript.md`. Verified against NestJS 12.5, @nestjs/config 12.1, @nestjs/terminus 12.2, Express 5.3, Fastify 5.12 (Nov 2026). Nest 12 packages are ESM-only: apps need Node.js 20.19+ or 22.12+; the CLI generators need 22.22.3+, 24.15+ or 26+.
 
 ## NestJS structure
 
@@ -30,12 +30,12 @@ Pick one style per project.
     return this.users.create(body);
   }
   ```
-  `app.useGlobalPipes(new StandardSchemaValidationPipe());` (import path not verified; check the Nest docs).
+  `app.useGlobalPipes(new StandardSchemaValidationPipe());` (`import { StandardSchemaValidationPipe } from "@nestjs/common"`).
 - Class-based: class-validator DTOs with `new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })`.
 
 ## Config
 
-- `ConfigModule.forRoot({ isGlobal: true, validationSchema: envSchema })` with a zod schema; the app refuses to start on bad env.
+- `ConfigModule.forRoot({ isGlobal: true, validationSchema: envSchema })` with a zod schema (v12 accepts any Standard Schema); the app refuses to start on bad env.
 - Read typed values: `ConfigService<Env, true>` and `config.get("PORT", { infer: true })`. No `process.env` outside config.
 
 ## Errors

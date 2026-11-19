@@ -1,15 +1,17 @@
 # Nix (flakes, devShells, NixOS modules)
 
+Verified against Nix 2.35, NixOS 26.05, nixfmt 1.5 (Nov 2026).
+
 ## Lint and validate
 
 - `nix flake check` in CI: it evaluates every output and runs `checks`.
-- Format with `nixfmt` (the official formatter, RFC 166): `nixfmt --check <files>` in CI; set `formatter` in the flake so `nix fmt` works locally (`pkgs.nixfmt-tree` wraps it for a whole tree; unverified on older nixpkgs).
+- Format with `nixfmt` (the official formatter, RFC 166): `nixfmt --check <files>` in CI; set `formatter` in the flake so `nix fmt` works locally (`pkgs.nixfmt-tree` wraps it for a whole tree, nixpkgs 25.05+).
 - Lint with `statix check .` and `deadnix --fail .`. Fix findings; no `# statix:skip`-style suppressions.
 - Before a switch: `nixos-rebuild build --flake .#host`, then `nixos-rebuild test` (no boot entry) before `switch`.
 
 ## Practices
 
-- Versions checked Nov 2026: Nix 2.35, NixOS 26.05 (supported to 2026-12-31; 26.11 due next). Look up the current one at nixos.org/manual and `nix --version`.
+- NixOS 26.05 is supported to 2026-12-31; 26.11 is due next. Check `nix --version` and nixos.org/manual.
 - Flakes are still an experimental feature in upstream Nix: enable `experimental-features = nix-command flakes` in `nix.conf`. Determinate Nix ships them stable.
 - Commit `flake.lock`. Update inputs on a schedule in a PR (`nix flake update`, or the `update-flake-lock` action), never silently.
 - Pin `nixpkgs` to a release branch (`nixos-26.05`) for servers; `nixos-unstable` only for dev machines.

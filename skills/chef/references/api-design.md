@@ -1,6 +1,6 @@
 # HTTP API design (REST, OpenAPI)
 
-Checked November 2026 against OpenAPI 3.2.0, RFC 9110, RFC 9457, RFC 9745 and the IETF drafts named below.
+Verified against OpenAPI 3.2.1, RFC 9110, RFC 9457, RFC 9745, Redocly CLI 2.80, Spectral 6.17, oasdiff 1.39, Schemathesis 4.33 and the IETF drafts named below (Nov 2026).
 
 ## Contract first
 
@@ -44,7 +44,7 @@ Every error is `application/problem+json` (RFC 9457 obsoletes RFC 7807):
 
 ## Idempotency keys
 
-- Accept an `Idempotency-Key` header on `POST`/`PATCH` that create or charge. The header comes from IETF draft `draft-ietf-httpapi-idempotency-key-header` (-07, Oct 2025, not an RFC).
+- Accept an `Idempotency-Key` header on `POST`/`PATCH` that create or charge. The header comes from IETF draft `draft-ietf-httpapi-idempotency-key-header` (-08, Oct 2026, not an RFC).
 - Store key, request fingerprint and response in the same transaction as the effect, with a TTL. Same key and body: replay the stored response. Same key, other body: `422`. First request still running: `409`.
 
 ## Versioning and deprecation

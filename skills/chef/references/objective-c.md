@@ -1,6 +1,6 @@
 # Objective-C
 
-ARC on (`CLANG_ENABLE_OBJC_ARC = YES`). New code in an Apple project is usually Swift (see `swift.md`); write Objective-C only where the project already does. Check the toolchain with `xcodebuild -version` and `clang --version`.
+ARC on (`CLANG_ENABLE_OBJC_ARC = YES`). New code in an Apple project is usually Swift (see `swift.md`); write Objective-C only where the project already does. Check the toolchain with `xcodebuild -version` and `clang --version`. Verified against Xcode 27.2, clang-format 23.1 (Nov 2026).
 
 ## Lint and format: clang-format, Clang Static Analyzer, clang-tidy
 

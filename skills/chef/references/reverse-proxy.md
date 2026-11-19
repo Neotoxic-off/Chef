@@ -1,5 +1,7 @@
 # Reverse proxies (Nginx, Caddy, Traefik, HAProxy)
 
+Verified against Nginx 1.30.7 stable / 1.31.9 mainline, Caddy 2.11.9, Traefik 3.7.19, HAProxy 3.4.8 LTS (Nov 2026).
+
 ## Lint and validate
 
 - Test the config before every reload, in CI and on the host. A failed test blocks the reload.
@@ -12,10 +14,10 @@
 
 ## Practices
 
-- Versions checked Nov 2026: Nginx 1.30 stable / 1.31 mainline, Caddy 2.11, Traefik 3.7, HAProxy 3.4 LTS. Look up the current one on nginx.org/news, haproxy.org, and the GitHub releases of caddyserver/caddy and traefik/traefik.
+- Look up the current one on nginx.org/news, haproxy.org, and the GitHub releases of caddyserver/caddy and traefik/traefik.
 - Pin the proxy image by tag and digest; let Renovate or Dependabot bump it.
 - TLS 1.2 and 1.3 only. Take ciphers from the Mozilla SSL Configuration Generator ("intermediate"), not from memory.
-- Automate certificates: Caddy and Traefik do ACME natively; Nginx has `ngx_http_acme_module` (package `nginx-module-acme`); HAProxy 3.3+ has built-in ACME.
+- Automate certificates: Caddy and Traefik do ACME natively; Nginx has `ngx_http_acme_module` (package `nginx-module-acme`); HAProxy has built-in ACME, still experimental in 3.4 (needs `expose-experimental-directives`).
 - Redirect HTTP to HTTPS. Set request size limits and timeouts (`client_max_body_size`, `timeout client/server`).
 - Trust `X-Forwarded-For` only from known proxy IPs: Nginx `set_real_ip_from`, Traefik `forwardedHeaders.trustedIPs`, HAProxy `option forwardfor` plus an ACL on the source.
 - Keep one file per site or route; keep TLS and header policy in one shared snippet.

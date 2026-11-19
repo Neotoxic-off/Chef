@@ -1,5 +1,7 @@
 # Go
 
+Verified against Go 1.27.4, golangci-lint 2.15.0, gofumpt 0.12, testcontainers-go 0.45 (Nov 2026).
+
 ## Lint and format: golangci-lint v2
 
 `.golangci.yml`:

@@ -1,6 +1,8 @@
 # PowerShell
 
-Target PowerShell 7.4+. Only target Windows PowerShell 5.1 when the host requires it, and say so in the manifest (`PowerShellVersion`, `CompatiblePSEditions`).
+Verified against PowerShell 7.7 (7.6 is the current LTS; 7.4 reached end of support on 2026-11-10), PSScriptAnalyzer 1.25.0, Pester 6.2.0 (Nov 2026).
+
+Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host requires it, and say so in the manifest (`PowerShellVersion`, `CompatiblePSEditions`).
 
 ## Lint and format: PSScriptAnalyzer
 
@@ -42,7 +44,7 @@ Target PowerShell 7.4+. Only target Windows PowerShell 5.1 when the host require
 
 ## Tests
 
-- Pester 6 (current; same configuration object and `Should -Be` syntax as Pester 5). One `*.Tests.ps1` per source file; `BeforeAll { . $PSCommandPath.Replace('.Tests.ps1', '.ps1') }`.
+- Pester 6 (same configuration object as Pester 5; classic `Should -Be` still works, new `Should-*` assertions are optional; runs on 5.1 and 7.4+). One `*.Tests.ps1` per source file; `BeforeAll { . $PSCommandPath.Replace('.Tests.ps1', '.ps1') }`.
 - Isolate I/O with `Mock` inside the module scope (`-ModuleName`); verify with `Should -Invoke`.
 - Use `TestDrive:` for files and `TestRegistry:` for the registry. Tag integration tests: `-Tag 'Integration'`.
 - Coverage is command coverage (no branch coverage). `CoveragePercentTarget` only reports, so gate it yourself:

@@ -1,5 +1,7 @@
 # Ruby
 
+Verified against Ruby 4.0, RuboCop 1.92, rubocop-sorbet 0.17, Sorbet 0.6, Tapioca 0.20, Steep 2.1, SimpleCov 1.3, mutant 0.17 (Nov 2026).
+
 Bundler manages tools (`Gemfile.lock` committed); run them with `bundle exec`.
 
 ## Lint and format: RuboCop
@@ -13,7 +15,7 @@ plugins:
   - rubocop-sorbet
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 3.4
+  TargetRubyVersion: 4.0
 Sorbet/StrictSigil:
   Enabled: true
 Sorbet/EnforceSignatures:

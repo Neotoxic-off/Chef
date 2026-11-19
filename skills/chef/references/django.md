@@ -1,6 +1,6 @@
 # Django
 
-Builds on `python.md`. Checked against Django 6.1 (August 2026, Python 3.12-3.14); 5.2 is the current LTS.
+Builds on `python.md`. Verified against Django 6.1.3 (Python 3.12-3.15; 5.2 is the current LTS), django-stubs 6.1, pytest-django 4.14, Django REST framework 3.18 (Nov 2026).
 
 ## Settings
 
@@ -28,7 +28,7 @@ django_settings_module = "config.settings.test"
 
 ## ORM
 
-- N+1: `select_related("author")` for foreign keys, `prefetch_related("tags")` for many-to-many and reverse relations. Name the fields; bare `select_related()` is deprecated in 6.1.
+- N+1: `select_related("author")` for foreign keys, `prefetch_related("tags")` for many-to-many and reverse relations. Name the fields; bare `select_related()` and `values_list(flat=True)` without a field are deprecated in 6.1.
 - 6.1 fetch modes: `.fetch_mode(models.FETCH_PEERS)` turns lazy loads into one query per field; `FETCH_RAISE` raises `FieldFetchBlocked` on any lazy load in hot paths.
 - Fetch only what you use: `.only()`, `.values_list()`, `.exists()`, `.count()`. Stream big sets with `.iterator(chunk_size=...)`.
 - Write in bulk: `bulk_create`, `update()`, `F()` expressions for counters (no read-modify-write races).

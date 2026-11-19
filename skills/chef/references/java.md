@@ -1,5 +1,7 @@
 # Java
 
+Verified against Gradle 9.9.1, Spotless 8.11.0, gradle-errorprone 5.2.0, Error Prone 2.53.0, NullAway 0.14.4, PMD 7.24.0, JaCoCo 0.8.16, gradle-pitest 1.19.0 (Nov 2026).
+
 Build with Gradle (Kotlin DSL) and the wrapper committed. Use the project's LTS JDK through a toolchain (`java { toolchain { languageVersion = JavaLanguageVersion.of(25) } }`). Maven projects use the same tools through their Maven plugins.
 
 ## Lint and format: Spotless, Error Prone, NullAway, PMD
@@ -26,9 +28,11 @@ tasks.withType<JavaCompile>().configureEach {
     options.errorprone.option("NullAway:AnnotatedPackages", "com.example")
 }
 
-pmd { isConsoleOutput = true; ruleSetFiles = files("config/pmd.xml"); ruleSets = listOf() }
+pmd { toolVersion = "7.24.0"; isConsoleOutput = true; ruleSetFiles = files("config/pmd.xml"); ruleSets = listOf() }
+jacoco { toolVersion = "0.8.16" }
 ```
 
+- Pin `toolVersion` for PMD and JaCoCo: Gradle's defaults are older (JaCoCo 0.8.13), and `UseExplicitTypes` needs PMD 7.
 - `-Xlint:all -Werror` makes javac and Error Prone warnings fail the build.
 - `config/pmd.xml` includes `category/java/codestyle.xml/UseExplicitTypes` to reject `var`, plus `bestpractices`, `errorprone` and `design` categories.
 - CI runs `./gradlew spotlessCheck check`.

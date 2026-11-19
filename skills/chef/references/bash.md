@@ -1,5 +1,7 @@
 # Bash, sh
 
+Verified against ShellCheck 0.11.0, shfmt 3.14.1, bats-core 1.14.0, bashcov 4.0.3 with SimpleCov 1.3 (Nov 2026).
+
 Target `bash` unless the script must run on a minimal image; then write POSIX `sh` and lint it as `sh`.
 
 ## Lint and format: ShellCheck + shfmt
@@ -8,11 +10,13 @@ Target `bash` unless the script must run on a minimal image; then write POSIX `s
 
 ```ini
 shell=bash
-enable=all              # include the optional checks too
-external-sources=true   # follow `source` paths
+# include the optional checks too
+enable=all
+# follow `source` paths
+external-sources=true
 ```
 
-ShellCheck exits non-zero on any finding, style included: that is the warnings-as-errors gate. Run `shellcheck **/*.sh` in CI.
+ShellCheck exits non-zero on any finding, style included: that is the warnings-as-errors gate. Run `git ls-files -z '*.sh' | xargs -0 shellcheck` in CI (`**/*.sh` needs `shopt -s globstar`).
 
 shfmt reads `.editorconfig`:
 
@@ -20,7 +24,7 @@ shfmt reads `.editorconfig`:
 [*.{sh,bash,bats}]
 indent_style = space
 indent_size = 2
-switch_case_indent = true
+case_indent = true
 binary_next_line = true
 ```
 

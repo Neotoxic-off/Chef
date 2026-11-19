@@ -1,13 +1,18 @@
 # SQL, migrations
 
+Verified against SQLFluff 4.5 (Nov 2026).
+
 ## Lint and format: SQLFluff
 
 `.sqlfluff` at the repo root:
 
 ```ini
+# Comments on their own lines: inline ones become part of the value.
 [sqlfluff]
-dialect = postgres        # or tsql, mysql, sqlite, bigquery, snowflake...
-templater = raw           # jinja or dbt if the project uses them
+# dialect: postgres, tsql, mysql, sqlite, bigquery, snowflake...
+dialect = postgres
+# templater: jinja or dbt if the project uses them
+templater = raw
 max_line_length = 100
 
 [sqlfluff:rules:capitalisation.keywords]

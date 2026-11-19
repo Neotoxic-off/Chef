@@ -1,5 +1,7 @@
 # Dart / Flutter
 
+Verified against Dart 3.14.1, Flutter 3.50, very_good_analysis 11.0, coverage 1.16, very_good_cli 1.7, mocktail 1.0.5, mutation_test 1.8 (Nov 2026).
+
 ## Lint and format: analyzer + very_good_analysis
 
 `analysis_options.yaml` (add `very_good_analysis` as a dev dependency; plain Dart or a lighter set: `package:lints/recommended.yaml` or `package:flutter_lints/flutter.yaml`):
@@ -19,7 +21,8 @@ analyzer:
 linter:
   rules:
     always_specify_types: true
-    omit_local_variable_types: false  # very_good_analysis enables it; it conflicts
+    omit_local_variable_types: false  # very_good_analysis enables it; contradicts explicit types
+    avoid_types_on_closure_parameters: false  # same reason: closure parameters are typed
 ```
 
 - very_good_analysis already sets the three strict language modes; keep them in the file so a switch to another rule set does not drop them.

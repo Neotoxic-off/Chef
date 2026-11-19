@@ -1,5 +1,7 @@
 # Python
 
+Verified against uv 0.13, Ruff 0.17, mypy 2.4, pytest 9.2, pytest-cov 7.1, Hypothesis 6.170, mutmut 3.8 (Nov 2026).
+
 All tool configuration lives in `pyproject.toml`. Use `uv` for environments and dependencies (`uv.lock` committed); run tools with `uv run`.
 
 ## Lint and format: Ruff

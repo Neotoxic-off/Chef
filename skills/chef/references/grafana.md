@@ -1,6 +1,6 @@
 # Grafana
 
-Checked Nov 2026 on grafana.com/docs (Grafana 13.x). Look up the current release on github.com/grafana/grafana/releases; never guess one.
+Verified against Grafana 13.3.1, gcx 1.8.0 (Nov 2026). Look up the current release on github.com/grafana/grafana/releases; never guess one.
 
 ## Dashboards as code
 
@@ -8,7 +8,7 @@ Checked Nov 2026 on grafana.com/docs (Grafana 13.x). Look up the current release
   - File provisioning (`provisioning/dashboards/*.yaml` plus JSON files) for self-hosted instances.
   - Foundation SDK (Go, TypeScript, Python, Java, PHP) to generate dashboards in code. Grafana marks it "public preview". Push the output with `gcx`, Terraform or provisioning.
   - Terraform (`grafana` provider) or the Grafana Operator (Kubernetes CRs) when the rest of the stack already uses them.
-  - Git Sync syncs a Git repository with Grafana and allows edits as pull requests. Check the docs for availability on your edition.
+  - Git Sync (GA since Grafana 13) syncs a Git repository with Grafana and allows edits as pull requests. Check the docs for availability on your edition.
 - Grafonnet is not officially supported by Grafana. Do not start new work with it; use the Foundation SDK.
 - Never hand-edit a provisioned dashboard in prod. Change the code, review it, deploy it. Lock the UI:
 

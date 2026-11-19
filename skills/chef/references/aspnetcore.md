@@ -1,6 +1,6 @@
 # ASP.NET Core
 
-Builds on `csharp.md`. Checked against ASP.NET Core 10 (LTS) and 11 (STS, released November 2026).
+Builds on `csharp.md`. Verified against ASP.NET Core 10.0.15 (LTS) and 11.0.0 (STS, released 10 Nov 2026) (Nov 2026).
 
 ## Endpoints
 
@@ -62,7 +62,7 @@ public static class OrderEndpoints
 ## Tests
 
 - Integration test projects end in `Tests` (`X.IntegrationTests`) so the CA1707 exception in `csharp.md` covers them.
-- Integration: `WebApplicationFactory<Program>` (`Microsoft.AspNetCore.Mvc.Testing`). Expose `Program` with `public partial class Program;` at the end of `Program.cs`. Unverified: whether CA1515 (`latest-all`) flags it; if so, ask the user.
+- Integration: `WebApplicationFactory<Program>` (`Microsoft.AspNetCore.Mvc.Testing`). Since .NET 10 a source generator makes `Program` public; do not declare `public partial class Program` by hand (ASP0027 flags it).
 - Start the database with Testcontainers in the factory and point the connection string at it with `builder.UseSetting(...)` in `ConfigureWebHost`. Swap the clock (`FakeTimeProvider`) and outbound clients in `ConfigureTestServices`.
   ```csharp
   [Fact]

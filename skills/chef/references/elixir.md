@@ -1,5 +1,7 @@
 # Elixir
 
+Verified against Elixir 1.20.5, Credo 1.7.19, Dialyxir 1.4.9, ExCoveralls 0.18.5, Mox 1.3.2, StreamData 1.4.0 (Nov 2026).
+
 ## Lint and format: mix format + Credo
 
 `.formatter.exs`:
@@ -32,7 +34,7 @@ CI: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix cre
   ```elixir
   @spec withdraw(Account.t(), pos_integer()) :: {:ok, Account.t()} | {:error, :insufficient_funds}
   ```
-- Elixir's built-in type checker (1.17+, full inference in 1.20) runs at compile time; with `warnings_as_errors` its violations fail the build. It does not read `@spec` yet, so keep both.
+- Elixir's built-in type checker (1.17+, inference of all constructs in 1.20) runs at compile time; with `warnings_as_errors` its violations fail the build. It does not read `@spec` yet, so keep both.
 - `@enforce_keys` on structs. No `any()` or `term()` in specs unless the value is truly unknown.
 
 ## Code

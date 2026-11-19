@@ -1,5 +1,7 @@
 # CI/CD (GitHub Actions, GitLab CI)
 
+Verified against actions/checkout 7.0.1, actionlint 1.7.12, zizmor 1.32, act 0.2.98 (Nov 2026).
+
 ## Lint and validate
 
 - Lint workflows with actionlint (runs ShellCheck on `run:` blocks): `actionlint`.
@@ -36,7 +38,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@<full-sha> # v5
+      - uses: actions/checkout@<full-sha> # v7.0.1
         with:
           persist-credentials: false
       - run: make fmt-check lint typecheck test
@@ -45,6 +47,7 @@ jobs:
 ## Security
 
 - Pin every third-party action to a full 40-char commit SHA with the tag in a comment. Tags are mutable: trivy-action tags were hijacked in March 2026. Enable the "require SHA pinning" policy in repo or org settings.
+- Get the real SHA, never invent one: `gh api repos/actions/checkout/commits/v7.0.1 --jq .sha` (or `curl -s https://api.github.com/repos/actions/checkout/commits/v7.0.1`): it resolves annotated tags to the commit. Pin the exact release tag, not the moving major tag. If no tool can reach GitHub, keep the tag and tell the user the SHA is still to pin.
 - `permissions: {}` at the top, then grant the least each job needs (`contents: read`, `id-token: write` only for deploy).
 - Use OIDC to the cloud (`id-token: write` plus the cloud's federated role) instead of long-lived keys in secrets. GitLab: `id_tokens:` with an `aud`.
 - Never use `pull_request_target` or `workflow_run` with a checkout of PR code. Never interpolate `${{ github.event.* }}` into `run:`; pass it through `env:`.

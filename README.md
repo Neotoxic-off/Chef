@@ -29,6 +29,7 @@ Chef is a [Claude Code](https://claude.com/claude-code) plugin that makes Claude
 - **Never hide a warning or an error**: fix the cause, always. No suppression comments; lint rules that clash with these habits are turned off in config, with the reason.
 - **`try`/`catch` only when nothing else works**: check first (`TryParse`, `dict.get`, `Result` types), except for files and network, where the operation itself is the check.
 - **Strict mode**: on by default in new projects, asked first in existing ones.
+- **Before heavy commands** (builds, test suites, installs): check free RAM and CPU first, and ask if the machine is loaded.
 - **WPF / WinUI / MAUI / Avalonia**: CommunityToolkit, always.
 
 Each stack has its own reference (linter, formatter, test runner, coverage tool, configs), loaded only when Claude works in it. Anything not listed is still covered: Claude looks up its official docs and standard tools first, then applies every rule.
@@ -56,7 +57,7 @@ For decisions, new features and unclear requests, Claude acts as the lead and co
 | `council-novice` | Knows nothing; asks the simple questions about the need that experts skip. |
 | `council-skeptic` | Argues it will not work, with evidence, until the plan holds. |
 
-Every agent ends with the same report: done, files, checks, not verified, risks, questions. A separate reviewer checks the code before you see it.
+A sixth agent, `reviewer`, did not write the code: it checks the changes against the house rules before you see them. Every working agent ends with the same report: done, files, checks, not verified, risks, questions.
 
 ## Install
 
@@ -71,13 +72,13 @@ Update: `/plugin marketplace update chef`, then `/reload-plugins`.
 
 ## Usage
 
-Claude loads the skill by itself on coding tasks. To call it explicitly:
+A `UserPromptSubmit` hook reminds Claude, on every prompt, to load the skill before the first edit or command of any development task. To call it explicitly:
 
 ```
 /chef:chef
 ```
 
-To change a habit, edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or the stack's file in [`skills/chef/references/`](skills/chef/references/), then push.
+To change a habit, edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or the stack's file in [`skills/chef/references/`](skills/chef/references/) (listed in [`INDEX.md`](skills/chef/references/INDEX.md)). Run `bash scripts/check.sh` before you push; CI runs it too.
 
 ## With and without chef
 

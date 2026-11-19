@@ -1,5 +1,7 @@
 # Scala
 
+Verified against Scala 3.10.1, scalafmt 3.11.5, scalafix 0.14.10, sbt-scoverage 2.4.4, stryker4s 1.1.1 (Nov 2026).
+
 Scala 3 with sbt (or Mill). Pin plugin versions in `project/plugins.sbt`.
 
 ## Lint and format: scalafmt + scalafix

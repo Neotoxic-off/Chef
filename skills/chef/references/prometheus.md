@@ -1,6 +1,6 @@
 # Prometheus
 
-Checked Nov 2026 on prometheus.io (Prometheus 3.x). Look up the current release on github.com/prometheus/prometheus/releases; never guess one.
+Verified against Prometheus 3.16.0, Alertmanager 0.35.0 (Nov 2026). Look up the current release on github.com/prometheus/prometheus/releases; never guess one.
 
 ## Lint and validate
 

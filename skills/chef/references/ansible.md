@@ -1,5 +1,7 @@
 # Ansible
 
+Verified against ansible-core 2.22, ansible-lint 26.11, Molecule 26.11 (Nov 2026).
+
 ## Lint and validate
 
 - ansible-lint in CI with the `production` profile; warnings fail the build.

@@ -1,6 +1,6 @@
 # Realtime: WebSockets and Server-Sent Events
 
-Checked November 2026 against RFC 6455, the WHATWG HTML Living Standard (Server-Sent Events), the OWASP WebSocket Security Cheat Sheet and `ws` 8.
+Verified against `ws` 8.23.0, RFC 6455, the WHATWG HTML Living Standard (Server-Sent Events) and the OWASP WebSocket Security Cheat Sheet (Nov 2026).
 
 ## Pick the transport
 

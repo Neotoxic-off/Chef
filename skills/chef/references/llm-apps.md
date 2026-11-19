@@ -1,6 +1,6 @@
 # LLM applications
 
-Provider-neutral. Builds on the language reference (`python.md`, `typescript.md`). Security list checked November 2026: OWASP Top 10 for LLM Applications 2026 (prompt injection stays LLM01). SDKs and model IDs change monthly: read the provider's current docs and changelog before writing calls.
+Provider-neutral. Builds on the language reference (`python.md`, `typescript.md`). Verified against OWASP Top 10 for LLM Applications 2026 (prompt injection stays LLM01) (Nov 2026). SDKs and model IDs change monthly: read the provider's current docs and changelog before writing calls.
 
 ## Prompts are code
 

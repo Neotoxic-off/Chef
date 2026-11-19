@@ -1,10 +1,10 @@
 # OpenTelemetry
 
-Checked Nov 2026 on opentelemetry.io. Look up current versions on the language's OTel page or GitHub releases; never guess one.
+Verified against OpenTelemetry Collector 0.165.0 (contrib 0.165.1), semantic conventions 1.45.0 (Nov 2026). Look up current versions on the language's OTel page or GitHub releases; never guess one.
 
 ## Setup
 
-- Signal status per SDK (opentelemetry.io/docs/languages): traces are Stable everywhere except Rust (Beta). Metrics and logs vary: logs are Stable in Java, .NET, C++ and PHP, not yet in Python, JavaScript or Go. Check the table before you rely on a signal.
+- Signal status per SDK (opentelemetry.io/docs/languages): traces are Stable everywhere except Rust (Beta). Metrics and logs vary: logs are Stable in Java, .NET, C++, PHP and Rust, a release candidate in Go, and still in development in Python and JavaScript. Check the table before you rely on a signal.
 - Start with zero-code instrumentation where it exists (Java agent, .NET auto-instrumentation, Python `opentelemetry-instrument`, Node `@opentelemetry/auto-instrumentations-node`, Go eBPF). Add manual spans only for business operations the libraries cannot see.
 - Configure through the standard env vars, not hard-coded values:
 
@@ -49,7 +49,7 @@ service:
 ```
 
 - `memory_limiter` comes first in every pipeline.
-- The exporter type is now `otlp_grpc` (`otlp` is a deprecated alias); HTTP is `otlp_http`. Batch in the exporter (`sending_queue.batch`). Do not also add the legacy `batch` processor: the Collector warns when both are present.
+- The exporter type is now `otlp_grpc` (`otlp` is a deprecated alias); HTTP is `otlp_http`. Batch in the exporter (`sending_queue.batch`). The `batch` processor is deprecated (removal planned for v0.177.0); do not add it. The Collector warns when both are present.
 - Use the `contrib` or `k8s` distribution only if you need its components. Otherwise build your own with `ocb` and only the components you use.
 - Validate config in CI: `otelcol validate --config=config.yaml` (use your distribution's binary name).
 

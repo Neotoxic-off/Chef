@@ -1,6 +1,6 @@
 # Rust web: Axum, Actix Web, Tokio, sqlx
 
-Builds on `rust.md`. Checked against axum 0.8.9 (0.9 in development, not released), tower-http 0.7.1, actix-web 4.20, tokio 1.54, sqlx 0.9.1. Current versions: `cargo info <crate>` or `cargo search <crate>`.
+Builds on `rust.md`. Verified against axum 0.8.9 (0.9 not released), tower-http 0.7.1, actix-web 4.20, tokio 1.54, sqlx 0.9.1 (Nov 2026). Current versions: `cargo info <crate>` or `cargo search <crate>`.
 
 ## Axum
 
@@ -47,7 +47,7 @@ async fn get_order(State(state): State<AppState>, Path(id): Path<i64>) -> Result
 - Compile-time checked queries (`query!`, `query_as!`). Commit the `.sqlx` folder from `cargo sqlx prepare`; CI builds with `SQLX_OFFLINE=true` and runs `cargo sqlx prepare --check`.
 - 0.9: `query()` takes `impl SqlSafeStr`, not `&str`. Bind values with `.bind()`; never format input into SQL.
 - Migrations with `sqlx::migrate!()` or `sqlx migrate run`. Size the pool and set `acquire_timeout` with named constants.
-- Per-crate settings in `sqlx.toml` (0.9).
+- Per-crate settings in `sqlx.toml` (0.9, feature `sqlx-toml`).
 
 ## Tests
 

@@ -1,10 +1,10 @@
 # Distributed tracing (Tempo, Jaeger)
 
-Checked Nov 2026 on opentelemetry.io, w3.org, grafana.com/docs/tempo and jaegertracing.io. Instrument with OpenTelemetry (see `opentelemetry.md`). Look up backend versions on their GitHub releases pages; never guess one.
+Verified against Tempo 3.1.1, Jaeger 2.23.0 (Nov 2026). Instrument with OpenTelemetry (see `opentelemetry.md`). Look up backend versions on their GitHub releases pages; never guess one.
 
 ## Backends
 
-- Grafana Tempo: object-storage backed, queried with TraceQL, integrated with Grafana, Loki and Prometheus.
+- Grafana Tempo: object-storage backed, queried with TraceQL, integrated with Grafana, Loki and Prometheus. Tempo 3 removed the ingester write path and has no downgrade to 2.x: follow the 3.0 migration guide.
 - Jaeger: v1 reached end of life on December 31, 2025 and gets no more updates. Use Jaeger v2: one binary built on the OpenTelemetry Collector, configured with Collector-style YAML, taking OTLP on `4317`/`4318`. The Jaeger client libraries and agent are gone: use OTel SDKs.
 - Send OTLP from apps to an OTel Collector, and from the Collector to the backend. Switching backends then means changing only the Collector.
 

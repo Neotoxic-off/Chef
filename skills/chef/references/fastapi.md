@@ -1,6 +1,6 @@
 # FastAPI (and Flask)
 
-Builds on `python.md`. Checked against FastAPI 0.163 (November 2026) with Pydantic v2.
+Builds on `python.md`. Verified against FastAPI 0.165 (Python 3.11+), Pydantic 2.14, pydantic-settings 2.16, SQLAlchemy 2.1, Alembic 1.20, Flask 3.1 (Nov 2026).
 
 ## Lint
 
@@ -45,7 +45,7 @@ async def read_order(order_id: int, session: SessionDep) -> OrderRead:
 ## Async and the database
 
 - `async def` only when every call inside is awaitable. Blocking libraries go in plain `def` routes (FastAPI runs them in a threadpool).
-- SQLAlchemy 2.0 async: one `create_async_engine` per app, `async_sessionmaker(engine, expire_on_commit=False)`, typed models with `Mapped[...]`.
+- SQLAlchemy 2.x async: one `create_async_engine` per app, `async_sessionmaker(engine, expire_on_commit=False)`, typed models with `Mapped[...]`.
 - Load relations explicitly (`selectinload(...)`); lazy loading in async code raises.
 - Startup and shutdown in a `lifespan` context manager, not `on_event`.
 - Migrations with Alembic, committed; CI runs `alembic check` to fail on model changes without a migration.

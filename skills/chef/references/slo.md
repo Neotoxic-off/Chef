@@ -1,6 +1,6 @@
 # SLOs and error budgets
 
-Checked Nov 2026 on sre.google (SRE Workbook, "Alerting on SLOs") and the Sloth and Pyrra repositories. Look up tool versions on their GitHub releases pages; never guess one.
+Verified against Sloth 0.16.0, Pyrra 0.10.2 (Nov 2026). Burn-rate math from the SRE Workbook ("Alerting on SLOs"). Look up tool versions on their GitHub releases pages; never guess one.
 
 ## Definitions
 
@@ -37,7 +37,7 @@ Use multiwindow, multi-burn-rate alerts (SRE Workbook, 30-day SLO):
 
 - Do not hand-write the dozens of recording rules and alerts an SLO needs. Generate them:
   - Sloth (github.com/slok/sloth): a spec file generates Prometheus recording rules and multiwindow multi-burn-rate alerts. CLI `sloth generate`, a Kubernetes controller, and a Go library since v0.16.0 (Apr 2026). Actively maintained per its README.
-  - Pyrra (github.com/pyrra-dev/pyrra): a `ServiceLevelObjective` resource (Kubernetes, Docker or filesystem) generates rules and 4 multi-burn-rate alerts, plus a web UI. Its README says it is mostly maintained in the authors' free time.
+  - Pyrra (github.com/prometheus-community/pyrra, moved from pyrra-dev): a `ServiceLevelObjective` resource (Kubernetes, Docker or filesystem) generates rules and 4 multi-burn-rate alerts, plus a web UI. Its README says it is mostly maintained in the authors' free time.
 - Pick one tool per organization. Commit the generated rules or generate them in CI; never edit generated output by hand.
 
 ```yaml

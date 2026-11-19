@@ -1,6 +1,6 @@
 # Terraform and OpenTofu
 
-Commands below use `terraform`; `tofu` takes the same ones.
+Commands below use `terraform`; `tofu` takes the same ones. Verified against Terraform 1.17, OpenTofu 1.13, TFLint 0.66, tflint-ruleset-aws 0.50, AWS provider 6.73 (Nov 2026).
 
 ## Lint and validate
 
@@ -18,7 +18,7 @@ plugin "terraform" {
 }
 plugin "aws" {
   enabled = true
-  version = "0.40.0"
+  version = "0.50.0"
   source  = "github.com/terraform-linters/tflint-ruleset-aws"
 }
 ```

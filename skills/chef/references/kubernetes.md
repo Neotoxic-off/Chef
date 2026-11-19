@@ -1,8 +1,10 @@
 # Kubernetes and Helm
 
+Verified against Kubernetes 1.37, Helm 4.3, kubeconform 0.8, kube-linter 0.8 (Nov 2026).
+
 ## Lint and validate
 
-- Validate manifests against the schemas of your target Kubernetes version: `kubeconform -strict -summary -kubernetes-version 1.34.0 manifests/`. Add CRD schemas with `-schema-location`.
+- Validate manifests against the schemas of your target Kubernetes version: `kubeconform -strict -summary -kubernetes-version 1.37.0 manifests/`. Add CRD schemas with `-schema-location`.
 - Lint for best practice with kube-linter (`kube-linter lint .`) or Polaris (`polaris audit --audit-path . --set-exit-code-on-danger`). Pick one; run it in CI.
 - Helm: `helm lint --strict charts/<chart>`, then render and validate: `helm template charts/<chart> | kubeconform -strict -`.
 - Chart repos: `ct lint` (chart-testing) also checks that the chart version was bumped.

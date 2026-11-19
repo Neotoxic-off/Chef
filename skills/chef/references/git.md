@@ -1,5 +1,7 @@
 # Git
 
+Verified against Git 2.56, pre-commit 4.7, pre-commit-hooks 6.0.0, gitleaks 8.30.1, lefthook 2.2 (Nov 2026).
+
 ## Lint and validate
 
 - Run hooks with pre-commit (`.pre-commit-config.yaml`) or lefthook (`lefthook.yml`). Pick one per repo.

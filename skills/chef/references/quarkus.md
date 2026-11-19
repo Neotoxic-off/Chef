@@ -1,6 +1,6 @@
 # Quarkus (and Micronaut)
 
-Builds on `java.md` (and `kotlin.md`). Checked against Quarkus 3.40.1 (LTS; 3.33 LTS supported to March 2027). Quarkus 4.0 was at CR1 in November 2026, not GA. Current versions: `https://quarkus.io/releases`; upgrade with `quarkus update`.
+Builds on `java.md` (and `kotlin.md`). Verified against Quarkus 3.40.1.2 (LTS; 3.33 LTS maintained to 25 Mar 2027), Micronaut platform 5.2.7 (Nov 2026). Quarkus 4.0.0 artifacts reached Maven Central on 18 Nov 2026; the release is planned for 25 Nov 2026. Current versions: `https://quarkus.io/releases`; upgrade with `quarkus update`.
 
 ## REST
 
@@ -62,7 +62,7 @@ class OrderResourceTest {
 
 ## Micronaut
 
-Checked against Micronaut platform 5.2.7 (5.0 GA in May 2026: Java 25 baseline, Jackson 3 in the Jackson Databind module, RxJava 2 dropped). Current version: `https://micronaut.io/category/release-announcements/`.
+Micronaut platform 5 (5.0 GA in May 2026: Java 25 baseline, Jackson 3 in the Jackson Databind module, RxJava 2 dropped). Current version: `https://micronaut.io/category/release-announcements/`.
 
 - DI is compile time: the annotation processors must be on the build path, or beans silently do not exist.
 - DTOs with `@Serdeable` (Micronaut Serialization), validated with `@Valid @Body`.

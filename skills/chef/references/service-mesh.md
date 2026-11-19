@@ -1,5 +1,7 @@
 # Service mesh (Istio ambient, Linkerd, Cilium)
 
+Verified against Istio 1.32.0, Linkerd 2.20 (edge-26.11.2), Cilium 1.20.5 (Nov 2026).
+
 ## When not to use one
 
 - Few services, one team, no zero-trust or compliance need: skip the mesh. Use NetworkPolicy, TLS at the ingress and app-level retries.
@@ -16,10 +18,10 @@
 
 ## Practices
 
-- Versions checked Nov 2026: Istio 1.32 (2026-11-09), Linkerd 2.20, Cilium 1.20. Check istio.io/latest/docs/releases/supported-releases, linkerd.io/releases, github.com/cilium/cilium/releases.
+- Look up current versions on istio.io/latest/docs/releases/supported-releases, linkerd.io/releases, github.com/cilium/cilium/releases.
 - Istio: prefer ambient mode (GA since 1.24): `istioctl install --set profile=ambient`, enroll namespaces with label `istio.io/dataplane-mode=ambient`. Add a waypoint only for namespaces that need L7 policy.
 - Linkerd: the project publishes edge releases; stable releases come from Buoyant (Buoyant Enterprise for Linkerd). Pick a channel on purpose.
-- Cilium: ztunnel mTLS is beta (since 1.19); its older mutual-auth feature is off by default. Enroll a namespace with label `io.cilium/mtls-enabled=true`.
+- Cilium: ztunnel mTLS is beta (since 1.19, still beta in 1.20); its older mutual-auth feature is off by default. Enroll a namespace with label `io.cilium/mtls-enabled=true`.
 - Upgrade one minor at a time, within the supported Kubernetes range of each release.
 - Install with Helm or the vendor CLI from Git, pinned; never `kubectl apply` from a URL.
 

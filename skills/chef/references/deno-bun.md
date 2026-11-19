@@ -1,6 +1,6 @@
 # Deno, Bun, Hono
 
-Builds on `typescript.md`. Checked against Deno 2.9.8, Bun 1.4.4, Hono 4.13.19. Current versions: `deno --version` / GitHub releases of `denoland/deno`; `npm view bun version`; `npm view hono version`.
+Builds on `typescript.md`. Verified against Deno 2.9.8, Bun 1.4.4, Hono 4.13.19, @hono/zod-validator 0.9 (Nov 2026). Current versions: `deno --version` / GitHub releases of `denoland/deno`; `npm view bun version`; `npm view hono version`.
 
 ## Deno
 
@@ -26,7 +26,7 @@ Builds on `typescript.md`. Checked against Deno 2.9.8, Bun 1.4.4, Hono 4.13.19. 
 ## Bun
 
 - Bun runs TypeScript without checking it: CI runs `tsc --noEmit`. No built-in linter: ESLint and Prettier as in `typescript.md`. Commit `bun.lock`; CI installs with `bun install --frozen-lockfile`.
-- `bun test` with a gate in `bunfig.toml`. It checks each file, lines and functions only (no branch gate); use Vitest when branch coverage must be enforced:
+- `bun test` with a gate in `bunfig.toml`. It gates lines and functions only (no branch gate), and only when the default `text` reporter runs; use Vitest when branch coverage must be enforced:
   ```toml
   [test]
   coverage = true

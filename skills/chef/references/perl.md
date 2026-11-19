@@ -1,6 +1,6 @@
 # Perl
 
-Target Perl 5.36 or later and start every file with `use v5.36;` (or the project's newer version): it enables `strict`, `warnings` and subroutine signatures. Manage dependencies with a `cpanfile` and Carton (`cpanfile.snapshot` committed). Check current tool versions on metacpan.org or with `cpanm --info <Module>`.
+Target Perl 5.36 or later and start every file with `use v5.36;` (or the project's newer version): it enables `strict`, `warnings` and subroutine signatures. Manage dependencies with a `cpanfile` and Carton (`cpanfile.snapshot` committed). Check current tool versions on metacpan.org or with `cpanm --info <Module>`. Verified against Perl 5.44, Perl::Critic 1.156, Perl::Tidy 20260826, Devel::Cover 1.52 (Nov 2026).
 
 ## Lint and format: Perl::Critic, perltidy
 
@@ -18,7 +18,7 @@ At severity 3, the `Documentation::*` policies stay off (they are severity 2 and
 
 `.perltidyrc`: `-pbp` (Perl Best Practices style) plus `-l=100`. CI runs `perltidy --assert-tidy` on every file and `perlcritic lib/ bin/ t/`; both fail the build. Never use `## no critic`.
 
-Not verified: whether your Perl::Critic version treats `use v5.36` as enabling warnings and signatures. If it flags them, upgrade Perl::Critic and PPI first; if that does not fix it, tell the user.
+Perl::Critic 1.144+ treats `use v5.36` as enabling `strict` and `warnings`; on an older one, upgrade it rather than add `use strict; use warnings;`.
 
 ## Code
 
@@ -27,7 +27,7 @@ Not verified: whether your Perl::Critic version treats `use v5.36` as enabling w
 - Lexical variables only (`my`), three-argument `open` with a lexical handle, `/x` on any non-trivial regex.
 - Errors: `die` with an exception object (a class, not a string). Check before acting (`exists`, `defined`, `looks_like_number` from `Scalar::Util`) instead of catching.
 - When catching is unavoidable (I/O, network), use `try`/`catch` (stable since 5.40, `use v5.40`), with the smallest `try` block. On older Perls, use `eval` with a `local $@` guard; never a bare `eval` whose result you ignore.
-- Modern OO: core `class` (5.38+, experimental) only if the project accepts it; otherwise Moo. No hand-rolled `bless` in new code.
+- Modern OO: core `class` (5.38+, still experimental in 5.44) only if the project accepts it; otherwise Moo. No hand-rolled `bless` in new code.
 - Inject I/O and time (`$clock->now`) through constructor arguments.
 
 ## Tests
@@ -45,6 +45,6 @@ Not verified: whether your Perl::Critic version treats `use v5.36` as enabling w
   done_testing;
   ```
 - Integration tests under `xt/` or behind an environment flag, against real services in containers.
-- Coverage: `cover -test` (Devel::Cover) reports statement, branch and condition coverage. Devel::Cover has no fail-under flag that I could verify: gate in CI by reading `cover -report json` and failing under 90%.
+- Coverage: `cover -test` (Devel::Cover) reports statement, branch and condition coverage. Devel::Cover has no fail-under flag: gate in CI by reading `cover_db/cover.json` from `cover -report json` and failing under 90%.
 
 Order before done: `perltidy` then `perlcritic` then `prove -lr t/` then `cover -test`.

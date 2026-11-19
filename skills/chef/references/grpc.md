@@ -1,6 +1,6 @@
 # gRPC and Protocol Buffers
 
-Checked November 2026 against Buf CLI 1.75 (`buf.yaml` v2) and protovalidate 1.x.
+Verified against Buf CLI 1.75 (`buf.yaml` v2), @bufbuild/protovalidate 1.3 (Nov 2026).
 
 ## Buf: lint, format, breaking
 

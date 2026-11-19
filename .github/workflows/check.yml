@@ -1,0 +1,29 @@
+name: check
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Lint shell scripts
+        run: git ls-files -z '*.sh' | xargs -0 shellcheck
+      - name: Test check script
+        run: npx --yes bats@1.13.0 tests/check.bats
+      - name: Check plugin consistency
+        run: bash scripts/check.sh

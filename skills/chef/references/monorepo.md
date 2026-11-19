@@ -1,5 +1,7 @@
 # Monorepos (pnpm workspaces, Turborepo, Nx, Bazel, Gradle)
 
+Verified against pnpm 11.18 and 12.21, Turborepo 2.11, Nx 23.3, Bazel 9.3, Gradle 9.9 (Nov 2026).
+
 ## Lint and validate
 
 - Run every gate only on what changed, but run all of it: `turbo run lint test build --affected`, `nx affected -t lint test build`, `pnpm -r --filter "...[origin/main]" run test`.
@@ -11,7 +13,6 @@
 
 ## Practices
 
-- Versions checked Nov 2026: pnpm 11 and 12, Turborepo 2.11, Nx 23, Bazel 9.3 (9.x LTS), Gradle 9.9. Check `<tool> --version` and each GitHub releases page or changelog.
 - Pick the smallest tool that fits: pnpm workspaces alone for a few JS packages; add Turborepo or Nx for caching and task graphs; Bazel for large polyglot repos with hermetic builds; Gradle multi-project for JVM.
 - Pin the tool: `packageManager` field in `package.json` (Corepack), `.bazelversion` (Bazelisk), Gradle wrapper with `distributionSha256Sum`.
 - One lockfile at the root, committed. CI installs frozen: `pnpm install --frozen-lockfile`.

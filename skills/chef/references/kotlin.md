@@ -1,5 +1,7 @@
 # Kotlin
 
+Verified against Kotlin 2.4.21, Spotless 8.11.0, detekt 1.23.8 (2.0.0-alpha.6 next), Kover 0.9.11, Kotest 6.2.7, MockK 1.14.12 (Nov 2026).
+
 Build with Gradle (Kotlin DSL), version catalog in `gradle/libs.versions.toml`, wrapper committed.
 
 ## Lint and format: ktlint (via Spotless), detekt
@@ -8,7 +10,7 @@ Build with Gradle (Kotlin DSL), version catalog in `gradle/libs.versions.toml`, 
 plugins {
     id("com.diffplug.spotless") version "8.11.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"  // 2.x moves to id("dev.detekt")
-    id("org.jetbrains.kotlinx.kover") version "0.9.8"
+    id("org.jetbrains.kotlinx.kover") version "0.9.11"
 }
 
 spotless { kotlin { ktlint() }; kotlinGradle { ktlint() } }
@@ -34,7 +36,7 @@ kotlin {
   ktlint_standard_no-unit-return = disabled
   ```
 - detekt fails on any finding by default (`maxIssues: 0`); do not raise it and never `@Suppress`: fix the cause, or ask the user.
-- Upgrade to detekt 2.x (`dev.detekt`) once it is stable; it is alpha as of late 2026.
+- detekt 1.23.8 is built against Kotlin 2.0.21; on newer Kotlin expect some false positives. Upgrade to detekt 2.x (`dev.detekt`, built against Kotlin 2.4) once it is stable; it is alpha as of Nov 2026.
 
 ## Code
 

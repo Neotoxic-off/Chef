@@ -1,6 +1,6 @@
 # Stream processing: Kafka Streams, Flink
 
-Builds on `messaging.md` (delivery, schemas, DLQs) and `java.md`. Checked November 2026: Kafka 4.4 (see `messaging.md`), Flink 2.3 (announced June 2026). Check `https://kafka.apache.org/downloads` and `https://flink.apache.org/downloads/`.
+Builds on `messaging.md` (delivery, schemas, DLQs) and `java.md`. Verified against Kafka 4.4 (see `messaging.md`), Flink 2.3 (Nov 2026). Check `https://kafka.apache.org/downloads` and `https://flink.apache.org/downloads/`.
 
 ## Time and windows
 

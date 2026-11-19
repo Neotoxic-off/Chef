@@ -1,13 +1,14 @@
 # Config files (YAML, JSON, TOML)
 
+Verified against yamllint 1.38, check-jsonschema 0.39, Taplo 0.10 (last release May 2025), Tombi 1.11, JSON Schema 2020-12 (Nov 2026).
+
 ## Lint and validate
 
 - YAML: `yamllint --strict .` in CI (warnings fail).
 - Every config with a schema gets validated against it: `check-jsonschema --schemafile schema.json config.yaml`. Known formats have built-ins: `check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/*.yml`.
 - Your own schemas: `check-jsonschema --check-metaschema schema.json`.
-- TOML: Taplo (`taplo fmt --check`, `taplo check`, `taplo check --schema <url>`) or Tombi (`tombi format`, `tombi lint`; check-mode flags unverified). Pick one per repo.
+- TOML: Taplo (`taplo fmt --check`, `taplo check`, `taplo check --schema <url>`) or Tombi (`tombi format --check`, `tombi lint`). Pick one per repo.
 - Format JSON and YAML with one formatter (Prettier, or the language's own) and run it in check mode in CI.
-- Versions checked Nov 2026: yamllint 1.38, check-jsonschema 0.39, Taplo 0.10 (last release May 2025), Tombi 1.11. Check PyPI and the GitHub releases pages.
 
 `.yamllint.yaml`:
 

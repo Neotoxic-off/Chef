@@ -1,6 +1,6 @@
 ---
 name: chef
-description: House coding habits for this user. Use on every coding task (writing, fixing, refactoring, reviewing, building). Stays on for the whole session.
+description: House coding habits for this user. Use on every development task, before the first edit or command - writing, fixing, debugging, refactoring, reviewing, testing or building code, config, scripts, infrastructure or CI, in any language. Stays on for the whole session.
 ---
 
 # Chef
@@ -63,7 +63,7 @@ If you do not understand what the user wants (vague, ambiguous, typo-heavy, miss
 
 ### 4. Report (every agent, every time)
 
-Each agent ends with this report:
+Each agent ends with this report. Council members are the exception: they follow the report in their own agent file.
 
 - **Done:** what it did, in a few lines.
 - **Files:** every file created or changed.
@@ -74,7 +74,7 @@ Each agent ends with this report:
 
 ### 5. Review
 
-A `reviewer` agent, separate from the authors, checks the changed code against this skill. Give it the code, not the authors' conclusions. Fix what it confirms.
+The `reviewer` agent shipped with this plugin, separate from the authors, checks the changed code against this skill. Give it the changed files or the diff, not the authors' conclusions. Fix what it confirms.
 
 ### 6. Synthesize and ask
 
@@ -105,186 +105,9 @@ Every word costs the user tokens and attention.
 
 ## Per-technology rules
 
-Before touching code or config in one of these, read its reference file (paths relative to this skill's folder) and follow it. A task that spans several (e.g. a Python service with a Dockerfile and a CI workflow) reads each one.
+Before touching code or config, open `references/INDEX.md` (relative to this skill's folder), find every stack the task touches (language, framework, infra, tools) and read each file it names. Follow them as strictly as this file. The index covers languages, frameworks, mobile, desktop, games, cloud, infrastructure, observability, data, AI and cross-cutting topics.
 
-Languages:
-
-| Tech | File |
-|---|---|
-| C#, .NET, WPF, WinUI | `references/csharp.md` |
-| TypeScript, JavaScript, Node, React | `references/typescript.md` |
-| Python | `references/python.md` |
-| Rust | `references/rust.md` |
-| Go | `references/go.md` |
-| C | `references/c.md` |
-| C++ | `references/cpp.md` |
-| Java | `references/java.md` |
-| Kotlin, Android | `references/kotlin.md` |
-| Swift, SwiftUI | `references/swift.md` |
-| Dart, Flutter | `references/dart.md` |
-| PHP | `references/php.md` |
-| Ruby | `references/ruby.md` |
-| Scala | `references/scala.md` |
-| Elixir | `references/elixir.md` |
-| Lua | `references/lua.md` |
-| Bash, sh | `references/bash.md` |
-| PowerShell | `references/powershell.md` |
-| SQL, migrations | `references/sql.md` |
-
-DevOps and tools:
-
-| Tech | File |
-|---|---|
-| Docker, Dockerfile, Compose | `references/docker.md` |
-| Kubernetes, Helm | `references/kubernetes.md` |
-| Terraform, OpenTofu | `references/terraform.md` |
-| CI/CD, GitHub Actions, GitLab CI | `references/ci.md` |
-| Ansible | `references/ansible.md` |
-| Git, commits, hooks | `references/git.md` |
-
-Frameworks (read with the language file they build on):
-
-| Tech | File |
-|---|---|
-| React, TanStack Query, Zustand | `references/react.md` |
-| Next.js | `references/nextjs.md` |
-| Vue, Nuxt, Pinia | `references/vue.md` |
-| Angular | `references/angular.md` |
-| Svelte, SvelteKit | `references/svelte.md` |
-| Tailwind CSS | `references/tailwind.md` |
-| ASP.NET Core | `references/aspnetcore.md` |
-| NestJS, Express, Fastify | `references/nestjs.md` |
-| Django, DRF | `references/django.md` |
-| FastAPI, Flask | `references/fastapi.md` |
-| Spring Boot | `references/spring-boot.md` |
-| Laravel | `references/laravel.md` |
-| Rails | `references/rails.md` |
-
-Observability:
-
-| Tech | File |
-|---|---|
-| OpenTelemetry, Collector | `references/opentelemetry.md` |
-| Prometheus, alerting rules | `references/prometheus.md` |
-| Grafana, dashboards | `references/grafana.md` |
-| Loki, Alloy | `references/loki.md` |
-| Tracing, Tempo, Jaeger | `references/tracing.md` |
-| Application logging | `references/logging.md` |
-| SLOs, error budgets | `references/slo.md` |
-
-Data and messaging:
-
-| Tech | File |
-|---|---|
-| PostgreSQL, PgBouncer | `references/postgres.md` |
-| Redis, Valkey | `references/redis.md` |
-| MongoDB | `references/mongodb.md` |
-| Kafka, RabbitMQ, outbox | `references/messaging.md` |
-| Elasticsearch, OpenSearch | `references/elasticsearch.md` |
-| ORMs: EF Core, Prisma, SQLAlchemy, Hibernate | `references/orm.md` |
-
-More languages and platforms:
-
-| Tech | File |
-|---|---|
-| Zig | `references/zig.md` |
-| Haskell | `references/haskell.md` |
-| OCaml | `references/ocaml.md` |
-| F# | `references/fsharp.md` |
-| Clojure | `references/clojure.md` |
-| Erlang/OTP | `references/erlang.md` |
-| R | `references/r.md` |
-| Julia | `references/julia.md` |
-| Perl | `references/perl.md` |
-| Objective-C | `references/objective-c.md` |
-| Solidity, smart contracts | `references/solidity.md` |
-| WebAssembly, WASI | `references/wasm.md` |
-| CUDA | `references/cuda.md` |
-| Embedded C/C++, Arduino, RTOS | `references/embedded.md` |
-| VHDL, Verilog, SystemVerilog | `references/hdl.md` |
-
-Mobile, desktop, games:
-
-| Tech | File |
-|---|---|
-| React Native, Expo | `references/react-native.md` |
-| Jetpack Compose | `references/jetpack-compose.md` |
-| SwiftUI | `references/swiftui.md` |
-| .NET MAUI | `references/maui.md` |
-| Avalonia | `references/avalonia.md` |
-| Electron | `references/electron.md` |
-| Tauri | `references/tauri.md` |
-| Qt, QML | `references/qt.md` |
-| Unity | `references/unity.md` |
-| Godot | `references/godot.md` |
-| Unreal Engine | `references/unreal.md` |
-
-More web:
-
-| Tech | File |
-|---|---|
-| Astro | `references/astro.md` |
-| React Router, Remix | `references/react-router.md` |
-| SolidJS | `references/solidjs.md` |
-| Qwik | `references/qwik.md` |
-| htmx | `references/htmx.md` |
-| Blazor | `references/blazor.md` |
-| Vite, webpack, esbuild, Rolldown | `references/bundlers.md` |
-| Playwright, Cypress | `references/e2e-testing.md` |
-| Storybook | `references/storybook.md` |
-| Symfony | `references/symfony.md` |
-| Phoenix, LiveView | `references/phoenix.md` |
-| Axum, Actix, Tokio | `references/rust-web.md` |
-| Go web: net/http, chi, Gin, Echo | `references/go-web.md` |
-| Ktor | `references/ktor.md` |
-| Quarkus, Micronaut | `references/quarkus.md` |
-| Deno, Bun, Hono | `references/deno-bun.md` |
-
-Cloud and infrastructure:
-
-| Tech | File |
-|---|---|
-| AWS | `references/aws.md` |
-| Azure | `references/azure.md` |
-| Google Cloud | `references/gcp.md` |
-| Serverless: Lambda, Functions, Cloud Run | `references/serverless.md` |
-| Pulumi | `references/pulumi.md` |
-| Bicep, ARM | `references/bicep.md` |
-| AWS CDK, CloudFormation | `references/aws-cdk.md` |
-| GitOps: Argo CD, Flux | `references/gitops.md` |
-| Secrets: Vault, SOPS, External Secrets | `references/secrets.md` |
-| Nginx, Caddy, Traefik, HAProxy | `references/reverse-proxy.md` |
-| Linux, systemd, SSH | `references/linux.md` |
-| Nix, NixOS | `references/nix.md` |
-| Service mesh: Istio, Linkerd, Cilium | `references/service-mesh.md` |
-| Make, just, Task | `references/makefile.md` |
-| YAML, JSON, TOML config | `references/config-files.md` |
-| Monorepos: Nx, Turborepo, Bazel | `references/monorepo.md` |
-
-Cross-cutting:
-
-| Tech | File |
-|---|---|
-| REST, OpenAPI | `references/api-design.md` |
-| GraphQL | `references/graphql.md` |
-| gRPC, protobuf | `references/grpc.md` |
-| Security, OWASP, auth | `references/security.md` |
-| Accessibility, WCAG | `references/accessibility.md` |
-| i18n, l10n | `references/i18n.md` |
-| WebSockets, SSE | `references/websockets.md` |
-
-Data and AI:
-
-| Tech | File |
-|---|---|
-| pandas, Polars | `references/dataframes.md` |
-| Jupyter notebooks | `references/notebooks.md` |
-| ML: PyTorch, scikit-learn | `references/ml.md` |
-| LLM and AI apps | `references/llm-apps.md` |
-| Airflow, Dagster, dbt, Spark | `references/data-engineering.md` |
-| Flink, Kafka Streams | `references/streaming.md` |
-
-For any stack not listed, nothing is skipped: before writing code, look up its current official docs (or ask `council-researcher`) for the standard linter, formatter, type checker, test runner and coverage tool, then apply every rule in this skill with them. Tell the user which tools you picked and why.
+For any stack not in the index, nothing is skipped: before writing code, look up its current official docs (or ask `council-researcher`) for the standard linter, formatter, type checker, test runner and coverage tool, then apply every rule in this skill with them. Tell the user which tools you picked and why.
 
 ## SOLID and readable code
 
@@ -386,6 +209,14 @@ public partial class MainViewModel : ObservableObject
     private bool CanSave() => !string.IsNullOrWhiteSpace(Name);
 }
 ```
+
+## Before heavy commands
+
+Builds, compilations, test suites, Docker builds and installs can freeze the user's machine.
+
+1. Check the load first. Windows: `Get-CimInstance Win32_OperatingSystem` (free RAM), `Get-CimInstance Win32_Processor` (CPU). Linux: `free -m`, `uptime`. macOS: `vm_stat`, `uptime`.
+2. Free RAM under 4 GB or CPU over 80%: stop and ask the user before running.
+3. If a hook blocks the command, report its reason to the user. Never retry it another way to get around the block.
 
 ## Done means
 

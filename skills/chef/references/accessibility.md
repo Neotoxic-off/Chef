@@ -1,6 +1,6 @@
 # Accessibility (WCAG 2.2)
 
-Checked November 2026 against WCAG 2.2 (W3C Recommendation, also ISO/IEC 40500:2025), axe-core 4.14 and @axe-core/playwright 4.14. WCAG 3 is still a Working Draft: do not target it.
+Verified against WCAG 2.2 (W3C Recommendation, also ISO/IEC 40500:2025), axe-core 4.14, @axe-core/playwright 4.14, eslint-plugin-jsx-a11y 6.10, eslint-plugin-vuejs-accessibility 2.6 (Nov 2026). WCAG 3 is still a Working Draft: do not target it.
 
 ## Target
 

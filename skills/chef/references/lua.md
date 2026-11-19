@@ -1,6 +1,6 @@
 # Lua
 
-Name the runtime first (Lua 5.4, LuaJIT, Neovim, Roblox Luau, LÖVE): it sets the `std` for every tool below. Install tools with LuaRocks (`.rockspec` committed).
+Name the runtime first (Lua 5.5, Lua 5.4, LuaJIT, Neovim, Roblox Luau, LÖVE): it sets the `std` for every tool below. Install tools with LuaRocks (`.rockspec` committed). Verified against Lua 5.5.1, StyLua 2.6, selene 0.32, luacheck 1.2, lua-language-server 3.19.2, busted 2.3, luacov 0.17 (Nov 2026).
 
 ## Lint and format: StyLua + selene (or luacheck)
 
@@ -20,6 +20,7 @@ Linter: selene, or luacheck if the project already uses it.
 
 - `selene.toml`: `std = "lua54"`. selene fails on warnings by default; never pass `--allow-warnings`.
 - `.luacheckrc`: `std = "lua54"`, `max_line_length = 100`, `unused_args = true`. luacheck exits 1 on any warning.
+- Neither selene nor luacheck has a Lua 5.5 std yet (both stop at `lua54`). On 5.5, tell the user before picking a std; LuaLS (`runtime.version = "Lua 5.5"`) still checks types.
 
 ## Types: LuaLS annotations
 

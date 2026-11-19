@@ -1,6 +1,6 @@
 # Go web: net/http, chi, Gin, Echo
 
-Builds on `go.md`. Checked against Go 1.27.4, chi v5.5.0, Gin v1.12.0, Echo v5.4.6. Current versions: `curl -s 'https://go.dev/VERSION?m=text'` for Go, `go list -m -u all` for modules.
+Builds on `go.md`. Verified against Go 1.27.4, chi 5.5.0, Gin 1.12.0, Echo 5.4.6 (Nov 2026). Current versions: `curl -s 'https://go.dev/VERSION?m=text'` for Go, `go list -m -u all` for modules.
 
 ## Router choice
 
@@ -42,7 +42,7 @@ func newServer(addr string, orders *OrderHandler) *http.Server {
   var err error = decoder.Decode(&request)
   ```
 - Map domain errors to status codes in one place (`errors.Is` / `errors.As`); never send `err.Error()` of an internal error to the client.
-- Go 1.27 ships `encoding/json/v2`. Keep `encoding/json` unless the project has chosen v2.
+- Go 1.27 ships `encoding/json/v2`, and `encoding/json` now runs on the v2 implementation. Keep the `encoding/json` API unless the project has chosen v2.
 - HTTP clients: always `defer resp.Body.Close()` (the `bodyclose` linter checks it); set `http.Client.Timeout`.
 
 ## Gin
@@ -54,8 +54,8 @@ func newServer(addr string, orders *OrderHandler) *http.Server {
 ## Echo v5
 
 - Handlers are `func(c *echo.Context) error` (v5 changed `echo.Context` from interface to struct pointer). Return errors; one `HTTPErrorHandler` renders them.
-- v5.1 changed client IP extraction: set `IPExtractor` with explicit trust options.
-- Echo v4 gets only security and bug fixes until 2026-12-31: migrate (import path `echo/v5`, `*echo.Context`).
+- Since v5.1, `RealIP()` uses the direct peer address by default. Behind a proxy, set `IPExtractor` (e.g. `echo.ExtractIPFromXFFHeader` with explicit trust options).
+- Echo v4 gets bug fixes until 2026-12-31 and security fixes until 2027-12-31: migrate (import path `echo/v5`, `*echo.Context`).
 
 ## Tests
 

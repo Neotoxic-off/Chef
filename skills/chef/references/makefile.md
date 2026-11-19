@@ -1,11 +1,12 @@
 # Make and task runners (just, Task)
 
+Verified against GNU Make 4.4.1, just 1.59, Task 3.54, checkmake 0.3 (Nov 2026).
+
 ## Lint and validate
 
 - Make: `checkmake Makefile` for style; `make -n <target>` shows commands without running them.
 - just: `just --fmt --check` fails and prints a diff when the justfile is not formatted; `just --list` must show every public recipe.
 - Task: add `# yaml-language-server: $schema=https://taskfile.dev/schema.json` to `Taskfile.yml`; validate in CI with `check-jsonschema --schemafile https://taskfile.dev/schema.json Taskfile.yml`.
-- Versions checked Nov 2026: GNU Make 4.4.1, just 1.59, Task 3.54. Check `make --version`, `just --version`, `task --version`, and each GitHub releases page.
 
 ## Practices
 

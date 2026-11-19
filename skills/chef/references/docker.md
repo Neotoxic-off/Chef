@@ -1,5 +1,7 @@
 # Docker
 
+Verified against Docker Engine 29.9, Buildx 0.39, Compose 5.8, hadolint 2.15, Trivy 0.76, Grype 0.122 (Nov 2026).
+
 ## Lint and validate
 
 - Lint every Dockerfile with hadolint in CI; fail on warnings: `hadolint --failure-threshold warning Dockerfile`.
@@ -19,6 +21,7 @@ trustedRegistries:
 
 - Multi-stage builds: build in one stage, copy only the artifact into a small runtime stage (distroless, `-slim`, alpine or a hardened image).
 - Pin the base image by digest, keep the tag for humans: `FROM python:3.13-slim@sha256:<digest>`. Let Dependabot or Renovate bump it.
+- Get the real digest, never invent one: `docker buildx imagetools inspect python:3.13-slim --format '{{.Manifest.Digest}}'` (or `crane digest python:3.13-slim`). If no tool can reach the registry, leave the tag, and tell the user the digest is still to pin.
 - Never `:latest`. Pin OS packages where the package manager allows it.
 - Order layers from least to most often changed: dependency manifests and install first, source code last.
 - Use `COPY`, not `ADD`, unless you need tar extraction.
@@ -29,14 +32,14 @@ trustedRegistries:
 - Compose: no top-level `version:` key (obsolete); use `name:` for the project name. Use `depends_on` with `condition: service_healthy`.
 
 ```dockerfile
-FROM golang:1.25@sha256:<digest> AS build
+FROM golang:1.27@sha256:<digest> AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o /out/app ./cmd/app
 
-FROM gcr.io/distroless/static-debian12:nonroot@sha256:<digest>
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:<digest>
 COPY --from=build /out/app /app
 USER nonroot:nonroot
 ENTRYPOINT ["/app"]

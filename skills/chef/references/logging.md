@@ -1,6 +1,6 @@
 # Logging in application code
 
-Checked Nov 2026 on the libraries' official docs and the OWASP Logging Cheat Sheet. Look up current versions on each package registry; never guess one.
+Verified against pino 10.4.0, structlog 26.1.0, Microsoft.Extensions.Logging 11.0.0, tracing 0.1.44, tracing-subscriber 0.3.23 (Nov 2026). Rules follow the OWASP Logging Cheat Sheet. Look up current versions on each package registry; never guess one.
 
 ## Libraries
 

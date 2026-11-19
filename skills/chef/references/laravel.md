@@ -1,6 +1,6 @@
 # Laravel
 
-Builds on `php.md`. Checked against Laravel 13 (March 2026, PHP 8.3+).
+Builds on `php.md`. Verified against Laravel 13.43.0 (PHP 8.3+), Larastan 3.15.0, Pest 5.3.7 (Nov 2026).
 
 ## Structure
 
@@ -40,7 +40,7 @@ final class StoreOrderRequest extends FormRequest
   Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
   ```
 - Eager load what you read: `with('customer')`, `withCount('lines')`. Fix every lazy-loading violation at its query.
-- Explicit `$fillable` on every model; never `$guarded = []`.
+- Explicit mass-assignment list on every model (`#[Fillable([...])]` or `$fillable`); never `$guarded = []`.
 - Big sets: `chunkById()` or `lazyById()` when updating while iterating; `cursor()` cannot eager load.
 - Multi-step writes inside `DB::transaction(...)`. Typed casts (`casts()` returning enum and value-object casts) instead of raw strings.
 - Query scopes and model methods for reusable queries; no raw SQL with interpolated input.
@@ -69,7 +69,7 @@ Type relations and collections in PHPDoc where native types cannot: `/** @return
 
 ## Tests: Pest
 
-- Pest 4 (on PHPUnit). Feature tests hit routes through the kernel; `RefreshDatabase` against the same database engine as production (Docker), not SQLite when production is MySQL or PostgreSQL.
+- Pest 5 (on PHPUnit; needs PHP 8.4, stay on Pest 4 for PHP 8.3). Feature tests hit routes through the kernel; `RefreshDatabase` against the same database engine as production (Docker), not SQLite when production is MySQL or PostgreSQL.
   ```php
   it('store_WithNoLines_Returns422', function (): void {
       $user = User::factory()->create();
