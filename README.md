@@ -17,6 +17,7 @@
 </p>
 
 <p align="center">
+  <strong>Blind reviewers merge chef's first answer as is 53% of the time, plain Claude's 40%, with 40% fewer "should fix" changes.</strong><br>
   <strong>Tested code in 100% of the code runs, without chef 0%.</strong><br>
   <strong>98% line coverage &middot; explicit types &middot; strict linters &middot; pinned images &middot; tested alert rules</strong><br>
   <strong>And the output works either way:</strong> hidden tests and promtool pass in 100% of runs, with or without chef.<br>
@@ -37,7 +38,7 @@ You know the kitchen. Every pan has its place, every dish is tasted before it le
   </picture>
 </p>
 
-Chef costs more per task, and the first answer is the finished one. Quality is the share of each task's checks that pass; the checks are listed under [Cost](#cost).
+Cost is the median of 5 runs. Quality and "would merge as is" come from a panel of blind judges that never knew chef was involved; see [Blind review panel](#blind-review-panel).
 
 <p align="center">
   <picture>
@@ -91,7 +92,7 @@ Median per task, with the min–max over 5 runs. Cost is what `claude -p` report
 
 The ranges of 0.9.0 and 0.10.0 overlap on every task, so the −5% is a trend, not a proven saving.
 
-**What the extra cost buys.** The same tasks and runs, scored on quality: the share of each task's checks that pass, averaged over 5 runs.
+**Checks chef enforces.** The same tasks and runs, scored on the share of each task's checks that pass. These are chef's own rules, so this view favors chef by construction; the [blind review panel](#blind-review-panel) below is the impartial one.
 
 <p align="center">
   <picture>
@@ -106,7 +107,25 @@ The ranges of 0.9.0 and 0.10.0 overlap on every task, so the −5% is a trend, n
 | Dockerfile + compose | 8: digest pin, non-root, healthcheck, `.dockerignore`, valid compose, hardened compose, resource limits, hadolint clean | 85% | 92% |
 | Prometheus | 10: config valid, rules valid, `histogram_quantile`, `for`, `severity`, `summary`, `runbook_url` on every alert, rule tests pass, valid compose, pinned image | 70% | 100% |
 
-So chef costs about 2.5× per task, and the first answer is the finished one: tested, typed, pinned, with tested alert rules. Without chef, the code works but the missing tests, types, pins and rule tests are left for a follow-up prompt or a review. The cost of those follow-ups was not measured here.
+### Blind review panel
+
+The checks above are the rules chef enforces, so they favor chef by construction. To judge quality impartially, every output of both arms (3 tasks × 5 runs × 2 arms = 30 submissions) went to a panel of judges that do not know chef exists:
+
+- Each submission is copied to its own temp folder under a random id, without git history, caches or scoring files.
+- Four seats review it: a senior engineer, a security reviewer, an SRE who will run it, and the engineer who will maintain it. Each seat gets one line of role, nothing about tests, types or pins.
+- Every submission and seat is a separate, fresh `claude -p --restricted` session on Opus 5.5 (the code was written by Sonnet 5.5): no plugin, no settings, read-only tools confined to that one folder. No judge sees another submission, another review, or which arm wrote it. The prompt asks for a teammate's review, not a benchmark.
+- All 120 reviews are kept; none were dropped. Prompt: [`bench/judge.md`](bench/judge.md), harness: [`bench/blind_review.py`](bench/blind_review.py).
+
+| Task | Quality /10 | Would merge as is | "Major" changes asked per review | "Minor" per review |
+|---|---|---|---|---|
+| Python CLI | 7.40 → **8.10** | 30% → **65%** | 1.25 → **0.40** | 4.3 → 4.2 |
+| Dockerfile + compose | 8.00 → 7.90 | 80% → 70% | 0.25 → 0.35 | 5.65 → 5.2 |
+| Prometheus | 6.85 → **7.50** | 10% → **25%** | 1.85 → **1.25** | 5.5 → 5.85 |
+| **Mean** | 7.42 → **7.83** | 40% → **53%** | 1.12 → **0.67** | 5.15 → 5.08 |
+
+<sub>Without chef → chef 0.10.0. Correctness was rated about the same in both arms (8.2 vs 8.4 out of 10). No blocker in any chef review; one in a review without chef.</sub>
+
+The impartial verdict is smaller than the checks suggest, and still in chef's favor: on the Python and Prometheus tasks, chef's first answer is merged as is about twice as often and needs a third to two thirds fewer "should fix before merge" changes. On the Dockerfile task, plain Claude was already good, and the panel rated both arms the same within noise. Every seat (senior, security, operations, maintainer) scored chef higher on average.
 
 **Where the money goes.** A per-call trace of one chef run (Prometheus, $0.239) splits as follows, with the official cache multipliers for Sonnet 5.5 (1-hour cache write 2× input, cache read 0.05× input):
 
@@ -314,6 +333,8 @@ The harness is in [`bench/`](bench/):
 ```bash
 bash bench/run.sh <new-out-dir> 5 none= old=<chef-0.9.0-dir> new=<chef-dir>
 python bench/score.py <out-dir> > scores.json
+python bench/blind_review.py <out-dir> <new-review-dir> none new
+python bench/blind_review.py summarize <review-dir>
 ```
 
 `run.sh` keeps each run's `stream.jsonl` (every call, tool and usage) and writes `versions.txt`. `score.py` needs pytest, pytest-cov, mypy, Ruff, PyYAML and a running Docker daemon (hadolint and promtool run from their official images). It reports the median for measurements, the share of runs for checks, and cache writes, cache reads, output tokens, tool calls and tool output size separately.
@@ -332,6 +353,7 @@ python bench/score.py <out-dir> > scores.json
 - The 0.10.0 arm ran a snapshot taken just before a final review pass. That pass only changed the wording of the one-call check commands (exit code, hadolint config mount), not their length.
 - The cost split comes from one traced run and uses Sonnet 5.5 base prices from third-party pages; the multipliers are official.
 - No run used subagents, so these tasks measure the rules, not the council or the reviewer.
+- The blind judges are Claude models too (Opus 5.5 judging Sonnet 5.5 output), so a shared taste between model families cannot be ruled out. The panel cost $7.05 for 120 reviews.
 - Times are inflated by three runs in parallel on the same machine. Compare the arms, not the absolute seconds.
 - Earlier benchmarks (0.8.1 with five tasks, and 0.8.1 vs 0.9.0 with 2 runs) are in the git history of this README.
 
