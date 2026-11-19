@@ -7,6 +7,7 @@ Verified against actions/checkout 7.0.1, actionlint 1.7.12, zizmor 1.32, act 0.2
 - Lint workflows with actionlint (runs ShellCheck on `run:` blocks): `actionlint`.
 - Audit workflow security with zizmor: `zizmor .github/workflows/`. Fail on findings; fix template injection, excessive permissions and unpinned actions.
 - GitLab: validate `.gitlab-ci.yml` with the CI Lint API or `glab ci lint`.
+- Check GitHub workflows in one call, failing if either fails: `rc=0; actionlint || rc=1; zizmor .github/workflows/ || rc=1; [ "$rc" -eq 0 ]`.
 
 ## Practices
 

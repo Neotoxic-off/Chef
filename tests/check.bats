@@ -100,3 +100,31 @@ name: transform
   [ "${status}" -eq 1 ]
   [[ "${output}" == *"invalid JSON"* ]]
 }
+
+@test "check_sizes fails when SKILL.md is over budget" {
+  head -c 10753 /dev/zero > "${root}/skills/chef/SKILL.md"
+  run check_sizes "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"SKILL.md: 10753 bytes, budget is 10752"* ]]
+}
+
+@test "check_sizes fails when a reference is over budget" {
+  head -c 6145 /dev/zero > "${root}/skills/chef/references/go.md"
+  run check_sizes "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"go.md: 6145 bytes, budget is 6144"* ]]
+}
+
+@test "check_sizes passes at exactly the budget" {
+  head -c 10752 /dev/zero > "${root}/skills/chef/SKILL.md"
+  head -c 6144 /dev/zero > "${root}/skills/chef/references/go.md"
+  run check_sizes "${root}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "check_sizes fails when team.md is over budget" {
+  head -c 6145 /dev/zero > "${root}/skills/chef/team.md"
+  run check_sizes "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"team.md: 6145 bytes, budget is 6144"* ]]
+}

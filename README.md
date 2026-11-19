@@ -19,9 +19,9 @@
 <p align="center">
   <strong>Tested code in 100% of the code runs, without chef 0%.</strong><br>
   <strong>98% line coverage &middot; explicit types &middot; strict linters &middot; pinned images &middot; tested alert rules</strong><br>
-  <strong>And the output works either way:</strong> hidden tests, container health checks and promtool pass in 100% of runs, with or without chef.<br>
-  <strong>v0.9 costs 11% fewer tokens than v0.8.1</strong> for the same results.<br>
-  <sub>Benchmarked in Claude Code, the same agent with and without the plugin: 3 tasks, Sonnet 5.5, 2 runs per arm, every result checked by real tools. <a href="#numbers">Details</a>.</sub>
+  <strong>And the output works either way:</strong> hidden tests and promtool pass in 100% of runs, with or without chef.<br>
+  <strong>The price: about 2.4–3.5× the cost of a plain run.</strong> v0.10 trims it by about 5%.<br>
+  <sub>Benchmarked in Claude Code, the same agent with and without the plugin: 3 tasks, Sonnet 5.5, 5 runs per arm, every result checked by real tools. <a href="#numbers">Details</a>.</sub>
 </p>
 
 ---
@@ -30,60 +30,57 @@ You know the kitchen. Every pan has its place, every dish is tasted before it le
 
 ## Numbers
 
-Share of runs that meet each check (2 runs per arm). *Old* is chef v0.8.1, *new* is chef v0.9.0.
+Share of runs that meet each check, 5 runs per arm.
 
-| Check | Without chef | Chef 0.8.1 | Chef 0.9.0 |
+| Check | Without chef | Chef 0.9.0 | Chef 0.10.0 |
 |---|---|---|---|
-| Works: hidden test, container `/health`, `promtool check` | 100% | 100% | 100% |
-| Python: tests written (mean) | 0 | 21 | 27.5 |
-| Python: line coverage | 0% | 98.4% | 98.5% |
-| Python: `mypy --strict` errors (mean) | 1 | 0 | 0 |
+| Works: hidden test passes, `promtool check config` and `check rules` pass | 100% | 100% | 100% |
+| Python: tests written (median) | 0 | 33 | 29 |
+| Python: line coverage (median) | 0% | 98.4% | 98.4% |
+| Python: `mypy --strict` errors (median) | 1 | 0 | 0 |
 | Python: Ruff and strict type checker configured | 0% | 100% | 100% |
-| Docker: base image pinned by digest | 0% | 100% | 100% |
-| Docker: non-root user, healthcheck, `.dockerignore`, hardened compose, limits | 100% | 100% | 100% |
-| Docker: hadolint findings | 0 | 0 | 0 |
+| Docker: non-root user, healthcheck, `.dockerignore`, hardened compose | 100% | 100% | 100% |
+| Docker: compose resource limits | 80% | 100% | 100% |
+| Docker: base image pinned by digest | 0% | 40% | 40% |
+| Docker: hadolint findings (median) | 0 | 0 | 0 |
 | Prometheus: alert rule unit tests (`promtool test rules`), passing | 0% | 100% | 100% |
 | Prometheus: every alert has `runbook_url` | 0% | 100% | 100% |
 | Prometheus: Prometheus image pinned | 0% | 100% | 100% |
 
-Without chef, Claude writes code and config that work, and nothing around them: no tests, no rule tests, unpinned images, no strict tooling. With chef, the same output ships with tests, coverage, explicit types, pinned images and tested alert rules. Docker hardening was already good without chef on this task.
+Without chef, Claude writes code and config that work, and nothing around them: no tests, no rule tests, unpinned images, no strict tooling. With chef, the same output ships with tests, coverage, explicit types, pinned images and tested alert rules. The digest pin fell from 100% in the previous run to 40% in both chef arms; Docker Hub was answering `429 Too Many Requests` during this run, which can block the digest lookup (not verified run by run).
 
-### Tokens and cost
+### Cost
 
-Mean per task. Tokens are input (including cache reads and writes) plus output, from the `modelUsage` that `claude -p` reports.
+Median per task, with the min–max over 5 runs. Cost is what `claude -p` reports in `total_cost_usd`.
 
-| Task | Without chef | Chef 0.8.1 | Chef 0.9.0 | 0.9.0 vs 0.8.1 |
-|---|---|---|---|---|
-| Python CLI | 78k tokens, $0.060, 15 s | 215k, $0.159, 47 s | 185k, $0.154, 43 s | −14% tokens |
-| Dockerfile + compose | 76k, $0.054, 20 s | 319k, $0.147, 63 s | 240k, $0.120, 40 s | −25% tokens |
-| Prometheus | 106k, $0.067, 30 s | 308k, $0.198, 42 s | 329k, $0.182, 44 s | +7% tokens |
-| **Mean** | **87k, $0.060** | **281k, $0.168** | **251k, $0.152** | **−11% tokens, −10% cost** |
-
-```mermaid
-xychart-beta
-    title "Tokens per task (thousands)"
-    x-axis ["Python", "Docker", "Prometheus"]
-    y-axis "k tokens" 0 --> 350
-    bar [78, 76, 106]
-    bar [215, 319, 308]
-    bar [185, 240, 329]
-```
-
-<sub>Bars in each group: without chef, chef 0.8.1, chef 0.9.0.</sub>
-
-**The price is real:** chef 0.9.0 uses about 2.9× the tokens, 2.5× the cost and 1.5–2.9× the time of no plugin: it writes and runs tests, configs and checkers that the plain run skips. No run used subagents, so `/chef:level lite` changes nothing on tasks this small; it saves the council and the reviewer on bigger ones.
-
-**Where v0.9 saves.** `SKILL.md` is loaded into every session and re-read on every turn from the cache:
-
-| File | 0.8.1 | 0.9.0 | When it is read |
+| Task | Without chef | Chef 0.9.0 | Chef 0.10.0 |
 |---|---|---|---|
-| `skills/chef/SKILL.md` | 20.3 KB (≈5.1k tokens) | 9.5 KB (≈2.4k tokens) | Every session |
-| `skills/chef/team.md` | in SKILL.md | 5.0 KB (≈1.2k tokens) | Only when agents, a council or the reviewer are used |
-| `references/INDEX.md` | 5.3 KB | 4.6 KB | Before touching code |
+| Python CLI | $0.060 (0.055–0.063) | $0.211 (0.181–0.271) | $0.192 (0.167–0.247) |
+| Dockerfile + compose | $0.051 (0.049–0.091) | $0.128 (0.115–0.139) | $0.128 (0.118–0.136) |
+| Prometheus | $0.081 (0.061–0.091) | $0.189 (0.183–0.209) | $0.183 (0.167–0.201) |
+| **Sum of medians** | **$0.192** | **$0.528** | **$0.503 (−5%)** |
+| Turns, median (Python / Docker / Prometheus) | 3 / 3 / 6 | 15 / 12 / 13 | 13 / 11 / 12 |
 
-The team and council procedure moved to `team.md`, the WPF/MAUI/Avalonia rules moved to `references/csharp.md`, and the prose was tightened. No rule was removed.
+The ranges of 0.9.0 and 0.10.0 overlap on every task, so the −5% is a trend, not a proven saving.
 
-Every result is checked by running tools on the output, with the same settings for both arms and the agent's own tool config ignored: a hidden test that calls the function the prompt asked for, `docker build` and a request to `/health`, `promtool check config`, `check rules` and `test rules`, `mypy --strict`, Ruff, hadolint, and measured line coverage. See [Benchmark details](#benchmark-details).
+**Where the money goes.** A per-call trace of one chef run (Prometheus, $0.239) splits as follows, with the official cache multipliers for Sonnet 5.5 (1-hour cache write 2× input, cache read 0.05× input):
+
+| Part | Tokens | Share of cost |
+|---|---|---|
+| Cache writes: every new token entering the context (system prompt, skill, references, tool output) | 34k | ≈57% |
+| Output: the code, tests and configs written | 6.7k | ≈28% |
+| Cache reads: the whole context re-read on every call | 355k | ≈15% |
+
+So the extra cost of chef is mostly the extra work: more files written, more checks run, and their output entering the context. The rules text is a small part. Counting cache reads as "tokens" overstates the cost: the previous README did, and its "−11% tokens" for 0.9.0 was within noise.
+
+**What 0.10.0 changes.**
+
+- The skill gives the exact path of its references (`${CLAUDE_SKILL_DIR}/references/INDEX.md`) and forbids listing the folder. One traced 0.9.0 run spent 16k characters on such a listing; none of the 30 chef runs here did, so this guards a rare case.
+- A "Few tokens" section: one call per stack check, quiet flags, batched reads and writes, no read-back of a file just written.
+- One-call check commands in `python.md`, `docker.md`, `prometheus.md` and `ci.md` that fail if any tool fails, with promtool and hadolint from their images when not installed.
+- `scripts/check.sh` fails if `SKILL.md` grows past 10.5 KB, or any reference or `team.md` past 6 KB.
+
+Every result is checked by running tools on the output, with the agent's own tool config ignored: a hidden test that calls the function the prompt asked for, `promtool check config`, `check rules` and `test rules`, `mypy --strict`, Ruff, hadolint, and measured line coverage. See [Benchmark details](#benchmark-details).
 
 ## Before / after
 
@@ -251,7 +248,7 @@ That's it. A `UserPromptSubmit` hook routes every development prompt through che
 No. `.chef.md` at the project root is created only when you set a level or answer a question chef would otherwise ask again. Commit it to share the choices with your team.
 
 **It costs more. Can I turn it down?**
-`/chef:level lite` keeps every code rule but drops the council and the reviewer agent, which is where most of the extra cost goes.
+`/chef:level lite` keeps every code rule but drops the council and the reviewer agent, the biggest extra cost on large tasks. On small tasks, most of the extra cost is the tests and checks themselves (see [Cost](#cost)).
 
 **Will it rewrite my legacy code?**
 No. Its style rules apply to the lines it adds or must change. Strict mode is asked first in an existing project, and `/chef:transform` keeps the diff to what the migration needs.
@@ -264,31 +261,32 @@ Because the kitchen has rules, and the dish is tasted before it leaves.
 
 ## Benchmark details
 
-Same prompt, same model (Sonnet 5.5), fresh git folder each time, run on Nov 19, 2026. Three arms: no plugin, chef 0.8.1 and chef 0.9.0. User settings, other plugins and MCP servers are off in every arm (`--setting-sources project --strict-mcp-config`); only the chef arms get `--plugin-dir`. Each prompt ends with "Work autonomously: nobody will answer questions."
+Same prompt, same model (Sonnet 5.5), fresh git folder each time, run on Nov 19, 2026 with Claude Code 2.1.328. For each task and run, the three arms run side by side: no plugin, chef 0.9.0 and chef 0.10.0. User settings, other plugins and MCP servers are off in every arm (`--setting-sources project --strict-mcp-config`); only the chef arms get `--plugin-dir`. Each prompt ends with "Work autonomously: nobody will answer questions."
 
 The harness is in [`bench/`](bench/):
 
 ```bash
-bash bench/run.sh <out-dir> 2 none= old=<chef-0.8.1-dir> new=<chef-dir>
+bash bench/run.sh <new-out-dir> 5 none= old=<chef-0.9.0-dir> new=<chef-dir>
 python bench/score.py <out-dir> > scores.json
 ```
 
-`run.sh` runs the arms of each task in parallel, and `score.py` needs pytest, pytest-cov, mypy, Ruff, PyYAML and a running Docker daemon (hadolint and promtool run from their official images).
+`run.sh` keeps each run's `stream.jsonl` (every call, tool and usage) and writes `versions.txt`. `score.py` needs pytest, pytest-cov, mypy, Ruff, PyYAML and a running Docker daemon (hadolint and promtool run from their official images). It reports the median for measurements, the share of runs for checks, and cache writes, cache reads, output tokens, tool calls and tool output size separately.
 
 | Task | Prompt, in short | What is checked |
 |---|---|---|
 | Python CLI | TOML endpoint validator, `find_invalid(path)` in `endpoints.py` | Hidden pytest, tests written, line coverage, `mypy --strict`, Ruff, tool config |
-| Dockerfile + compose | Containerize a stdlib HTTP service with `/health` | `docker build`, `/health` answers, hadolint, digest pin, non-root, healthcheck, `.dockerignore`, `docker compose config`, `read_only` + `no-new-privileges` or `cap_drop: ALL`, resource limits |
+| Dockerfile + compose | Containerize a stdlib HTTP service with `/health` | `docker build` and `/health`, hadolint, digest pin, non-root, healthcheck, `.dockerignore`, `docker compose config`, `read_only` + `no-new-privileges` or `cap_drop: ALL`, resource limits |
 | Prometheus | Scrape config, alerts for down, 5xx ratio > 5%, p95 > 500 ms, compose | `promtool check config --syntax-only`, `check rules`, `test rules`, `for`, `severity`, `summary`, `runbook_url`, `histogram_quantile` on `_bucket`, pinned image |
 
 <details>
 <summary><strong>Weak spots and limits</strong></summary>
 
-- 2 runs per arm is a small sample, and the token counts vary a lot between runs (Docker with chef 0.8.1: 242k and 391k). The −11% is a mean over 6 runs per arm, not a guarantee per task; on Prometheus, 0.9.0 used 7% more.
+- 5 runs per arm shows trends, not proof: at this variance, a 10% effect needs far more runs. Claim a saving only when the ranges stop overlapping.
+- Docker Hub rate-limited this machine (`429 Too Many Requests`) during the runs and the scoring, so `docker build` failed in most Docker runs. The container health check is not reported here; in the previous run every Docker output built and answered `/health`, with and without chef.
+- The 0.10.0 arm ran a snapshot taken just before a final review pass. That pass only changed the wording of the one-call check commands (exit code, hadolint config mount), not their length.
+- The cost split comes from one traced run and uses Sonnet 5.5 base prices from third-party pages; the multipliers are official.
 - No run used subagents, so these tasks measure the rules, not the council or the reviewer.
-- Docker Desktop stopped at some point during the no-plugin and 0.8.1 runs, and was restarted before the 0.9.0 runs and the scoring. An agent that tried `docker build` in those runs may have failed. Every Docker output still built and answered `/health` at scoring time.
 - Times are inflated by three runs in parallel on the same machine. Compare the arms, not the absolute seconds.
-- Token counts per file in the "Where v0.9 saves" table are estimated at 4 bytes per token.
-- The previous benchmark (0.8.1, five tasks: C#, TypeScript, Python, Docker + CI, Python 3.8 to 3.13 transformation) is in the git history of this README.
+- Earlier benchmarks (0.8.1 with five tasks, and 0.8.1 vs 0.9.0 with 2 runs) are in the git history of this README.
 
 </details>

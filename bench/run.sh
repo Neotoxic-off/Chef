@@ -39,14 +39,15 @@ run_one() {
     cd "${run_dir}/workspace"
     claude -p "$(cat "${task_dir}/prompt.md")" \
       --model "${MODEL}" \
-      --output-format json \
+      --output-format stream-json \
+      --verbose \
       --setting-sources project \
       --strict-mcp-config \
       --no-session-persistence \
       --dangerously-skip-permissions \
       --max-budget-usd "${MAX_BUDGET_USD}" \
       "${plugin_args[@]}" \
-      </dev/null >"${run_dir}/result.json" 2>"${run_dir}/stderr.log"
+      </dev/null >"${run_dir}/stream.jsonl" 2>"${run_dir}/stderr.log"
   ) || printf 'bench: %s exited with an error, see stderr.log\n' "${run_dir}" >&2
 }
 
@@ -64,6 +65,15 @@ main() {
   local -i run=0
   local -a pids=()
   local -i pid=0
+  [[ ! -e "${out_dir}" ]] || die "${out_dir} exists: use a new out-dir"
+  mkdir -p "${out_dir}"
+  {
+    claude --version
+    printf 'model: %s\n' "${MODEL}"
+    for arm in "$@"; do
+      printf 'arm %s: %s\n' "${arm%%=*}" "${arm#*=}"
+    done
+  } >"${out_dir}/versions.txt"
   for task_dir in "${TASKS_DIR}"/*/; do
     task_dir="${task_dir%/}"
     for ((run = 1; run <= runs; run++)); do

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.10.0 (2026-11-19)
+
+- Fewer tokens, from a council review and a per-call trace: cache writes are about 57% of a run's cost, output 28%, cache reads 15%.
+- `SKILL.md` points to `${CLAUDE_SKILL_DIR}/references/INDEX.md` and `${CLAUDE_SKILL_DIR}/team.md`, and forbids listing the references folder.
+- New "Few tokens" section: one call per stack check, quiet flags, batched reads and writes, no read-back.
+- One-call check commands in `python.md`, `docker.md`, `prometheus.md` and `ci.md`, failing if any tool fails; promtool and hadolint from their images when not installed.
+- `scripts/check.sh` enforces a size budget: `SKILL.md` 10.5 KB, each reference and `team.md` 6 KB.
+- Benchmark: stream-json traces, cost as the main metric, cache writes, reads and output reported apart, medians and ranges over 5 runs per arm. 0.10.0 costs about 5% less than 0.9.0 (ranges overlap). The 0.9.0 "-11% tokens" claim is withdrawn as noise.
+
 ## 0.9.0 (2026-11-19)
 
 - Fewer tokens per session: `SKILL.md` cut from 20.3 KB to 9.5 KB. The team and council procedure moved to `skills/chef/team.md`, read only when agents, a council or the `reviewer` are used. The CommunityToolkit rules moved to `references/csharp.md`. `INDEX.md` tables became lists. No rule removed.

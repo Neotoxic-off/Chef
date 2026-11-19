@@ -7,6 +7,7 @@ Verified against Prometheus 3.16.0, Alertmanager 0.35.0 (Nov 2026). Look up the 
 - `promtool check config prometheus.yml` and `promtool check rules rules/*.yml` in CI. Both fail the build on error.
 - `amtool check-config alertmanager.yml` for Alertmanager.
 - Unit-test every alerting and recording rule with `promtool test rules tests/*.yml`.
+- Check in one call, promtool from the image when it is not installed: `docker run --rm -v "$PWD:/w" -w /w --entrypoint sh prom/prometheus:<tag> -c 'rc=0; promtool check config --syntax-only prometheus.yml || rc=1; promtool check rules rules/*.yml || rc=1; promtool test rules tests/*.yml || rc=1; exit $rc'`. `--syntax-only` because `rule_files` usually name the path inside the container.
 
 ## Metric types and naming
 
@@ -23,7 +24,7 @@ Verified against Prometheus 3.16.0, Alertmanager 0.35.0 (Nov 2026). Look up the 
 - Every label value creates a new series. Never use user IDs, emails, request IDs, full URLs or other unbounded values as labels.
 - Use the route template (`/users/{id}`), not the raw path. Use the status class or code, not the error message.
 - Keep the number of series per metric bounded and known. Alert on `prometheus_tsdb_head_series` growth.
-- Put trace IDs in exemplars, not labels (see `tracing.md`).
+- Put trace IDs in exemplars, not labels (see `tracing.md` when the task covers tracing).
 
 ## What to measure
 
@@ -60,7 +61,7 @@ groups:
 - Every page must need human action now. If nobody has to act, make it a ticket or a dashboard. Do not delete the signal.
 - Use `for:` to avoid flapping. Never raise thresholds or silence alerts just to stop noise: fix the cause or the alert.
 - Every alert has `summary`, a `severity` label and a `runbook_url`. `runbook_url` is a common convention, not a Prometheus requirement.
-- Prefer SLO burn-rate alerts for services (see `slo.md`).
+- Prefer SLO burn-rate alerts for services (see `slo.md` when the task covers SLOs).
 
 ## Security
 

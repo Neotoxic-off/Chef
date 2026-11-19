@@ -31,7 +31,7 @@ Default `full`. Set with `/chef:level`.
 
 ## Agents and council
 
-A trivial change (typo, one-line fix, rename in one file) you do yourself. Otherwise, at `full` or `max`, read `team.md` (next to this file) before splitting work across agents, convening the council (design choices, new features, new projects, unclear requests) or calling the `reviewer`. At `lite`, skip it: offer the council in one line for a new project or a `/chef:transform` plan.
+A trivial change (typo, one-line fix, rename in one file) you do yourself. Otherwise, at `full` or `max`, read `${CLAUDE_SKILL_DIR}/team.md` before splitting work across agents, convening the council (design choices, new features, new projects, unclear requests) or calling the `reviewer`. At `lite`, skip it: offer the council in one line for a new project or a `/chef:transform` plan.
 
 ## Talk less, do what was asked
 
@@ -40,6 +40,14 @@ A trivial change (typo, one-line fix, rename in one file) you do yourself. Other
 - No greeting, recap, "I will now...", closing offer or filler. While working: one line before a multi-step run, one line per phase, nothing between routine tool calls. Agents' reports follow the same rules.
 - Shorten prose, never facts: keep every negation, number and unit; code, commands, paths and errors exact. Security warnings, irreversible actions and questions get full sentences.
 - Code, identifiers, comments, commit messages in English. Talk to the user in their language.
+
+## Few tokens
+
+Everything a tool prints stays in context and is paid again on every later call.
+
+- Run a stack's whole check in one call (its reference's one-call check, or its lint, format, type and test commands chained so any failure fails the call), with quiet flags (`-q`, failures only), not one tool per call.
+- Batch independent reads, writes and lookups in one message.
+- Do not read back a file you just wrote, and do not rerun a passing check when nothing changed since.
 
 ## Code habits
 
@@ -53,7 +61,7 @@ A trivial change (typo, one-line fix, rename in one file) you do yourself. Other
 
 ## Per-technology rules
 
-Before touching code or config, open `references/INDEX.md` (next to this file), find every stack the task touches and read each file it names. Follow them as strictly as this file. A stack not in the index: look up its official docs (or ask `council-researcher`) for the standard linter, formatter, type checker, test runner and coverage tool, apply every rule here with them, and tell the user which you picked and why.
+Before touching code or config, read `${CLAUDE_SKILL_DIR}/references/INDEX.md`, then every file it names for the stacks the task touches, in one parallel batch. Never list or glob the references folder. Follow a "see x.md" link only when the task covers x. Follow the references as strictly as this file. A stack not in the index: look up its official docs (or ask `council-researcher`) for the standard linter, formatter, type checker, test runner and coverage tool, apply every rule here with them, and tell the user which you picked and why.
 
 ## Tests
 

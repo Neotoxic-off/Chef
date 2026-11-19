@@ -46,7 +46,17 @@ DOCKER_KEYS: tuple[str, ...] = (
 COMPOSE_FILE_NAMES: tuple[str, ...] = ("docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml")
 
 Metrics = dict[str, float | int | bool | None]
-USAGE_KEYS: tuple[str, ...] = ("cost_usd", "seconds", "input_tokens", "output_tokens", "turns")
+USAGE_KEYS: tuple[str, ...] = (
+    "cost_usd",
+    "seconds",
+    "turns",
+    "input_tokens",
+    "cache_write_tokens",
+    "cache_read_tokens",
+    "output_tokens",
+    "tool_calls",
+    "tool_result_chars",
+)
 
 
 def run(command: list[str], cwd: Path, stdin: str | None = None) -> subprocess.CompletedProcess[str]:
@@ -69,25 +79,55 @@ def python_files(workspace: Path) -> list[Path]:
     return [path.relative_to(workspace) for path in workspace.rglob("*.py") if ".venv" not in path.parts]
 
 
-def usage_metrics(result_path: Path) -> Metrics:
-    empty: Metrics = {key: None for key in USAGE_KEYS} | {"completed": False}
-    text: str = result_path.read_text(encoding="utf-8") if result_path.is_file() else ""
-    try:
-        result: dict[str, Any] = json.loads(text)
-    except json.JSONDecodeError:
-        return empty
-    models: dict[str, dict[str, int]] = result.get("modelUsage", {})
-    input_tokens: int = sum(
-        usage.get("inputTokens", 0) + usage.get("cacheReadInputTokens", 0) + usage.get("cacheCreationInputTokens", 0)
-        for usage in models.values()
-    )
-    output_tokens: int = sum(usage.get("outputTokens", 0) for usage in models.values())
+def stream_events(stream_path: Path) -> list[dict[str, Any]]:
+    """Parse the `claude -p --output-format stream-json` log; a crash can leave a partial last line."""
+    text: str = stream_path.read_text(encoding="utf-8") if stream_path.is_file() else ""
+    events: list[dict[str, Any]] = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        try:
+            event: Any = json.loads(line)
+        except json.JSONDecodeError:
+            print(f"score: {stream_path}:{line_number} is not JSON, skipped", file=sys.stderr)
+            continue
+        if isinstance(event, dict):
+            events.append(event)
+    return events
+
+
+def tool_traffic(events: list[dict[str, Any]]) -> tuple[int, int]:
+    """Count tool calls, and the characters their results put into the context."""
+    calls: int = 0
+    result_chars: int = 0
+    for event in events:
+        content: Any = event.get("message", {}).get("content")
+        if not isinstance(content, list):
+            continue
+        if event.get("type") == "assistant":
+            calls += sum(1 for block in content if block.get("type") == "tool_use")
+            continue
+        result_chars += sum(
+            len(json.dumps(block.get("content"), ensure_ascii=False)) for block in content if block.get("type") == "tool_result"
+        )
+    return calls, result_chars
+
+
+def usage_metrics(stream_path: Path) -> Metrics:
+    events: list[dict[str, Any]] = stream_events(stream_path)
+    result: dict[str, Any] | None = next((event for event in reversed(events) if event.get("type") == "result"), None)
+    if result is None:
+        return dict.fromkeys(USAGE_KEYS) | {"completed": False}
+    models: list[dict[str, int]] = list(result.get("modelUsage", {}).values())
+    calls, result_chars = tool_traffic(events)
     return {
         "cost_usd": result.get("total_cost_usd"),
         "seconds": result["duration_ms"] / 1000 if "duration_ms" in result else None,
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
         "turns": result.get("num_turns"),
+        "input_tokens": sum(usage.get("inputTokens", 0) for usage in models),
+        "cache_write_tokens": sum(usage.get("cacheCreationInputTokens", 0) for usage in models),
+        "cache_read_tokens": sum(usage.get("cacheReadInputTokens", 0) for usage in models),
+        "output_tokens": sum(usage.get("outputTokens", 0) for usage in models),
+        "tool_calls": calls,
+        "tool_result_chars": result_chars,
         "completed": result.get("subtype") == "success" and not result.get("is_error", False),
     }
 
@@ -353,7 +393,14 @@ SCORERS: dict[str, Callable[[Path], Metrics]] = {
 
 
 def score_run(run_dir: Path, task: str) -> Metrics:
-    return {**usage_metrics(run_dir / "result.json"), **SCORERS[task](run_dir / "workspace")}
+    return {**usage_metrics(run_dir / "stream.jsonl"), **SCORERS[task](run_dir / "workspace")}
+
+
+def central_value(values: list[float | int | bool]) -> float:
+    """Pass rate for checks (share of runs that passed), median for measurements."""
+    if all(isinstance(value, bool) for value in values):
+        return statistics.fmean(values)
+    return statistics.median(values)
 
 
 def summarize(runs: list[Metrics]) -> Metrics:
@@ -361,7 +408,10 @@ def summarize(runs: list[Metrics]) -> Metrics:
     keys: list[str] = list(dict.fromkeys(key for run_metrics in runs for key in run_metrics))
     for key in keys:
         values: list[float | int | bool] = [value for run_metrics in runs if (value := run_metrics.get(key)) is not None]
-        summary[key] = round(statistics.fmean(values), 3) if values else None
+        summary[key] = round(central_value(values), 3) if values else None
+        if key in USAGE_KEYS and values:
+            summary[f"{key}_min"] = min(values)
+            summary[f"{key}_max"] = max(values)
     return summary
 
 
@@ -377,7 +427,7 @@ def main(out_dir: Path) -> None:
     for arm_dir in sorted(path for path in out_dir.iterdir() if path.is_dir()):
         for task_dir in sorted(path for path in arm_dir.iterdir() if path.name in SCORERS):
             runs: list[Metrics] = [score_run(run_dir, task_dir.name) for run_dir in sorted(task_dir.iterdir())]
-            report.setdefault(arm_dir.name, {})[task_dir.name] = {"runs": runs, "mean": summarize(runs)}
+            report.setdefault(arm_dir.name, {})[task_dir.name] = {"runs": runs, "summary": summarize(runs)}
     print(json.dumps(report, indent=2))
 
 

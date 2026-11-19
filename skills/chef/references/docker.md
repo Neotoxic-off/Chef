@@ -7,6 +7,7 @@ Verified against Docker Engine 29.9, Buildx 0.39, Compose 5.8, hadolint 2.15, Tr
 - Lint every Dockerfile with hadolint in CI; fail on warnings: `hadolint --failure-threshold warning Dockerfile`.
 - Lint shell inside `RUN` too: hadolint runs ShellCheck on it. Fix, do not ignore.
 - Validate Compose files: `docker compose config --quiet`.
+- Check in one call, hadolint from its image when it is not installed (the mount lets it read `.hadolint.yaml`; name every Dockerfile; add the compose check only when a compose file exists): `rc=0; docker run --rm -v "$PWD:/w" -w /w hadolint/hadolint:<tag> hadolint Dockerfile || rc=1; docker compose config --quiet || rc=1; [ "$rc" -eq 0 ]`.
 
 `.hadolint.yaml`:
 
@@ -21,7 +22,7 @@ trustedRegistries:
 
 - Multi-stage builds: build in one stage, copy only the artifact into a small runtime stage (distroless, `-slim`, alpine or a hardened image).
 - Pin the base image by digest, keep the tag for humans: `FROM python:3.13-slim@sha256:<digest>`. Let Dependabot or Renovate bump it.
-- Get the real digest, never invent one: `docker buildx imagetools inspect python:3.13-slim --format '{{.Manifest.Digest}}'` (or `crane digest python:3.13-slim`). If no tool can reach the registry, leave the tag, and tell the user the digest is still to pin.
+- Get the real digest, never invent one, for all images in one call: `for image in python:3.13-slim nginx:1.29-alpine; do printf '%s ' "$image"; docker buildx imagetools inspect "$image" --format '{{.Manifest.Digest}}'; done` (or `crane digest <image>`). If no tool can reach the registry, leave the tag, and tell the user the digest is still to pin.
 - Never `:latest`. Pin OS packages where the package manager allows it.
 - Order layers from least to most often changed: dependency manifests and install first, source code last.
 - Use `COPY`, not `ADD`, unless you need tar extraction.

@@ -5,6 +5,9 @@ shopt -s inherit_errexit nullglob
 
 readonly INDEX_NAME="INDEX.md"
 readonly BACKTICK=$'\x60'
+# Every byte of these files is written into the model context, so growth costs tokens on every task.
+readonly MAX_SKILL_BYTES=10752
+readonly MAX_REFERENCE_BYTES=6144
 
 die() {
   printf 'check: %s\n' "$*" >&2
@@ -82,6 +85,24 @@ check_badge() {
   [[ "${badge##*-}" == "${actual_count}" ]] || die "README badge says ${badge##*-} references, found ${actual_count}"
 }
 
+check_size() {
+  local -r file_path="$1"
+  local -ri max_bytes="$2"
+  local -i size=0
+  size="$(wc -c <"${file_path}")"
+  ((size <= max_bytes)) || die "${file_path}: ${size} bytes, budget is ${max_bytes}"
+}
+
+check_sizes() {
+  local -r root="$1"
+  local reference_path=""
+  check_size "${root}/skills/chef/SKILL.md" "${MAX_SKILL_BYTES}"
+  [[ ! -f "${root}/skills/chef/team.md" ]] || check_size "${root}/skills/chef/team.md" "${MAX_REFERENCE_BYTES}"
+  for reference_path in "${root}"/skills/chef/references/*.md; do
+    check_size "${reference_path}" "${MAX_REFERENCE_BYTES}"
+  done
+}
+
 check_json() {
   local -r root="$1"
   local json_path=""
@@ -96,6 +117,7 @@ main() {
   check_agents "${root}"
   check_skills "${root}"
   check_badge "${root}"
+  check_sizes "${root}"
   check_json "${root}"
   printf 'check: all good\n'
 }

@@ -16,7 +16,19 @@ def test_summarize_uses_keys_from_every_run() -> None:
 def test_summarize_skips_missing_values() -> None:
     runs: list[score.Metrics] = [{"cost_usd": None}, {"cost_usd": 0.4}]
 
-    assert score.summarize(runs) == {"cost_usd": 0.4}
+    assert score.summarize(runs) == {"cost_usd": 0.4, "cost_usd_min": 0.4, "cost_usd_max": 0.4}
+
+
+def test_summarize_reports_pass_rate_for_checks() -> None:
+    runs: list[score.Metrics] = [{"completed": True}, {"completed": False}, {"completed": False}]
+
+    assert score.summarize(runs) == {"completed": 0.333}
+
+
+def test_summarize_reports_median_not_mean() -> None:
+    runs: list[score.Metrics] = [{"turns": 4}, {"turns": 5}, {"turns": 30}]
+
+    assert score.summarize(runs)["turns"] == 5
 
 
 def test_last_user_is_not_root_with_app_user_returns_true() -> None:
@@ -50,18 +62,24 @@ def test_alert_rules_ignores_rule_test_files_and_bad_groups() -> None:
     assert alerts == [{"alert": "Down"}]
 
 
-def test_usage_metrics_with_invalid_output_marks_run_incomplete(tmp_path: Path) -> None:
-    result_path: Path = tmp_path / "result.json"
-    result_path.write_text("crash", encoding="utf-8")
+def test_usage_metrics_without_result_event_marks_run_incomplete(tmp_path: Path) -> None:
+    stream_path: Path = tmp_path / "stream.jsonl"
+    stream_path.write_text('{"type": "system"}\ncrash', encoding="utf-8")
 
-    metrics: score.Metrics = score.usage_metrics(result_path)
+    metrics: score.Metrics = score.usage_metrics(stream_path)
 
     assert metrics["completed"] is False
     assert metrics["cost_usd"] is None
 
 
-def test_usage_metrics_sums_tokens_across_models(tmp_path: Path) -> None:
+def test_usage_metrics_splits_tokens_and_counts_tool_traffic(tmp_path: Path) -> None:
+    assistant: dict[str, Any] = {
+        "type": "assistant",
+        "message": {"content": [{"type": "text", "text": "hi"}, {"type": "tool_use", "name": "Read"}]},
+    }
+    tool_result: dict[str, Any] = {"type": "user", "message": {"content": [{"type": "tool_result", "content": "abc"}]}}
     result: dict[str, Any] = {
+        "type": "result",
         "subtype": "success",
         "total_cost_usd": 0.3,
         "duration_ms": 2000,
@@ -71,17 +89,21 @@ def test_usage_metrics_sums_tokens_across_models(tmp_path: Path) -> None:
             "haiku": {"inputTokens": 1, "outputTokens": 2},
         },
     }
-    result_path: Path = tmp_path / "result.json"
-    result_path.write_text(json.dumps(result), encoding="utf-8")
+    stream_path: Path = tmp_path / "stream.jsonl"
+    stream_path.write_text("\n".join(json.dumps(event) for event in (assistant, tool_result, result)), encoding="utf-8")
 
-    metrics: score.Metrics = score.usage_metrics(result_path)
+    metrics: score.Metrics = score.usage_metrics(stream_path)
 
     assert metrics == {
         "cost_usd": 0.3,
         "seconds": 2.0,
-        "input_tokens": 116,
-        "output_tokens": 9,
         "turns": 4,
+        "input_tokens": 11,
+        "cache_write_tokens": 5,
+        "cache_read_tokens": 100,
+        "output_tokens": 9,
+        "tool_calls": 1,
+        "tool_result_chars": len(json.dumps("abc", ensure_ascii=False)),
         "completed": True,
     }
 

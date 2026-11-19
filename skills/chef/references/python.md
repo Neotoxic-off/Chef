@@ -40,10 +40,10 @@ select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "C4", "RET", "PTH", "ANN", 
 - pytest with fixtures; `pytest-cov` with branch coverage and a hard gate:
   ```toml
   [tool.pytest.ini_options]
-  addopts = "--cov --cov-branch --cov-report=term-missing --cov-fail-under=90"
+  addopts = "--cov --cov-branch --cov-report=term-missing:skip-covered --cov-fail-under=90"
   ```
 - Mark slow tests: `@pytest.mark.integration`; integration with `testcontainers`.
 - Property-based tests with Hypothesis for parsers and pure logic.
 - Mutation testing: mutmut.
 
-Order before done: `uv run ruff check --fix` then `uv run ruff format` then `uv run mypy .` then `uv run pytest`.
+Check before done, in one call so every failure shows at once and any failure fails the call: `rc=0; uv run ruff check --fix --output-format concise . || rc=1; uv run ruff format . || rc=1; uv run mypy . || rc=1; uv run pytest -q || rc=1; [ "$rc" -eq 0 ]`.

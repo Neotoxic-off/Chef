@@ -43,4 +43,4 @@ jobs:
           python -m ruff check .
           python -m ruff format --check .
           python -m mypy --strict score.py test_score.py
-          python -m pytest -q -p no:cacheprovider
+          python -m pytest -q -p no:cacheprovider test_score.py
