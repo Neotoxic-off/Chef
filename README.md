@@ -30,6 +30,16 @@ You know the kitchen. Every pan has its place, every dish is tasted before it le
 
 ## Numbers
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/scorecard-dark.svg">
+    <img src="assets/bench/scorecard.svg" width="880" alt="Share of runs that meet each check, without chef and with chef 0.10.0. Correct: 100% and 100%. Tests written, coverage at least 90%, mypy strict clean, strict tooling, promtool rule tests, runbook_url, pinned Prometheus image: 0% and 100%. Compose resource limits: 80% and 100%.">
+  </picture>
+</p>
+
+<details>
+<summary><strong>All checks, with chef 0.9.0</strong></summary>
+
 Share of runs that meet each check, 5 runs per arm.
 
 | Check | Without chef | Chef 0.9.0 | Chef 0.10.0 |
@@ -47,9 +57,18 @@ Share of runs that meet each check, 5 runs per arm.
 | Prometheus: every alert has `runbook_url` | 0% | 100% | 100% |
 | Prometheus: Prometheus image pinned | 0% | 100% | 100% |
 
+</details>
+
 Without chef, Claude writes code and config that work, and nothing around them: no tests, no rule tests, unpinned images, no strict tooling. With chef, the same output ships with tests, coverage, explicit types, pinned images and tested alert rules. The digest pin fell from 100% in the previous run to 40% in both chef arms; Docker Hub was answering `429 Too Many Requests` during this run, which can block the digest lookup (not verified run by run).
 
 ### Cost
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/cost-dark.svg">
+    <img src="assets/bench/cost.svg" width="880" alt="Median cost per task over 5 runs. Python CLI: $0.060 without chef, $0.211 with chef 0.9.0, $0.192 with chef 0.10.0. Dockerfile and compose: $0.051, $0.128, $0.128. Prometheus: $0.081, $0.189, $0.183.">
+  </picture>
+</p>
 
 Median per task, with the min–max over 5 runs. Cost is what `claude -p` reports in `total_cost_usd`.
 
@@ -65,11 +84,12 @@ The ranges of 0.9.0 and 0.10.0 overlap on every task, so the −5% is a trend, n
 
 **Where the money goes.** A per-call trace of one chef run (Prometheus, $0.239) splits as follows, with the official cache multipliers for Sonnet 5.5 (1-hour cache write 2× input, cache read 0.05× input):
 
-| Part | Tokens | Share of cost |
-|---|---|---|
-| Cache writes: every new token entering the context (system prompt, skill, references, tool output) | 34k | ≈57% |
-| Output: the code, tests and configs written | 6.7k | ≈28% |
-| Cache reads: the whole context re-read on every call | 355k | ≈15% |
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/cost-split-dark.svg">
+    <img src="assets/bench/cost-split.svg" width="880" alt="Where the cost of one traced chef run goes: cache writes 57% (34k tokens), output 28% (6.7k tokens), cache reads 15% (355k tokens).">
+  </picture>
+</p>
 
 So the extra cost of chef is mostly the extra work: more files written, more checks run, and their output entering the context. The rules text is a small part. Counting cache reads as "tokens" overstates the cost: the previous README did, and its "−11% tokens" for 0.9.0 was within noise.
 
