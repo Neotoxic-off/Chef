@@ -36,7 +36,9 @@ run_one() {
   local -r arm_source="$3"
   local -a plugin_args=()
   local claude_md=""
+  local prompt=""
   [[ ! -e "${run_dir}" ]] || die "${run_dir} exists: use a new out-dir"
+  prompt="$(cat "${task_dir}/prompt.md")"
   if [[ "${arm_source}" == *.md ]]; then
     claude_md="${arm_source}"
   elif [[ -n "${arm_source}" ]]; then
@@ -45,7 +47,7 @@ run_one() {
   prepare_workspace "${task_dir}" "${run_dir}/workspace" "${claude_md}"
   (
     cd "${run_dir}/workspace"
-    claude -p "$(cat "${task_dir}/prompt.md")" \
+    claude -p "${prompt}" \
       --model "${MODEL}" \
       --output-format stream-json \
       --verbose \

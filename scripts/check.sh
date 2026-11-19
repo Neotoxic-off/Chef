@@ -103,8 +103,12 @@ check_sizes() {
   done
 }
 
+bullets() {
+  sed -n '/^- /p' "$1"
+}
+
 core_rules() {
-  sed -n '/^## Core rules$/,/^## /p' "$1" | grep -E '^- '
+  sed -n '/^## Core rules$/,/^## /{/^- /p}' "$1"
 }
 
 check_agents_md() {
@@ -113,8 +117,10 @@ check_agents_md() {
   local core=""
   local exported=""
   [[ -f "${export_path}" ]] || die "${export_path}: missing"
-  core="$(core_rules "${root}/skills/chef/SKILL.md")" || die "SKILL.md: no '## Core rules' bullets"
-  exported="$(grep -E '^- ' "${export_path}")" || die "${export_path}: no rules"
+  core="$(core_rules "${root}/skills/chef/SKILL.md")"
+  [[ -n "${core}" ]] || die "SKILL.md: no '## Core rules' bullets"
+  exported="$(bullets "${export_path}")"
+  [[ -n "${exported}" ]] || die "${export_path}: no rules"
   [[ "${core}" == "${exported}" ]] || die "export/AGENTS.md rules differ from SKILL.md '## Core rules'"
 }
 
