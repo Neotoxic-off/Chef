@@ -125,6 +125,20 @@ The checks above are the rules chef enforces, so they favor chef by construction
 
 <sub>Without chef → chef 0.10.0. Correctness was rated about the same in both arms (8.2 vs 8.4 out of 10). No blocker in any chef review; one in a review without chef.</sub>
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/panel-majors-dark.svg">
+    <img src="assets/bench/panel-majors.svg" width="880" alt="Blind panel: 'should fix before merge' changes requested per review, without chef versus chef 0.10.0. Python 1.25 vs 0.40, Docker 0.25 vs 0.35, Prometheus 1.85 vs 1.25, all tasks 1.12 vs 0.67.">
+  </picture>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/panel-seats-dark.svg">
+    <img src="assets/bench/panel-seats.svg" width="880" alt="Blind panel quality score out of 10 by reviewer seat, without chef versus chef 0.10.0. Senior 7.53 vs 7.80, security 7.47 vs 8.07, SRE 7.20 vs 7.53, maintainer 7.47 vs 7.93.">
+  </picture>
+</p>
+
 The impartial verdict is smaller than the checks suggest, and still in chef's favor: on the Python and Prometheus tasks, chef's first answer is merged as is about twice as often and needs a third to two thirds fewer "should fix before merge" changes. On the Dockerfile task, plain Claude was already good, and the panel rated both arms the same within noise. Every seat (senior, security, operations, maintainer) scored chef higher on average.
 
 **Where the money goes.** A per-call trace of one chef run (Prometheus, $0.239) splits as follows, with the official cache multipliers for Sonnet 5.5 (1-hour cache write 2× input, cache read 0.05× input):
