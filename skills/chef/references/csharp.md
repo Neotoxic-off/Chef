@@ -39,10 +39,29 @@
 - Dependency injection through `Microsoft.Extensions.DependencyInjection` constructors. Wrap time in `TimeProvider`.
 - Throw specific exceptions. Use guard helpers: `ArgumentNullException.ThrowIfNull(x)`.
 
-## WPF / WinUI
+## WPF / WinUI / MAUI / Avalonia: CommunityToolkit, always
 
-- MVVM with CommunityToolkit (see SKILL.md). Code-behind holds only view logic.
-- ViewModels have no reference to UI types, so they are unit-testable without a window.
+`CommunityToolkit.Mvvm` in every such project (plus `CommunityToolkit.Maui` in MAUI). Pre-approved: add it without asking.
+
+- ViewModels inherit `ObservableObject` (or `ObservableValidator` / `ObservableRecipient`) and are `partial`.
+- Properties: `[ObservableProperty]`. Commands: `[RelayCommand]` (async gives `IAsyncRelayCommand`). Never hand-write `INotifyPropertyChanged`, `SetProperty` boilerplate or a custom `ICommand`.
+- Dependent updates: `[NotifyPropertyChangedFor]`, `[NotifyCanExecuteChangedFor]`. Messaging: `WeakReferenceMessenger`. Validation: `ObservableValidator` with data annotations.
+- WinUI: `CommunityToolkit.WinUI.*` controls and helpers before writing your own.
+- Code-behind holds only view logic. ViewModels have no reference to UI types, so they are unit-testable without a window.
+
+```csharp
+public partial class MainViewModel : ObservableObject
+{
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _name = string.Empty;
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task SaveAsync(CancellationToken token) { /* ... */ }
+
+    private bool CanSave() => !string.IsNullOrWhiteSpace(Name);
+}
+```
 
 ## Tests
 

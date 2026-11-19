@@ -17,7 +17,7 @@ Builds on `csharp.md` (project settings, `.editorconfig`, tests). Verified again
 
 ## MVVM: CommunityToolkit.Mvvm (house rule)
 
-- Same rules as WPF/WinUI in SKILL.md: `partial` ViewModels on `ObservableObject`, `[ObservableProperty]`, `[RelayCommand]`, `WeakReferenceMessenger`. No hand-written `INotifyPropertyChanged` or `ICommand`.
+- Same rules as WPF/WinUI in `csharp.md`: `partial` ViewModels on `ObservableObject`, `[ObservableProperty]`, `[RelayCommand]`, `WeakReferenceMessenger`. No hand-written `INotifyPropertyChanged` or `ICommand`.
 - ViewModels never reference `Microsoft.Maui.*` UI types; inject platform services (`IConnectivity`, `IPreferences`, `ISecureStorage`) as interfaces so tests replace them.
 - Every page and every `DataTemplate` declares `x:DataType`:
   ```xml

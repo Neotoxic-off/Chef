@@ -18,7 +18,7 @@ Builds on `csharp.md` (project settings, `.editorconfig`, tests). Verified again
 
 ## MVVM: CommunityToolkit.Mvvm
 
-- Same rules as WPF/WinUI in SKILL.md: `partial` ViewModels on `ObservableObject`, `[ObservableProperty]`, `[RelayCommand]`, `WeakReferenceMessenger`. Do not mix in ReactiveUI unless the project already uses it.
+- Same rules as WPF/WinUI in `csharp.md`: `partial` ViewModels on `ObservableObject`, `[ObservableProperty]`, `[RelayCommand]`, `WeakReferenceMessenger`. Do not mix in ReactiveUI unless the project already uses it.
 - ViewModels never reference `Avalonia.*` types, so they test without a UI thread. File and folder pickers, clipboard and dialogs go behind an interface the view layer implements (`IStorageProvider` lives on `TopLevel`).
 - Wire ViewModels with `Microsoft.Extensions.DependencyInjection`; map ViewModels to views in one `ViewLocator` or in `DataTemplates`, not by reflection on names scattered across the code.
 - Code-behind holds only view logic (focus, animation, pointer handling).

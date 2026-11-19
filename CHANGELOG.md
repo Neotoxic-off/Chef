@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0 (2026-11-19)
+
+- Fewer tokens per session: `SKILL.md` cut from 20.3 KB to 9.5 KB. The team and council procedure moved to `skills/chef/team.md`, read only when agents, a council or the `reviewer` are used. The CommunityToolkit rules moved to `references/csharp.md`. `INDEX.md` tables became lists. No rule removed.
+- Benchmark harness in `bench/`: `run.sh` runs each task in a fresh git folder per arm, `score.py` checks the output with pytest, coverage, mypy, ruff, hadolint, promtool and a container health check.
+- Benchmark rerun: without chef, chef 0.8.1 and chef 0.9.0, on a Python CLI, a Dockerfile with compose, and a Prometheus setup.
+
 ## 0.8.1 (2026-11-19)
 
 - `pin-gate.sh` checks only the workflows Claude edited in the session (recorded by a `PostToolUse` hook on Edit/Write), and blocks once instead of every turn.

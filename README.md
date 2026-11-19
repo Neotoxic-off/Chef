@@ -17,10 +17,11 @@
 </p>
 
 <p align="center">
-  <strong>Tested code in 88% of runs, without chef 0%.</strong><br>
-  <strong>86% line coverage &middot; explicit types &middot; strict linters &middot; warnings as errors</strong><br>
-  <strong>And the code works either way:</strong> hidden tests pass in 100% of runs, with or without chef.<br>
-  <sub>Benchmarked in Claude Code, the same agent with and without the plugin: 5 tasks, Sonnet 5.5, 2 runs each, every result checked by real tools. <a href="#numbers">Details</a>.</sub>
+  <strong>Tested code in 100% of the code runs, without chef 0%.</strong><br>
+  <strong>98% line coverage &middot; explicit types &middot; strict linters &middot; pinned images &middot; tested alert rules</strong><br>
+  <strong>And the output works either way:</strong> hidden tests, container health checks and promtool pass in 100% of runs, with or without chef.<br>
+  <strong>v0.9 costs 11% fewer tokens than v0.8.1</strong> for the same results.<br>
+  <sub>Benchmarked in Claude Code, the same agent with and without the plugin: 3 tasks, Sonnet 5.5, 2 runs per arm, every result checked by real tools. <a href="#numbers">Details</a>.</sub>
 </p>
 
 ---
@@ -29,25 +30,60 @@ You know the kitchen. Every pan has its place, every dish is tasted before it le
 
 ## Numbers
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/scorecard-dark.svg">
-    <img src="assets/bench/scorecard.svg" width="880" alt="Share of runs that meet each check, without and with chef. Correct, hidden tests pass: 100% and 100%. Tested: 0% and 88%. Covered: 0% and 86%. Typed: 0% and 83%. Clean under strict checkers: 67% and 100%. Strict tooling: 0% and 100%. Hardened Docker and CI: 50% and 86%. Safe migration: 0% and 88%.">
-  </picture>
-</p>
+Share of runs that meet each check (2 runs per arm). *Old* is chef v0.8.1, *new* is chef v0.9.0.
 
-Without chef, Claude writes code that works, and nothing around it: no tests in any run, no strict tooling, inferred types. With chef, the same code ships with tests, coverage, explicit types and a linter that fails on warnings.
+| Check | Without chef | Chef 0.8.1 | Chef 0.9.0 |
+|---|---|---|---|
+| Works: hidden test, container `/health`, `promtool check` | 100% | 100% | 100% |
+| Python: tests written (mean) | 0 | 21 | 27.5 |
+| Python: line coverage | 0% | 98.4% | 98.5% |
+| Python: `mypy --strict` errors (mean) | 1 | 0 | 0 |
+| Python: Ruff and strict type checker configured | 0% | 100% | 100% |
+| Docker: base image pinned by digest | 0% | 100% | 100% |
+| Docker: non-root user, healthcheck, `.dockerignore`, hardened compose, limits | 100% | 100% | 100% |
+| Docker: hadolint findings | 0 | 0 | 0 |
+| Prometheus: alert rule unit tests (`promtool test rules`), passing | 0% | 100% | 100% |
+| Prometheus: every alert has `runbook_url` | 0% | 100% | 100% |
+| Prometheus: Prometheus image pinned | 0% | 100% | 100% |
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/cost-time-dark.svg">
-    <img src="assets/bench/cost-time.svg" width="880" alt="Cost per task without and with chef: C# $0.10 and $0.29, TypeScript $0.12 and $0.26, Python $0.11 and $0.24, Docker and CI $0.09 and $0.26, Transform $0.10 and $0.37. Time in seconds: 56 and 112, 66 and 186, 39 and 128, 72 and 185, 53 and 93.">
-  </picture>
-</p>
+Without chef, Claude writes code and config that work, and nothing around them: no tests, no rule tests, unpinned images, no strict tooling. With chef, the same output ships with tests, coverage, explicit types, pinned images and tested alert rules. Docker hardening was already good without chef on this task.
 
-**The price is real:** about 2.5× the cost and 1.7–3.3× the time per task. `/chef:level lite` drops the council and the reviewer when you want the rules without the ceremony.
+### Tokens and cost
 
-Every result is checked by running tools on the output, with the same settings for both arms: a hidden test that calls the function the prompt asked for, `mypy --strict`, `tsc --strict`, compiler warnings, ruff, hadolint, and measured line coverage. Per-task tables and limits are in [Benchmark details](#benchmark-details).
+Mean per task. Tokens are input (including cache reads and writes) plus output, from the `modelUsage` that `claude -p` reports.
+
+| Task | Without chef | Chef 0.8.1 | Chef 0.9.0 | 0.9.0 vs 0.8.1 |
+|---|---|---|---|---|
+| Python CLI | 78k tokens, $0.060, 15 s | 215k, $0.159, 47 s | 185k, $0.154, 43 s | −14% tokens |
+| Dockerfile + compose | 76k, $0.054, 20 s | 319k, $0.147, 63 s | 240k, $0.120, 40 s | −25% tokens |
+| Prometheus | 106k, $0.067, 30 s | 308k, $0.198, 42 s | 329k, $0.182, 44 s | +7% tokens |
+| **Mean** | **87k, $0.060** | **281k, $0.168** | **251k, $0.152** | **−11% tokens, −10% cost** |
+
+```mermaid
+xychart-beta
+    title "Tokens per task (thousands)"
+    x-axis ["Python", "Docker", "Prometheus"]
+    y-axis "k tokens" 0 --> 350
+    bar [78, 76, 106]
+    bar [215, 319, 308]
+    bar [185, 240, 329]
+```
+
+<sub>Bars in each group: without chef, chef 0.8.1, chef 0.9.0.</sub>
+
+**The price is real:** chef 0.9.0 uses about 2.9× the tokens, 2.5× the cost and 1.5–2.9× the time of no plugin: it writes and runs tests, configs and checkers that the plain run skips. No run used subagents, so `/chef:level lite` changes nothing on tasks this small; it saves the council and the reviewer on bigger ones.
+
+**Where v0.9 saves.** `SKILL.md` is loaded into every session and re-read on every turn from the cache:
+
+| File | 0.8.1 | 0.9.0 | When it is read |
+|---|---|---|---|
+| `skills/chef/SKILL.md` | 20.3 KB (≈5.1k tokens) | 9.5 KB (≈2.4k tokens) | Every session |
+| `skills/chef/team.md` | in SKILL.md | 5.0 KB (≈1.2k tokens) | Only when agents, a council or the reviewer are used |
+| `references/INDEX.md` | 5.3 KB | 4.6 KB | Before touching code |
+
+The team and council procedure moved to `team.md`, the WPF/MAUI/Avalonia rules moved to `references/csharp.md`, and the prose was tightened. No rule was removed.
+
+Every result is checked by running tools on the output, with the same settings for both arms and the agent's own tool config ignored: a hidden test that calls the function the prompt asked for, `docker build` and a request to `/health`, `promtool check config`, `check rules` and `test rules`, `mypy --strict`, Ruff, hadolint, and measured line coverage. See [Benchmark details](#benchmark-details).
 
 ## Before / after
 
@@ -228,74 +264,31 @@ Because the kitchen has rules, and the dish is tasted before it leaves.
 
 ## Benchmark details
 
-Same prompt, same model (Sonnet 5.5), fresh git folder each time. The only difference is the chef plugin; every other plugin is off in both arms. 5 tasks × 2 runs per arm, run on Nov 19, 2026. Each prompt names the function to write, so a hidden test Claude never saw can call it after the run.
+Same prompt, same model (Sonnet 5.5), fresh git folder each time, run on Nov 19, 2026. Three arms: no plugin, chef 0.8.1 and chef 0.9.0. User settings, other plugins and MCP servers are off in every arm (`--setting-sources project --strict-mcp-config`); only the chef arms get `--plugin-dir`. Each prompt ends with "Work autonomously: nobody will answer questions."
 
-<details>
-<summary><strong>New code: C#, TypeScript, Python, Docker + CI</strong></summary>
+The harness is in [`bench/`](bench/):
 
-| Task | Metric | Without chef | With chef |
-|---|---|---|---|
-| C# library | Hidden tests pass | 2/2 | 2/2 |
-| | Test cases written | 0 | 8.5 |
-| | Tests pass | no tests | 1/2 |
-| | Line coverage | 0% | 100% / 0% |
-| | `var` (inferred types) | 2 | 0 |
-| | Build warnings | 0 | 0 |
-| | `TreatWarningsAsErrors` | 0/2 | 2/2 |
-| TypeScript module | Hidden tests pass | 2/2 | 2/2 |
-| | Test cases written | 0 | 4.5 |
-| | Line coverage | 0% | 100% |
-| | Untyped `const`/`let` | 4.5 | 0.5 |
-| | `tsc --strict` errors | 0 | 0 |
-| | ESLint config | 0/2 | 2/2 |
-| Python CLI | Hidden tests pass | 2/2 | 2/2 |
-| | Test cases written | 0 | 11 |
-| | Line coverage | 0% | 97.8% |
-| | `mypy --strict` errors | 2 | 0 |
-| | Ruff findings (default rules) | 3 | 2 |
-| | Ruff + strict type checker config | 0/2 | 2/2 |
-| Dockerfile + CI | `HEALTHCHECK`, base image pinned by digest | 0/2 | 2/2 |
-| | `permissions:` block | 1/2 | 2/2 |
-| | Actions pinned by SHA | 0/2 | 0/2 |
-| | Hadolint findings | 1 | 1 |
-| All four | Cost per task | $0.09–0.12 | $0.24–0.29 |
-| | Time per task | 39–73 s | 112–186 s |
+```bash
+bash bench/run.sh <out-dir> 2 none= old=<chef-0.8.1-dir> new=<chef-dir>
+python bench/score.py <out-dir> > scores.json
+```
 
-</details>
+`run.sh` runs the arms of each task in parallel, and `score.py` needs pytest, pytest-cov, mypy, Ruff, PyYAML and a running Docker daemon (hadolint and promtool run from their official images).
 
-<details>
-<summary><strong>Transformation: Python 3.8 to 3.13</strong></summary>
-
-The seed is a small legacy module with no tests. It uses `distutils.util.strtobool`, `datetime.utcnow()`, `typing.List` and `python_requires=">=3.8"`. Prompt: upgrade it to Python 3.13, keep the public functions and their behavior. With chef, the same prompt starts with `/chef:transform`. The hidden test runs on Python 3.13 with `DeprecationWarning` as an error; the untouched seed fails it.
-
-| Metric | Without chef | With chef |
+| Task | Prompt, in short | What is checked |
 |---|---|---|
-| Hidden tests pass on 3.13 | 2/2 | 2/2 |
-| `distutils` and `utcnow()` removed, `python_requires>=3.13` | 2/2 | 2/2 |
-| Characterization tests written | 0 | 11, all pass |
-| Line coverage | 0% | 95.2% |
-| `TRANSFORM.md` with baseline, batches and report | 0/2 | 2/2 |
-| Commits | 0 | 4 |
-| `reviewer` agent on the diff | 0/2 | 1/2 |
-| Council on the plan | 0/2 | 0/2 |
-| Cost per task | $0.10 | $0.37 |
-
-</details>
+| Python CLI | TOML endpoint validator, `find_invalid(path)` in `endpoints.py` | Hidden pytest, tests written, line coverage, `mypy --strict`, Ruff, tool config |
+| Dockerfile + compose | Containerize a stdlib HTTP service with `/health` | `docker build`, `/health` answers, hadolint, digest pin, non-root, healthcheck, `.dockerignore`, `docker compose config`, `read_only` + `no-new-privileges` or `cap_drop: ALL`, resource limits |
+| Prometheus | Scrape config, alerts for down, 5xx ratio > 5%, p95 > 500 ms, compose | `promtool check config --syntax-only`, `check rules`, `test rules`, `for`, `severity`, `summary`, `runbook_url`, `histogram_quantile` on `_bucket`, pinned image |
 
 <details>
 <summary><strong>Weak spots and limits</strong></summary>
 
-Weak spots seen in this run (before v0.8):
-
-- **C# run without tests:** in one run, the `dotnet add package` calls never reached the test project, so its tests do not build.
-- **Actions not pinned by SHA,** even though the rule is in `ci.md`. Now enforced by `pin-gate.sh`.
-- **Transform steps skipped:** no council, and the reviewer ran in one run of two. The `## Council` section and one commit per batch are now enforced by the transform stop gate.
-
-Limits:
-
-- 2 runs per arm is a small sample.
-- Times are inflated by the checks running in parallel on the same machine. Compare the arms, not the absolute seconds.
-- `docker build` and actionlint were not run.
-- The harness is not in the repo.
+- 2 runs per arm is a small sample, and the token counts vary a lot between runs (Docker with chef 0.8.1: 242k and 391k). The −11% is a mean over 6 runs per arm, not a guarantee per task; on Prometheus, 0.9.0 used 7% more.
+- No run used subagents, so these tasks measure the rules, not the council or the reviewer.
+- Docker Desktop stopped at some point during the no-plugin and 0.8.1 runs, and was restarted before the 0.9.0 runs and the scoring. An agent that tried `docker build` in those runs may have failed. Every Docker output still built and answered `/health` at scoring time.
+- Times are inflated by three runs in parallel on the same machine. Compare the arms, not the absolute seconds.
+- Token counts per file in the "Where v0.9 saves" table are estimated at 4 bytes per token.
+- The previous benchmark (0.8.1, five tasks: C#, TypeScript, Python, Docker + CI, Python 3.8 to 3.13 transformation) is in the git history of this README.
 
 </details>

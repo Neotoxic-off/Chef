@@ -82,7 +82,7 @@ Target: <runtime and version, e.g. Python 3.13>
 - Every batch names its validation command: build plus the tests it touches, or the full suite when unsure.
 - Validation runs on the `Target:` runtime, never on whatever is installed: e.g. `uv run --python 3.13 pytest`, `nvm exec 22 npm test`, a pinned container image.
 
-Before the user sees it, convene the council on the plan (chef's section 3): core plus the specialists the migration calls for. Fix the plan with what holds up; put the open disagreements in front of the user. Record the members and what changed in `## Council`. At `lite` or with `council: off`, when the user declines the council, write `Skipped: <level or setting>` under `## Council` instead.
+Before the user sees it, convene the council on the plan (chef's `team.md`): core plus the specialists the migration calls for. Fix the plan with what holds up; put the open disagreements in front of the user. Record the members and what changed in `## Council`. At `lite` or with `council: off`, when the user declines the council, write `Skipped: <level or setting>` under `## Council` instead.
 
 Show the plan and ask the user to approve it (AskUserQuestion). Do not edit code or commit before they approve. Their approval covers the plan commit (`chore: transform plan for <goal>`) and one commit per batch.
 
