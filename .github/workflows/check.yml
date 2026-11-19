@@ -42,5 +42,5 @@ jobs:
           python -m pip install --quiet pytest==9.2.0 PyYAML==6.0.3 ruff==0.17.6 mypy==2.4.1 types-PyYAML==6.0.12.20261113
           python -m ruff check .
           python -m ruff format --check .
-          python -m mypy --strict score.py test_score.py blind_review.py test_blind_review.py
-          python -m pytest -q -p no:cacheprovider test_score.py test_blind_review.py
+          python -m mypy --strict score.py test_score.py blind_review.py test_blind_review.py charts.py test_charts.py
+          python -m pytest -q -p no:cacheprovider test_score.py test_blind_review.py test_charts.py

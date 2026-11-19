@@ -349,6 +349,7 @@ bash bench/run.sh <new-out-dir> 5 none= old=<chef-0.9.0-dir> new=<chef-dir>
 python bench/score.py <out-dir> > scores.json
 python bench/blind_review.py <out-dir> <new-review-dir> none new
 python bench/blind_review.py summarize <review-dir>
+python bench/charts.py   # after copying the new numbers into it
 ```
 
 `run.sh` keeps each run's `stream.jsonl` (every call, tool and usage) and writes `versions.txt`. `score.py` needs pytest, pytest-cov, mypy, Ruff, PyYAML and a running Docker daemon (hadolint and promtool run from their official images). It reports the median for measurements, the share of runs for checks, and cache writes, cache reads, output tokens, tool calls and tool output size separately.
