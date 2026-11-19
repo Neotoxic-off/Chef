@@ -1,0 +1,20 @@
+{
+  "none": {
+    "runs": 39.0,
+    "merged_first_time": 0.564,
+    "merged_in_the_end": 1.0,
+    "fix_rounds_per_run": 0.49,
+    "first_answer_cost": 2.82,
+    "total_cost": 5.0,
+    "cost_per_merged_run": 0.128
+  },
+  "chef11": {
+    "runs": 39.0,
+    "merged_first_time": 0.872,
+    "merged_in_the_end": 0.974,
+    "fix_rounds_per_run": 0.15,
+    "first_answer_cost": 6.33,
+    "total_cost": 7.26,
+    "cost_per_merged_run": 0.191
+  }
+}

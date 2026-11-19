@@ -2,7 +2,25 @@
 
 How chef was measured, task by task. The short version is in the [main README](../README.md).
 
-## Results
+## Cost to mergeable (1.1)
+
+The headline numbers in the README. Same 13 tasks and first answers as below (plain Claude from the 1.0 run, chef 1.1 rerun on the same day), 39 runs per arm. A blind Opus reviewer, the same panel prompt as in [`judge.md`](judge.md), decides whether it would merge each first answer and lists the changes it requires (`blocker` or `major`). If it would not merge, those changes go back as a new prompt to the same setup in that workspace, and a fresh reviewer looks again, up to 2 fix rounds. Harness: [`merge_loop.py`](merge_loop.py), results: [`results/merge.json`](results/merge.json).
+
+| | Plain Claude | Chef 1.1 |
+|---|---|---|
+| First answer accepted | 56% | 87% |
+| Merged after at most 2 fix rounds | 100% | 97% |
+| Fix rounds per task | 0.49 | 0.15 |
+| First answers, cost of 39 runs | $2.82 | $6.33 |
+| With the fixes | $5.00 | $7.26 |
+
+Reviewer costs ($4.67 and $6.66) are not counted in either arm. One chef run was still not accepted after 2 rounds.
+
+## Across versions
+
+The README's version chart uses the three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus): the median cost of those runs, and the same blind reviewer on up to 3 runs per task and version (6 to 9 reviews each). Data: [`results/history.json`](results/history.json).
+
+## Chef 1.0 against plain Claude and a control
 
 Three arms, the same prompt and model (Sonnet 5.5) for each: **plain Claude**, a **control** (plain Claude with chef's 12 core rules in a `CLAUDE.md`, the cheap alternative), and **chef 1.0**. 13 tasks, 3 runs per arm, 117 runs in all.
 

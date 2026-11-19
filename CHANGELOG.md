@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 (2026-11-20)
+
+- Fixes from the blind reviewers' reasons in the 1.0 benchmark: the task's stated contract (exception types, exit codes, formats) wins over conventions; tests assert the exact exception or exit code; never invent data to signal an error; error messages say what and where; a refactor keeps behavior, fallbacks and supported runtimes exactly; input size is bounded before expensive parsing.
+- Docker: apps that ignore SIGTERM do not run as PID 1 (`init: true` or `tini`), memory and CPU limits, log rotation, only digests read from the registry.
+- Less scaffolding on small tasks: tool configs in the project's main config file, CI, coverage gates and mutation testing only when the project has them or the user asks; every configured tool declared as a dev dependency (`pytest-cov` with `--cov`).
+- Benchmark: cost to mergeable. A blind reviewer sends its required changes back until it would merge (`bench/merge_loop.py`). Chef 1.1 is accepted the first time in 87% of tasks against 56% for plain Claude, needs 70% fewer review rounds, and costs 1.45x plain Claude once plain Claude's fixes are counted (2.2x for the first answer alone).
+- README cut to the essentials; benchmark details in `bench/README.md`; version history chart.
+
 ## 1.0.0 (2026-11-20)
 
 Stable release. The public contract under semantic versioning: the commands (`/chef:chef`, `/chef:level`, `/chef:status`, `/chef:transform`), the levels (`lite`, `full`, `max`), the `.chef.md` keys, the agent names, the hook behaviour, and `export/AGENTS.md`.

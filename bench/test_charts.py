@@ -30,8 +30,25 @@ def test_win_rate_counts_ties_as_half() -> None:
     assert charts.win_rate({"b": 1.0, "a": 1.0, "tie": 2.0}) == 50.0
 
 
-def test_overview_chart_lists_each_reviewed_arm() -> None:
-    svg: str = charts.overview_chart(charts.LIGHT, SUMMARY)
+def test_overview_chart_lists_each_looped_arm() -> None:
+    merge: dict[str, dict[str, float]] = {
+        "none": {"runs": 2.0, "merged_first_time": 0.5, "fix_rounds_per_run": 0.5, "total_cost": 0.2},
+    }
 
-    assert "Plain Claude: merged as is 47%, 0.81 changes required per review, median cost $0.063 per task" in svg
-    assert "Control" not in svg
+    svg: str = charts.overview_chart(charts.LIGHT, merge)
+
+    assert "Plain Claude: first answer accepted 50%, 0.50 review rounds per task, $0.100 per task with fixes" in svg
+    assert "Chef 1.1" not in svg
+
+
+def test_history_chart_labels_every_version_and_the_baseline() -> None:
+    history: dict[str, Any] = {
+        "tasks": ["python"],
+        "versions": [{"version": "0.9.0", "cost": 0.2, "merge": 40.0}, {"version": "1.1.0", "cost": 0.15, "merge": 90.0}],
+        "baseline": {"cost": 0.06, "merge": 45.0},
+    }
+
+    svg: str = charts.history_chart(charts.LIGHT, history)
+
+    assert "0.9.0 $0.200 per task, 40% merged as is; 1.1.0 $0.150 per task, 90% merged as is" in svg
+    assert "Plain Claude: $0.060, 45%." in svg

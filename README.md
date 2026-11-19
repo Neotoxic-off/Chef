@@ -15,24 +15,24 @@
   <img src="https://img.shields.io/badge/references-127-D97757?style=flat-square" alt="127 references">
 </p>
 
-**Chef makes Claude write code a reviewer would merge as is.** It costs more per task, and saves you the review round-trips.
+**Chef makes Claude write code a reviewer accepts the first time.** It costs more tokens, and saves most of the review round-trips.
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-dark.svg">
-    <img src="assets/bench/overview.svg" width="880" alt="Plain Claude: merged as is 47%, 0.81 changes required per review, median cost $0.063 per task. Control with chef's rules in AGENTS.md: 56%, 0.73, $0.084. Chef 1.0: 89%, 0.13, $0.155.">
+    <img src="assets/bench/overview.svg" width="880" alt="Same 13 tasks, same model, a blind reviewer asks for fixes until it merges. Plain Claude: first answer accepted 56%, 0.49 review rounds per task, $0.128 per task with fixes. Chef 1.1: 87%, 0.15 review rounds, $0.186 per task with fixes.">
   </picture>
 </p>
 
 | | Without chef | With chef |
 |---|---|---|
-| A blind reviewer would merge it as is | 47% | **89%** |
-| Changes the reviewer requires | 0.81 per task | **0.13** per task |
-| Cost per task | $0.063 | $0.155 (**2.4×**) |
+| The reviewer accepts the first answer | 56% | **87%** |
+| Review rounds needed per task | 0.49 | **0.15** (70% fewer) |
+| Cost per task, review fixes included | $0.128 | $0.186 (**1.45×**) |
 
-<sub>13 tasks in 11 stacks, 3 runs each, Sonnet 5.5. The code works either way: every run passes its hidden tests. Reviewers are blind Opus sessions that never know chef exists. <a href="bench/README.md">How it was measured</a>.</sub>
+<sub>13 tasks in 11 stacks, 3 runs each, Sonnet 5.5. The reviewer is a blind Opus session that never knows chef exists; when it would not merge, its required changes go back to the same setup, up to 2 rounds. The code works either way: every first answer passes its hidden tests. <a href="bench/README.md">How it was measured</a>.</sub>
 
-The extra cost is the work a reviewer would ask for anyway: tests, strict types and linters, pinned versions, configs checked by their tools.
+Chef's first answer costs 2.2× a plain one, because it already does what the reviewer would ask for: tests, strict types and linters, pinned versions, configs checked by their tools. Counting the fixes plain Claude needs afterwards, the gap falls to 1.45×, for 70% fewer review rounds.
 
 ## Install
 
@@ -64,8 +64,19 @@ That's it: chef applies to every coding prompt from now on.
 ## Spend less
 
 - `/chef:level lite` drops the council and the reviewer agent, the biggest cost on large tasks.
-- Or skip the plugin: copy [`export/AGENTS.md`](export/AGENTS.md), chef's 12 core rules, into your project. It works with any agent (Codex, Cursor, Copilot) and gets part of the effect: 56% merged as is, at $0.084 per task.
+- Or skip the plugin: copy [`export/AGENTS.md`](export/AGENTS.md), chef's 12 core rules, into your project. It works with any agent (Codex, Cursor, Copilot) and gets part of the effect (in the 1.0 benchmark: 56% merged as is against 89% with chef, at $0.084 per task).
 
 ## Change a rule
 
 Edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or a stack file in [`skills/chef/references/`](skills/chef/references/), then run `bash scripts/check.sh`. Changes are listed in the [CHANGELOG](CHANGELOG.md).
+
+## Across versions
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/history-dark.svg">
+    <img src="assets/bench/history.svg" width="880" alt="Chef by version on the Python, Docker and Prometheus tasks. Cost per task: 0.8.1 $0.167, 0.9.0 $0.184, 0.10.0 $0.180, 1.0.0 $0.155, 1.1.0 $0.145; plain Claude $0.059. Share a blind reviewer would merge as is: 50%, 44%, 67%, 78%, 78%; plain Claude 44%.">
+  </picture>
+</p>
+
+<sub>The three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus), same blind reviewer for every version, 6 to 9 reviews each: read it as a trend.</sub>

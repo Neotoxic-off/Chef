@@ -11,6 +11,8 @@ from typing import Any
 
 OUT: Path = Path(__file__).resolve().parent.parent / "assets" / "bench"
 SUMMARY: Path = Path(__file__).resolve().parent / "results" / "summary.json"
+HISTORY: Path = Path(__file__).resolve().parent / "results" / "history.json"
+MERGE: Path = Path(__file__).resolve().parent / "results" / "merge.json"
 FONT: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 WIDTH: int = 880
 
@@ -169,20 +171,21 @@ def pairwise_chart(theme: Theme, summary: dict[str, Any]) -> str:
 
 
 OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
-    ("Would merge as is (blind review)", "merge"),
-    ("Changes required (fewer is better)", "major"),
-    ("Median cost per task", "cost"),
+    ("First answer accepted", "merge"),
+    ("Review rounds (fewer is better)", "major"),
+    ("Cost per task, fixes included", "cost"),
 )
+OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef11": "Chef 1.1"}
 PANEL_WIDTH: float = 150.0
 PANEL_STEP: float = 230.0
 
 
-def overview_values(summary: dict[str, Any], arm: str) -> dict[str, float]:
-    review: dict[str, float] = summary["reviews"][arm]
+def overview_values(merge: dict[str, dict[str, float]], arm: str) -> dict[str, float]:
+    loop: dict[str, float] = merge[arm]
     return {
-        "merge": 100 * review["merge_as_is"],
-        "major": review["major_changes"],
-        "cost": summary["overall"][arm]["median_cost_usd"],
+        "merge": 100 * loop["merged_first_time"],
+        "major": loop["fix_rounds_per_run"],
+        "cost": loop["total_cost"] / loop["runs"],
     }
 
 
@@ -196,32 +199,111 @@ def overview_cell(theme: Theme, x: float, y: float, value: float, scale: tuple[f
     ]
 
 
-def overview_chart(theme: Theme, summary: dict[str, Any]) -> str:
-    """Headline chart: each arm on the three numbers a reader decides on."""
-    arms: list[str] = [arm for arm in ARM_NAMES if arm in summary["reviews"]]
-    values: dict[str, dict[str, float]] = {arm: overview_values(summary, arm) for arm in arms}
+def overview_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
+    """Headline chart: each arm on the three numbers a reader decides on, from the review-and-fix loop."""
+    arms: list[str] = [arm for arm in OVERVIEW_ARMS if arm in merge]
+    values: dict[str, dict[str, float]] = {arm: overview_values(merge, arm) for arm in arms}
     tops: dict[str, tuple[float, str]] = {
         "merge": (100.0, "%"),
         "major": (max(values[arm]["major"] for arm in arms), ""),
         "cost": (max(values[arm]["cost"] for arm in arms), "$"),
     }
-    body: list[str] = [text(0, 26, "Same tasks, same model: what each setup gives you", theme.ink, 18, 600)]
+    body: list[str] = [
+        text(0, 26, "Same 13 tasks, same model, a blind reviewer asks for fixes until it merges", theme.ink, 18, 600)
+    ]
     for index, (title, _) in enumerate(OVERVIEW_PANELS):
         body += [text(LABEL_WIDTH + index * PANEL_STEP, 62, title, theme.muted, 13, 600)]
-    colors: dict[str, str] = arm_colors(theme)
+    colors: dict[str, str] = {"none": theme.without, "chef11": theme.chef}
     y: float = 80.0
     for arm in arms:
-        body += [text(0, y + 13, ARM_NAMES[arm], theme.ink, 15, 600)]
+        body += [text(0, y + 13, OVERVIEW_ARMS[arm], theme.ink, 15, 600)]
         for index, (_, key) in enumerate(OVERVIEW_PANELS):
             top, unit = tops[key]
             body += overview_cell(theme, LABEL_WIDTH + index * PANEL_STEP, y, values[arm][key], (top, unit, colors[arm]))
         y += 34
     label: str = "; ".join(
-        f"{ARM_NAMES[arm]}: merged as is {values[arm]['merge']:.0f}%, {values[arm]['major']:.2f} changes required per review, "
-        f"median cost ${values[arm]['cost']:.3f} per task"
+        f"{OVERVIEW_ARMS[arm]}: first answer accepted {values[arm]['merge']:.0f}%, {values[arm]['major']:.2f} review rounds per task, "
+        f"${values[arm]['cost']:.3f} per task with fixes"
         for arm in arms
     )
     return svg(int(y + 6), label, body)
+
+
+HISTORY_PANEL_WIDTH: float = 330.0
+HISTORY_PANEL_HEIGHT: float = 150.0
+HISTORY_PANEL_GAP: float = 120.0
+HISTORY_TOP: float = 70.0
+
+
+@dataclass(frozen=True)
+class Panel:
+    x: float
+    title: str
+    key: str
+    top: float
+    unit: str
+
+
+def history_point(panel: Panel, index: int, count: int, value: float) -> tuple[float, float]:
+    step: float = HISTORY_PANEL_WIDTH / max(count - 1, 1)
+    return panel.x + index * step, HISTORY_TOP + HISTORY_PANEL_HEIGHT * (1 - value / panel.top)
+
+
+def history_panel(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[str]:
+    versions: list[dict[str, Any]] = history["versions"]
+    shown: dict[str, str] = {"$": "${:.3f}", "%": "{:.0f}%"}
+    body: list[str] = [text(panel.x, HISTORY_TOP - 22, panel.title, theme.muted, 13, 600)]
+    base_y: float = history_point(panel, 0, len(versions), history["baseline"][panel.key])[1]
+    baseline_line: str = (
+        f'<line x1="{panel.x}" y1="{base_y:.1f}" x2="{panel.x + HISTORY_PANEL_WIDTH}" y2="{base_y:.1f}" '
+        f'stroke="{theme.without}" stroke-width="2" stroke-dasharray="6 4"/>'
+    )
+    body += [
+        baseline_line,
+        text(
+            panel.x + HISTORY_PANEL_WIDTH,
+            base_y - 6,
+            "plain Claude " + shown[panel.unit].format(history["baseline"][panel.key]),
+            theme.muted,
+            11,
+            400,
+            "end",
+        ),
+    ]
+    points: list[tuple[float, float]] = [
+        history_point(panel, index, len(versions), entry[panel.key]) for index, entry in enumerate(versions)
+    ]
+    body += [
+        f'<polyline points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in points)}" fill="none" stroke="{theme.chef}" stroke-width="2"/>'
+    ]
+    for (x, y), entry in zip(points, versions, strict=True):
+        body += [f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5" fill="{theme.chef}"/>']
+        body += [text(x, y - 10, shown[panel.unit].format(entry[panel.key]), theme.ink, 12, 600, "middle")]
+        body += [text(x, HISTORY_TOP + HISTORY_PANEL_HEIGHT + 22, entry["version"], theme.muted, 12, 400, "middle")]
+    return body
+
+
+def history_chart(theme: Theme, history: dict[str, Any]) -> str:
+    """Cost and blind-review quality of chef by version, on the tasks every version ran."""
+    cost_top: float = 1.2 * max(max(entry["cost"] for entry in history["versions"]), history["baseline"]["cost"])
+    panels: tuple[Panel, Panel] = (
+        Panel(40.0, "Cost per task (median)", "cost", cost_top, "$"),
+        Panel(40.0 + HISTORY_PANEL_WIDTH + HISTORY_PANEL_GAP, "A blind reviewer would merge it as is", "merge", 100.0, "%"),
+    )
+    body: list[str] = [text(0, 26, "Chef across versions", theme.ink, 18, 600)]
+    for panel in panels:
+        body += history_panel(theme, panel, history)
+    label: str = (
+        "Chef by version, on "
+        + ", ".join(history["tasks"])
+        + ": "
+        + "; ".join(
+            f"{entry['version']} ${entry['cost']:.3f} per task, {entry['merge']:.0f}% merged as is"
+            for entry in history["versions"]
+        )
+        + f". Plain Claude: ${history['baseline']['cost']:.3f}, {history['baseline']['merge']:.0f}%."
+    )
+    return svg(int(HISTORY_TOP + HISTORY_PANEL_HEIGHT + 40), label, body)
 
 
 def split_chart(theme: Theme) -> str:
@@ -241,10 +323,14 @@ def main() -> None:
     summary: dict[str, Any] = json.loads(SUMMARY.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
     for theme in (LIGHT, DARK):
-        (OUT / f"overview{theme.suffix}.svg").write_text(overview_chart(theme, summary), encoding="utf-8")
+        merge: dict[str, dict[str, float]] = json.loads(MERGE.read_text(encoding="utf-8"))
+        (OUT / f"overview{theme.suffix}.svg").write_text(overview_chart(theme, merge), encoding="utf-8")
         (OUT / f"cost{theme.suffix}.svg").write_text(cost_chart(theme, summary), encoding="utf-8")
         (OUT / f"pairwise{theme.suffix}.svg").write_text(pairwise_chart(theme, summary), encoding="utf-8")
         (OUT / f"cost-split{theme.suffix}.svg").write_text(split_chart(theme), encoding="utf-8")
+        if HISTORY.is_file():
+            history: dict[str, Any] = json.loads(HISTORY.read_text(encoding="utf-8"))
+            (OUT / f"history{theme.suffix}.svg").write_text(history_chart(theme, history), encoding="utf-8")
 
 
 if __name__ == "__main__":
