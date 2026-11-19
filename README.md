@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" width="160" alt="Chef logo">
+  <img src="assets/logo.png" width="160" alt="Chef logo">
 </p>
 
 <h1 align="center">Chef</h1>
