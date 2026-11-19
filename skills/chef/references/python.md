@@ -14,10 +14,11 @@ line-length = 100
 select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "C4", "RET", "PTH", "ANN", "S", "PL", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]  # assert is how pytest checks
+"tests/**" = ["S101", "PLR2004"]  # assert is how pytest checks; literals in a test are the expected values
+"**/test_*.py" = ["S101", "PLR2004"]  # same, for tests outside tests/
 ```
 
-`ANN` enforces type annotations on every function.
+`ANN` enforces type annotations on every function, tests included: `def test_add() -> None:`.
 
 ## Types
 
@@ -34,6 +35,8 @@ select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "C4", "RET", "PTH", "ANN", 
 - `pathlib` over `os.path`. f-strings. Context managers for resources.
 - No mutable default arguments. No bare `except:`.
 - Inject I/O and time through parameters so logic stays pure.
+- Parsed TOML/JSON/YAML is outside input: check the type of every container and field you read, the top level included (`json.loads` can return a `list`, a field can be a `str` where you expect an `int`).
+- Reading a file can raise `UnicodeDecodeError` (a `ValueError`), not only `OSError`: `open(...).read()`, `json.load` and `tomllib.load` on bytes that are not UTF-8.
 
 ## Tests
 

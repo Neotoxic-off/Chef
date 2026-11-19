@@ -43,3 +43,16 @@ def test_summarize_groups_records_by_arm(tmp_path: Path) -> None:
     (record_dir / "record.json").write_text(json.dumps(record), encoding="utf-8")
 
     assert merge_loop.summarize(tmp_path)["none"]["merged_first_time"] == 1.0
+
+
+def test_lines_to_review_counts_text_lines_and_skips_binaries(tmp_path: Path) -> None:
+    (tmp_path / "app.py").write_text("a = 1" + chr(10) + "b = 2" + chr(10), encoding="utf-8")
+    (tmp_path / "logo.png").write_bytes(bytes([0, 1, 10, 10]))
+
+    assert merge_loop.lines_to_review(tmp_path) == 2
+
+
+def test_review_cost_of_a_crashed_review_is_zero(tmp_path: Path) -> None:
+    (tmp_path / "review-0.json").write_text("", encoding="utf-8")
+
+    assert merge_loop.review_cost(tmp_path / "review-0.json") == 0.0

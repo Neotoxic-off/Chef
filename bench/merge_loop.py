@@ -23,10 +23,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from blind_review import EXCLUDED, PARALLEL_JUDGES, read_review, run_judge
+from blind_review import PARALLEL_JUDGES, copy_submission, read_review, run_judge, submission_files
 from score import usage_metrics
 
 ROUND_LIMIT: int = 2
+NUL_BYTE: bytes = bytes([0])
 WORKER_MODEL: str = "claude-sonnet-5-5"
 WORKER_BUDGET_USD: str = "1"
 REQUIRED: tuple[str, ...] = ("blocker", "major")
@@ -64,10 +65,29 @@ def stream_cost(stream_path: Path) -> float:
 
 def review(sample: Sample, review_path: Path) -> dict[str, Any] | None:
     blind: Path = Path(tempfile.mkdtemp(prefix="review-")) / "submission"
-    shutil.copytree(sample.workspace, blind, ignore=shutil.ignore_patterns(*EXCLUDED))
+    copy_submission(sample.workspace, blind)
     run_judge(blind, sample.task, SEAT, review_path)
     shutil.rmtree(blind.parent)
     return read_review(review_path)
+
+
+def review_cost(review_path: Path) -> float:
+    text: str = review_path.read_text(encoding="utf-8") if review_path.is_file() else ""
+    try:
+        cost: Any = json.loads(text).get("total_cost_usd") if text.strip() else None
+    except json.JSONDecodeError:
+        return 0.0
+    return float(cost) if isinstance(cost, (int, float)) else 0.0
+
+
+def lines_to_review(workspace: Path) -> int:
+    """Lines of text a reviewer reads in the submission, the proxy for human review time."""
+    total: int = 0
+    for relative in submission_files(workspace):
+        content: bytes = (workspace / relative).read_bytes()
+        if NUL_BYTE not in content:
+            total += content.count(b"\n")
+    return total
 
 
 def fix(sample: Sample, changes: list[str], plugin_dir: str, stream_path: Path) -> float:
@@ -92,9 +112,12 @@ def fix(sample: Sample, changes: list[str], plugin_dir: str, stream_path: Path) 
 def loop(sample: Sample, plugin_dir: str, record_dir: Path) -> dict[str, Any]:
     """Review, fix, review again; returns the record of the sample's rounds."""
     record: dict[str, Any] = {"arm": sample.arm, "task": sample.task, "run": sample.run, "first_cost": sample.first_cost}
+    record["lines_to_review"] = lines_to_review(sample.workspace)
     fix_costs: list[float] = []
+    reviewer_costs: list[float] = []
     for round_index in range(ROUND_LIMIT + 1):
         verdict: dict[str, Any] | None = review(sample, record_dir / f"review-{round_index}.json")
+        reviewer_costs.append(review_cost(record_dir / f"review-{round_index}.json"))
         if verdict is None:
             record["error"] = f"no readable review in round {round_index}"
             break
@@ -106,6 +129,7 @@ def loop(sample: Sample, plugin_dir: str, record_dir: Path) -> dict[str, Any]:
             break
         fix_costs.append(fix(sample, required_changes(verdict), plugin_dir, record_dir / f"fix-{round_index + 1}.jsonl"))
     record["fix_costs"] = fix_costs
+    record["reviewer_cost"] = round(sum(reviewer_costs), 4)
     record["total_cost"] = round(sample.first_cost + sum(fix_costs), 4)
     (record_dir / "record.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
     return record
@@ -148,6 +172,8 @@ def arm_summary(records: list[dict[str, Any]]) -> dict[str, float]:
         "first_answer_cost": round(sum(record["first_cost"] for record in records), 2),
         "total_cost": round(sum(record["total_cost"] for record in records), 2),
         "cost_per_merged_run": round(sum(record["total_cost"] for record in records) / len(merged), 3) if merged else 0.0,
+        "reviewer_cost": round(sum(record.get("reviewer_cost", 0.0) for record in records), 2),
+        "lines_to_review": round(statistics.median(record.get("lines_to_review", 0) for record in records)),
     }
 
 

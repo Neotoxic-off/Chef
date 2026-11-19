@@ -25,13 +25,15 @@
   [{*Tests,**/*Tests}/**.cs]
   # test names are Method_Condition_Result, which CA1707 rejects
   dotnet_diagnostic.CA1707.severity = none
+  # xUnit v3 test projects are Exe, so CA1515 wants internal types, but test classes and fixtures must be public
+  dotnet_diagnostic.CA1515.severity = none
   ```
   Underscore test names build in `X.Tests` projects (verified with .NET 10).
 - Central package versions: `Directory.Packages.props`.
 
 ## Code
 
-- `var` when the type is apparent on the right side (`var users = new List<User>();`), explicit types otherwise.
+- `var` when the type is apparent on the right side (`var users = new List<User>();`), explicit types otherwise: `decimal subtotal = 0m;` (built-in type), `Order order = repository.Find(id);` (elsewhere). `var` there fails the build with IDE0008.
 - Nullable reference types on. No `!` null-forgiving operator: it hides a warning. Narrow with a null check or fix the type.
 - `async` all the way: `Task`/`ValueTask`, pass `CancellationToken`, never `.Result` or `.Wait()`. Async method names end in `Async`.
 - `sealed` classes by default, `record` for immutable data, `readonly` fields.
@@ -69,6 +71,24 @@ public partial class MainViewModel : ObservableObject
   ```json
   { "test": { "runner": "Microsoft.Testing.Platform" } }
   ```
+- Test project (the version goes in `Directory.Packages.props`; without `<Using Include="Xunit" />`, `[Fact]` fails with `CS0246`):
+  ```xml
+  <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <TargetFramework>net10.0</TargetFramework>
+      <OutputType>Exe</OutputType>
+    </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="xunit.v3.mtp-v2" />
+      <Using Include="Xunit" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\X\X.csproj" />
+    </ItemGroup>
+  </Project>
+  ```
+  Test classes and their fixtures are `public sealed`: an internal test class trips CA1812, since xUnit creates it by reflection.
+- Add a package with `dotnet add tests/X.Tests package xunit.v3.mtp-v2` (there is no `-q` flag); with central versions it writes the version to `Directory.Packages.props`.
 - Coverage: Microsoft's MTP code coverage extension (`dotnet test --coverage --coverage-output-format cobertura`), or `coverlet.MTP`. `coverlet.collector` does not work with MTP.
 - xUnit v3 on MTP does not accept the VSTest `--filter` syntax; use xUnit's own filter options.
 - Assertions: AwesomeAssertions or Shouldly. Do not add FluentAssertions 8+: it needs a paid license for commercial use.

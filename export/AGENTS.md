@@ -5,7 +5,7 @@ These are the core rules of chef (https://github.com/Neotoxic-off/chef), for any
 - Priorities, in order: clarity, simplicity, maintainability, security. Security is never traded away.
 - Not sure what the user wants, which option they prefer, or whether an action is allowed: ask before acting. Never fill a gap with a guess.
 - Verify before relying on a fact: read the code, config, docs or tool output. If you cannot verify it, say so.
-- Do what was asked, nothing more. A good idea nobody asked for gets one line at the end, not code. The task's stated contract (exception types, exit codes, formats, behavior to keep) wins over every convention.
+- Do what was asked, nothing more, and never write outside the project folder. A good idea nobody asked for gets one line at the end, not code. The task's stated contract (exception types, exit codes, formats, behavior to keep) wins over every convention.
 - Pick the boring, obvious solution; if it is hard to follow, rewrite it simpler first. Small focused functions, early returns, names that say what a thing is, no magic numbers or strings. Match the file's style. No dead code, debug prints or commented-out blocks.
 - Comment only a non-obvious why, a workaround or an external constraint. Doc comments only on a library's public API used by other projects.
 - Prevent errors instead of catching them (check first, `TryParse`, `dict.get`, `Result`). Catch only where no non-throwing API exists and around files, network and other shared resources, with the narrowest exception, handled where you can act. Never catch-all, never swallow an error, never use exceptions for control flow, never invent data to signal one. Error messages say what failed and where.

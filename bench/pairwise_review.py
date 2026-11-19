@@ -13,7 +13,6 @@ it is a tie. The key telling which folder held which arm stays in the review dir
 
 import json
 import random
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -24,7 +23,7 @@ from math import comb
 from pathlib import Path
 from typing import Any
 
-from blind_review import BENCH_DIR, EXCLUDED, JUDGE_BUDGET_USD, JUDGE_MODEL, PARALLEL_JUDGES
+from blind_review import BENCH_DIR, JUDGE_BUDGET_USD, JUDGE_MODEL, PARALLEL_JUDGES, copy_submission
 
 ORDERS: tuple[str, str] = ("ab", "ba")
 WINNERS: tuple[str, ...] = ("first", "second", "tie")
@@ -68,7 +67,7 @@ def find_pairs(out_dir: Path, arm_a: str, arm_b: str) -> list[Pair]:
 def stage(first: Path, second: Path) -> Path:
     folder: Path = Path(tempfile.mkdtemp(prefix="pair-"))
     for name, source in (("first", first), ("second", second)):
-        shutil.copytree(source, folder / name, ignore=shutil.ignore_patterns(*EXCLUDED))
+        copy_submission(source, folder / name)
     return folder
 
 

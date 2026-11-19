@@ -67,12 +67,35 @@ REVIEW_SCHEMA: dict[str, Any] = {
 }
 
 
+def submission_files(workspace: Path) -> list[Path]:
+    """Files a reviewer sees: what git would track (so .gitignore'd build output is left out), minus EXCLUDED names."""
+    listed: subprocess.CompletedProcess[str] = subprocess.run(
+        ["git", "-C", str(workspace), "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if listed.returncode == 0:
+        paths: list[Path] = [Path(name) for name in listed.stdout.split("\0") if name]
+    else:
+        paths = [path.relative_to(workspace) for path in workspace.rglob("*") if path.is_file()]
+    hidden: frozenset[str] = frozenset(EXCLUDED)
+    return sorted(path for path in paths if not hidden.intersection(path.parts) and (workspace / path).is_file())
+
+
+def copy_submission(workspace: Path, target: Path) -> None:
+    for relative in submission_files(workspace):
+        destination: Path = target / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(workspace / relative, destination)
+
+
 def anonymize(out_dir: Path, arms: list[str]) -> dict[str, dict[str, str]]:
     key: dict[str, dict[str, str]] = {}
     for arm in arms:
         for workspace in sorted(out_dir.glob(f"{arm}/*/*/workspace")):
             submission: Path = Path(tempfile.mkdtemp(prefix="review-")) / "submission"
-            shutil.copytree(workspace, submission, ignore=shutil.ignore_patterns(*EXCLUDED))
+            copy_submission(workspace, submission)
             key[secrets.token_hex(4)] = {
                 "arm": arm,
                 "task": workspace.parents[1].name,

@@ -1,4 +1,5 @@
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -58,3 +59,25 @@ def test_judge_prompt_names_the_seat_and_the_task_only() -> None:
     assert blind_review.ROLES["security"] in prompt
     assert "Dockerfile" in prompt
     assert "chef" not in prompt.lower()
+
+
+def test_copy_submission_leaves_out_gitignored_build_output(tmp_path: Path) -> None:
+    workspace: Path = tmp_path / "workspace"
+    for name, text in (
+        (".gitignore", "node_modules/\ndist/\n"),
+        ("src/app.ts", "x"),
+        ("node_modules/a/index.js", "x"),
+        ("dist/app.js", "x"),
+    ):
+        (workspace / name).parent.mkdir(parents=True, exist_ok=True)
+        (workspace / name).write_text(text, encoding="utf-8")
+    subprocess.run(["git", "init", "-q", str(workspace)], check=True)
+
+    blind_review.copy_submission(workspace, tmp_path / "copy")
+
+    assert sorted(
+        path.relative_to(tmp_path / "copy").as_posix() for path in (tmp_path / "copy").rglob("*") if path.is_file()
+    ) == [
+        ".gitignore",
+        "src/app.ts",
+    ]

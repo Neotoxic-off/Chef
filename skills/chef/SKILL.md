@@ -12,7 +12,7 @@ Follow these house habits on every task, without being reminded.
 - Priorities, in order: clarity, simplicity, maintainability, security. Security is never traded away.
 - Not sure what the user wants, which option they prefer, or whether an action is allowed: ask before acting. Never fill a gap with a guess.
 - Verify before relying on a fact: read the code, config, docs or tool output. If you cannot verify it, say so.
-- Do what was asked, nothing more. A good idea nobody asked for gets one line at the end, not code. The task's stated contract (exception types, exit codes, formats, behavior to keep) wins over every convention.
+- Do what was asked, nothing more, and never write outside the project folder. A good idea nobody asked for gets one line at the end, not code. The task's stated contract (exception types, exit codes, formats, behavior to keep) wins over every convention.
 - Pick the boring, obvious solution; if it is hard to follow, rewrite it simpler first. Small focused functions, early returns, names that say what a thing is, no magic numbers or strings. Match the file's style. No dead code, debug prints or commented-out blocks.
 - Comment only a non-obvious why, a workaround or an external constraint. Doc comments only on a library's public API used by other projects.
 - Prevent errors instead of catching them (check first, `TryParse`, `dict.get`, `Result`). Catch only where no non-throwing API exists and around files, network and other shared resources, with the narrowest exception, handled where you can act. Never catch-all, never swallow an error, never use exceptions for control flow, never invent data to signal one. Error messages say what failed and where.
@@ -30,8 +30,8 @@ Before touching code or config in a stack, read its reference in `${CLAUDE_SKILL
 
 Everything a tool prints stays in context and is paid again on every later call.
 
-- Run a stack's whole check in one call, with quiet flags (failures only), chained so any failure fails the call.
-- Batch independent reads, writes and lookups in one message.
+- Run a stack's whole check in one call, with quiet flags (failures only), chained so any failure fails the call; a pipe through a filter keeps the exit code (`set -o pipefail`).
+- Create every file with the Write tool in one message, never a shell heredoc; batch reads and lookups too.
 - Do not read back a file you just wrote, and do not rerun a passing check when nothing changed since.
 
 ## Talk less
@@ -69,9 +69,9 @@ A trivial change (typo, one-line fix, rename in one file) you do yourself. Other
 - Tests: each public behavior, branch and error path, edge cases (empty, null, zero, max, invalid input); integration tests at every boundary (database, HTTP, filesystem, queues) with real dependencies in containers (Testcontainers) over mocks where possible. Names state the behavior in the language's convention (`Withdraw_WithInsufficientFunds_Throws...`, `test_withdraw_with_insufficient_funds_raises`, `withdraw with insufficient funds throws`). Arrange/Act/Assert, one behavior per test, no `if` or loops in tests. No real clock, random, network or sleep. Mock only what you own, at boundaries, never the class under test.
 - Scale the setup to the task: a small library or script gets tests and its formatter, linter and type checker in the project's main config file; CI files, coverage gates, mutation testing and extra tool configs come when the project already has them or the user asks. Fix every failure of a check before rerunning it, so each check runs once or twice.
 - Tests assert the exact contract: the exact exception type (`Assert.Throws<T>`, `pytest.raises(T)`), message or exit code the task names, never a looser "any exception".
-- A refactor keeps behavior exactly, including fallbacks, defaults, error types and the supported runtime versions, and adds no tool a caller must install.
+- A refactor keeps behavior exactly (fallbacks, defaults, error types, supported runtimes) and adds no tool a caller must install. Prove it first with characterization tests in the repo (exact outputs, exception types and messages, malformed input), run before and after.
 - Bound input size before expensive work on it (big integers, regex, recursion, allocation).
 - Coverage: aim for full branch coverage of business logic; CI fails under 90% line and branch. Exclude only generated code and thin UI views, with the reason. Mutation testing on critical logic (money, security, parsing): Stryker (.NET, JS/TS), mutmut (Python), cargo-mutants (Rust).
 - Never hide a warning or error: no `eslint-disable`, `noqa`, `type: ignore`, `#pragma warning disable`, `@SuppressWarnings`, `[SuppressMessage]`, `#[allow]`, `@ts-ignore`, empty `catch`, `|| true`, errors sent to `/dev/null` or `$null` (a presence check like `command -v x >/dev/null` is fine), `-ErrorAction SilentlyContinue`, skipped or deleted tests, lowered thresholds, files excluded from the linter.
 - The only allowed lint exceptions, with the reason next to them: a rule disabled in config because it contradicts a house rule, and Rust `unsafe_code` in a dedicated crate after the user agrees (`references/rust.md`). A warning that cannot be fixed (third-party code, tool bug): stop and tell the user.
-- Before builds, test suites, Docker builds and installs, check free RAM and CPU (Windows `Get-CimInstance Win32_OperatingSystem` / `Win32_Processor`; Linux `free -m`, `uptime`; macOS `vm_stat`, `uptime`). Under 4 GB free or over 80% CPU: ask first. A hook blocks a command: report its reason, never work around it.
+- Before builds, test suites and installs, check free RAM and CPU (`Get-CimInstance`, `free -m`, `vm_stat`); under 4 GB free or over 80% CPU, ask first. A hook blocks a command: report its reason, never work around it.

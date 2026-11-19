@@ -7,9 +7,9 @@ Verified against Docker Engine 29.9, Buildx 0.39, Compose 5.8, hadolint 2.15, Tr
 - Lint every Dockerfile with hadolint in CI; fail on warnings: `hadolint --failure-threshold warning Dockerfile`.
 - Lint shell inside `RUN` too: hadolint runs ShellCheck on it. Fix, do not ignore.
 - Validate Compose files: `docker compose config --quiet`.
-- Check in one call, hadolint from its image when it is not installed (the mount lets it read `.hadolint.yaml`; name every Dockerfile; add the compose check only when a compose file exists): `rc=0; docker run --rm -v "$PWD:/w" -w /w hadolint/hadolint:<tag> hadolint Dockerfile || rc=1; docker compose config --quiet || rc=1; [ "$rc" -eq 0 ]`.
+- Check in one call, hadolint from its image when it is not installed (stdin works in every shell, Git Bash on Windows included; one hadolint per Dockerfile; add the compose check only when a compose file exists): `rc=0; docker run --rm -i hadolint/hadolint:<tag> hadolint --failure-threshold warning - < Dockerfile || rc=1; docker compose config --quiet || rc=1; [ "$rc" -eq 0 ]`.
 
-`.hadolint.yaml`:
+Through stdin the container does not see `.hadolint.yaml`, so `trustedRegistries` is not checked locally. CI runs hadolint (binary or the hadolint action) from the repo root, where it reads `.hadolint.yaml`:
 
 ```yaml
 failure-threshold: warning
@@ -30,7 +30,7 @@ trustedRegistries:
 - Exec form for `CMD`/`ENTRYPOINT` (`["app", "--flag"]`) so signals reach the process.
 - Add a `HEALTHCHECK` (or a probe in the orchestrator) that hits a real readiness endpoint.
 - Keep a `.dockerignore` that excludes `.git`, `node_modules`, build output, `.env*` and local secrets.
-- Compose: no top-level `version:` key (obsolete); use `name:` for the project name. Use `depends_on` with `condition: service_healthy`.
+- Compose: no top-level `version:` key (obsolete); use `name:` for the project name. Use `depends_on` with `condition: service_healthy` only for a dependency the service needs to start (a database before the app). A monitor (Prometheus) never waits on what it monitors.
 
 ```dockerfile
 FROM golang:1.27@sha256:<digest> AS build

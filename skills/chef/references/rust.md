@@ -20,7 +20,7 @@ Verified against Rust 1.100, cargo-nextest 0.9.152, cargo-llvm-cov 0.9.1, cargo-
   unwrap_used = "warn"
   expect_used = "warn"
   ```
-  CI: `cargo clippy --all-targets --all-features -- -D warnings`.
+  CI: `cargo clippy --all-targets --all-features -- -D warnings`. Never add `-A`/`--allow` on the command line: it hides a lint like `#[allow]` does.
 
 ## Unsafe
 
@@ -37,13 +37,23 @@ Verified against Rust 1.100, cargo-nextest 0.9.152, cargo-llvm-cov 0.9.1, cargo-
 ## Code
 
 - Type every function signature and public field; let `let` bindings and closures infer when the type is obvious.
-- Errors: `Result` with `thiserror` in libraries, `anyhow` in binaries. No `unwrap()`/`expect()` outside tests.
+- Errors: `Result` with `thiserror` in libraries, `anyhow` in binaries. No `unwrap()`/`expect()`, tests included: `unwrap_used`/`expect_used` fire there too.
 - Small modules, traits for seams that tests need to replace.
 - Newtypes for domain values (`struct UserId(u64)`), not bare primitives.
 
 ## Tests
 
 - Unit tests in `#[cfg(test)] mod tests` next to the code; integration tests in `tests/`.
+- Tests and the helpers in `tests/` return `Result` and use `?`:
+  ```rust
+  #[test]
+  fn parse_port_with_valid_text_returns_port() -> Result<(), Box<dyn std::error::Error>> {
+      let port: u16 = parse_port(" 8080 ")?;
+      assert_eq!(port, 8080);
+      Ok(())
+  }
+  ```
+  Check an error with `assert!(parse_port("").is_err())`, or a variant with `assert!(matches!(result, Err(ref error) if *error.kind() == IntErrorKind::InvalidDigit))`. Clippy rejects `matches!(result, Err(_))`.
 - Runner: `cargo nextest run`. Nextest does not run doctests, so also run `cargo test --doc`.
 - Coverage: `cargo llvm-cov nextest --lcov --output-path lcov.info` (needs the `llvm-tools-preview` component). Gate with `--fail-under-lines 90`.
 - Property tests: `proptest`. Mutation testing: `cargo-mutants`.
