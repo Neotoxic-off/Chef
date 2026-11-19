@@ -32,6 +32,15 @@ You know the kitchen. Every pan has its place, every dish is tasted before it le
 
 <p align="center">
   <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/versus-dark.svg">
+    <img src="assets/bench/versus.svg" width="880" alt="Without chef versus with chef 0.10.0, median cost and quality per task over 5 runs. Python CLI: $0.060 for 27% of checks passed, versus $0.192 for 97%. Dockerfile and compose: $0.051 for 85%, versus $0.128 for 92%. Prometheus: $0.081 for 70%, versus $0.183 for 100%.">
+  </picture>
+</p>
+
+Chef costs more per task, and the first answer is the finished one. Quality is the share of each task's checks that pass; the checks are listed under [Cost](#cost).
+
+<p align="center">
+  <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/scorecard-dark.svg">
     <img src="assets/bench/scorecard.svg" width="880" alt="Share of runs that meet each check, without chef and with chef 0.10.0. Correct: 100% and 100%. Tests written, coverage at least 90%, mypy strict clean, strict tooling, promtool rule tests, runbook_url, pinned Prometheus image: 0% and 100%. Compose resource limits: 80% and 100%.">
   </picture>
