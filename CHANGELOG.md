@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.1 (2026-11-19)
+
+- `pin-gate.sh` checks only the workflows Claude edited in the session (recorded by a `PostToolUse` hook on Edit/Write), and blocks once instead of every turn.
+- `/chef:status` reads the current session's transcript by session id, not the newest one in the project.
+
 ## 0.8.0 (2026-11-19)
 
 - Levels `lite | full | max`, set with `/chef:level`. `full` stays the default. `lite` keeps every code rule but drops the council and the reviewer; `max` runs both on every non-trivial change.

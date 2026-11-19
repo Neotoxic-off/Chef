@@ -91,3 +91,21 @@ teardown() {
   run detected_stacks "${CLAUDE_PROJECT_DIR}"
   [ "${output}" = "stacks: none detected" ]
 }
+
+@test "reads this session's transcript even when another session wrote later" {
+  local folder=""
+  folder="${CLAUDE_PROJECT_DIR}/config/projects/$(transcript_folder_name "${CLAUDE_PROJECT_DIR}")"
+  mkdir -p "${folder}"
+  printf '%s\n' '{"message":{"id":"msg_S","role":"assistant","usage":{"input_tokens":3,"output_tokens":0}}}' > "${folder}/mine.jsonl"
+  touch -d '2020-01-01' "${folder}/mine.jsonl"
+  printf '%s\n' '{"message":{"id":"msg_O","role":"assistant","usage":{"input_tokens":9,"output_tokens":0}}}' > "${folder}/other.jsonl"
+  CHEF_SESSION_ID="mine" CLAUDE_CONFIG_DIR="${CLAUDE_PROJECT_DIR}/config" run main
+  [[ "${output}" == *"tokens: 3 input"* ]]
+}
+
+@test "unknown session id fails with a clear error" {
+  mkdir -p "${CLAUDE_PROJECT_DIR}/config/projects/$(transcript_folder_name "${CLAUDE_PROJECT_DIR}")"
+  CHEF_SESSION_ID="nope" CLAUDE_CONFIG_DIR="${CLAUDE_PROJECT_DIR}/config" run main
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"no transcript for session nope"* ]]
+}

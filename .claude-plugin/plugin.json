@@ -1,5 +1,5 @@
 {
   "name": "chef",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Chef mode: house coding habits, per-stack references and a council of agents."
 }

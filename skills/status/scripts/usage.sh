@@ -24,12 +24,27 @@ transcript_folder_name() {
   printf '%s\n' "${native_path//[^[:alnum:]]/-}"
 }
 
-newest_transcript() {
-  local root=""
-  local folder=""
+transcript_folder() {
+  local root="" folder_name=""
   root="$(project_dir)"
-  folder="$(transcript_folder_name "${root}")"
-  folder="${CLAUDE_CONFIG_DIR:-${HOME}/.claude}/projects/${folder}"
+  folder_name="$(transcript_folder_name "${root}")"
+  printf '%s/projects/%s\n' "${CLAUDE_CONFIG_DIR:-${HOME}/.claude}" "${folder_name}"
+}
+
+# CHEF_SESSION_ID (set by the skill from ${CLAUDE_SESSION_ID}) picks this session even when another one wrote later.
+session_transcript() {
+  local folder=""
+  folder="$(transcript_folder)"
+  if [[ -z "${CHEF_SESSION_ID:-}" ]]; then
+    newest_transcript "${folder}"
+    return
+  fi
+  [[ -f "${folder}/${CHEF_SESSION_ID}.jsonl" ]] || die "no transcript for session ${CHEF_SESSION_ID} in ${folder}"
+  printf '%s\n' "${folder}/${CHEF_SESSION_ID}.jsonl"
+}
+
+newest_transcript() {
+  local -r folder="$1"
   local newest=""
   local candidate=""
   for candidate in "${folder}"/*.jsonl; do
@@ -131,7 +146,7 @@ usage_report() {
 
 main() {
   local transcript_path="${1:-}"
-  if [[ -z "${transcript_path}" ]]; then transcript_path="$(newest_transcript)"; fi
+  if [[ -z "${transcript_path}" ]]; then transcript_path="$(session_transcript)"; fi
   [[ -f "${transcript_path}" ]] || die "transcript not found: ${transcript_path}"
   local -a transcript_paths=("${transcript_path}" "${transcript_path%.jsonl}/${SUBAGENTS_DIR_NAME}"/*.jsonl)
   local root=""

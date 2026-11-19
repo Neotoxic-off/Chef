@@ -107,7 +107,7 @@ To pick how much ceremony chef uses, per project:
 
 The level and other answers (strict mode, coverage target, council on or off) are kept in `.chef.md` at the project root, so chef does not ask twice. `/chef:status` shows the level, the overrides, the detected stacks and the session's token use.
 
-Two Stop hooks check what prose rules could not enforce. `pin-gate.sh` blocks once if a changed GitHub workflow uses an action not pinned by commit SHA. During `/chef:transform`, the stop gate requires a `Target:` runtime, a `## Council` section and one commit per ticked batch.
+Two Stop hooks check what prose rules could not enforce. `pin-gate.sh` blocks once per session if a GitHub workflow Claude edited uses an action not pinned by commit SHA; workflows you edit yourself are not checked. During `/chef:transform`, the stop gate requires a `Target:` runtime, a `## Council` section and one commit per ticked batch.
 
 To change a habit, edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or the stack's file in [`skills/chef/references/`](skills/chef/references/) (listed in [`INDEX.md`](skills/chef/references/INDEX.md)). Run `bash scripts/check.sh` before you push; CI runs it too.
 

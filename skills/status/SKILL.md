@@ -8,7 +8,7 @@ description: Show the chef status of this project and session - active level, .c
 Run this command and print its output as is, in a code block. Say nothing else.
 
 ```bash
-bash "${CLAUDE_PLUGIN_ROOT}/skills/status/scripts/usage.sh"
+CHEF_SESSION_ID="${CLAUDE_SESSION_ID}" bash "${CLAUDE_PLUGIN_ROOT}/skills/status/scripts/usage.sh"
 ```
 
-The script finds the current session transcript itself. If it exits with an error, print its error line and stop.
+The script reads this session's transcript (by session id). If it exits with an error, print its error line and stop.

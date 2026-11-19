@@ -1,5 +1,5 @@
 {
-  "description": "Route every development prompt through the chef skill and block unpinned GitHub Actions.",
+  "description": "Route every development prompt through the chef skill and block unpinned GitHub Actions in workflows Claude edits.",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -17,8 +17,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pin-gate.sh\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pin-gate.sh\" check",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pin-gate.sh\" record",
+            "timeout": 5
           }
         ]
       }
