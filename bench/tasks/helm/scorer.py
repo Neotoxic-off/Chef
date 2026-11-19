@@ -47,9 +47,12 @@ def helm(workspace: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
     return docker_run([*docker_mount(workspace), HELM_IMAGE, *arguments], workspace)
 
 
+def set_flags() -> list[str]:
+    return [flag for value in TEST_VALUES for flag in ("--set", value)]
+
+
 def render(workspace: Path) -> str | None:
-    set_flags: list[str] = [flag for value in TEST_VALUES for flag in ("--set", value)]
-    outcome: subprocess.CompletedProcess[str] = helm(workspace, "template", "bench", CHART_DIR, *set_flags)
+    outcome: subprocess.CompletedProcess[str] = helm(workspace, "template", "bench", CHART_DIR, *set_flags())
     return outcome.stdout if outcome.returncode == 0 else None
 
 
@@ -161,7 +164,8 @@ def every_deployment(deployments: list[dict[str, Any]], check: Callable[[dict[st
 def score(workspace: Path) -> Metrics:
     if not (workspace / "chart" / "Chart.yaml").is_file():
         return dict(EMPTY_METRICS)
-    lint_passes: bool = helm(workspace, "lint", CHART_DIR).returncode == 0
+    # Lint with the values the chart is rendered with: a chart may rightly require an image.
+    lint_passes: bool = helm(workspace, "lint", CHART_DIR, *set_flags()).returncode == 0
     rendered: str | None = render(workspace)
     if rendered is None:
         return dict(EMPTY_METRICS)

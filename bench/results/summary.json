@@ -1,0 +1,605 @@
+{
+  "versions": [
+    "2.1.328 (Claude Code)",
+    "model: claude-sonnet-5-5",
+    "arm none: ",
+    "arm control: control.md",
+    "arm chef: chef-1.0"
+  ],
+  "arms": [
+    "chef",
+    "control",
+    "none"
+  ],
+  "tasks": {
+    "chef": {
+      "bugfix": {
+        "cost_usd": 0.123,
+        "turns": 12,
+        "output_tokens": 2127,
+        "cache_write_tokens": 21593,
+        "hidden_test_passes": 1.0
+      },
+      "csharp": {
+        "cost_usd": 0.172,
+        "turns": 9,
+        "output_tokens": 4539,
+        "cache_write_tokens": 25252,
+        "hidden_test_passes": 1.0
+      },
+      "docker": {
+        "cost_usd": 0.113,
+        "turns": 11,
+        "output_tokens": 2218,
+        "cache_write_tokens": 17513,
+        "hidden_test_passes": null
+      },
+      "github-actions": {
+        "cost_usd": 0.112,
+        "turns": 13,
+        "output_tokens": 1905,
+        "cache_write_tokens": 17328,
+        "hidden_test_passes": 1.0
+      },
+      "go": {
+        "cost_usd": 0.134,
+        "turns": 7,
+        "output_tokens": 4310,
+        "cache_write_tokens": 19411,
+        "hidden_test_passes": 1.0
+      },
+      "helm": {
+        "cost_usd": 0.111,
+        "turns": 7,
+        "output_tokens": 2778,
+        "cache_write_tokens": 18282,
+        "hidden_test_passes": 1.0
+      },
+      "java": {
+        "cost_usd": 0.202,
+        "turns": 12,
+        "output_tokens": 8862,
+        "cache_write_tokens": 23838,
+        "hidden_test_passes": 1.0
+      },
+      "prometheus": {
+        "cost_usd": 0.168,
+        "turns": 15,
+        "output_tokens": 5227,
+        "cache_write_tokens": 23227,
+        "hidden_test_passes": null
+      },
+      "python": {
+        "cost_usd": 0.155,
+        "turns": 8,
+        "output_tokens": 5356,
+        "cache_write_tokens": 21120,
+        "hidden_test_passes": 1.0
+      },
+      "refactor": {
+        "cost_usd": 0.377,
+        "turns": 20,
+        "output_tokens": 14542,
+        "cache_write_tokens": 38099,
+        "hidden_test_passes": 1.0
+      },
+      "rust": {
+        "cost_usd": 0.253,
+        "turns": 18,
+        "output_tokens": 10980,
+        "cache_write_tokens": 29019,
+        "hidden_test_passes": 1.0
+      },
+      "terraform": {
+        "cost_usd": 0.146,
+        "turns": 13,
+        "output_tokens": 4484,
+        "cache_write_tokens": 19893,
+        "hidden_test_passes": 1.0
+      },
+      "typescript": {
+        "cost_usd": 0.164,
+        "turns": 9,
+        "output_tokens": 5955,
+        "cache_write_tokens": 20993,
+        "hidden_test_passes": 1.0
+      }
+    },
+    "control": {
+      "bugfix": {
+        "cost_usd": 0.088,
+        "turns": 9,
+        "output_tokens": 1983,
+        "cache_write_tokens": 13871,
+        "hidden_test_passes": 1.0
+      },
+      "csharp": {
+        "cost_usd": 0.05,
+        "turns": 2,
+        "output_tokens": 1278,
+        "cache_write_tokens": 8233,
+        "hidden_test_passes": 1.0
+      },
+      "docker": {
+        "cost_usd": 0.067,
+        "turns": 6,
+        "output_tokens": 1376,
+        "cache_write_tokens": 10214,
+        "hidden_test_passes": null
+      },
+      "github-actions": {
+        "cost_usd": 0.072,
+        "turns": 7,
+        "output_tokens": 1402,
+        "cache_write_tokens": 10142,
+        "hidden_test_passes": 1.0
+      },
+      "go": {
+        "cost_usd": 0.087,
+        "turns": 4,
+        "output_tokens": 3342,
+        "cache_write_tokens": 11139,
+        "hidden_test_passes": 1.0
+      },
+      "helm": {
+        "cost_usd": 0.063,
+        "turns": 4,
+        "output_tokens": 1389,
+        "cache_write_tokens": 9917,
+        "hidden_test_passes": 1.0
+      },
+      "java": {
+        "cost_usd": 0.078,
+        "turns": 3,
+        "output_tokens": 3041,
+        "cache_write_tokens": 10126,
+        "hidden_test_passes": 1.0
+      },
+      "prometheus": {
+        "cost_usd": 0.086,
+        "turns": 6,
+        "output_tokens": 2363,
+        "cache_write_tokens": 11773,
+        "hidden_test_passes": null
+      },
+      "python": {
+        "cost_usd": 0.114,
+        "turns": 7,
+        "output_tokens": 4315,
+        "cache_write_tokens": 13246,
+        "hidden_test_passes": 1.0
+      },
+      "refactor": {
+        "cost_usd": 0.2,
+        "turns": 10,
+        "output_tokens": 8528,
+        "cache_write_tokens": 21126,
+        "hidden_test_passes": 1.0
+      },
+      "rust": {
+        "cost_usd": 0.084,
+        "turns": 4,
+        "output_tokens": 2868,
+        "cache_write_tokens": 11423,
+        "hidden_test_passes": 1.0
+      },
+      "terraform": {
+        "cost_usd": 0.057,
+        "turns": 5,
+        "output_tokens": 1807,
+        "cache_write_tokens": 8974,
+        "hidden_test_passes": 1.0
+      },
+      "typescript": {
+        "cost_usd": 0.132,
+        "turns": 7,
+        "output_tokens": 5171,
+        "cache_write_tokens": 15410,
+        "hidden_test_passes": 1.0
+      }
+    },
+    "none": {
+      "bugfix": {
+        "cost_usd": 0.084,
+        "turns": 8,
+        "output_tokens": 1602,
+        "cache_write_tokens": 13146,
+        "hidden_test_passes": 1.0
+      },
+      "csharp": {
+        "cost_usd": 0.05,
+        "turns": 2,
+        "output_tokens": 1255,
+        "cache_write_tokens": 8255,
+        "hidden_test_passes": 1.0
+      },
+      "docker": {
+        "cost_usd": 0.059,
+        "turns": 6,
+        "output_tokens": 1521,
+        "cache_write_tokens": 9263,
+        "hidden_test_passes": null
+      },
+      "github-actions": {
+        "cost_usd": 0.048,
+        "turns": 4,
+        "output_tokens": 719,
+        "cache_write_tokens": 7966,
+        "hidden_test_passes": 1.0
+      },
+      "go": {
+        "cost_usd": 0.066,
+        "turns": 3,
+        "output_tokens": 2451,
+        "cache_write_tokens": 9408,
+        "hidden_test_passes": 1.0
+      },
+      "helm": {
+        "cost_usd": 0.056,
+        "turns": 3,
+        "output_tokens": 1358,
+        "cache_write_tokens": 8989,
+        "hidden_test_passes": 1.0
+      },
+      "java": {
+        "cost_usd": 0.078,
+        "turns": 3,
+        "output_tokens": 2993,
+        "cache_write_tokens": 10169,
+        "hidden_test_passes": 1.0
+      },
+      "prometheus": {
+        "cost_usd": 0.057,
+        "turns": 3,
+        "output_tokens": 1587,
+        "cache_write_tokens": 8702,
+        "hidden_test_passes": null
+      },
+      "python": {
+        "cost_usd": 0.061,
+        "turns": 3,
+        "output_tokens": 1835,
+        "cache_write_tokens": 8888,
+        "hidden_test_passes": 1.0
+      },
+      "refactor": {
+        "cost_usd": 0.194,
+        "turns": 10,
+        "output_tokens": 9265,
+        "cache_write_tokens": 20110,
+        "hidden_test_passes": 1.0
+      },
+      "rust": {
+        "cost_usd": 0.061,
+        "turns": 2,
+        "output_tokens": 2042,
+        "cache_write_tokens": 9094,
+        "hidden_test_passes": 1.0
+      },
+      "terraform": {
+        "cost_usd": 0.063,
+        "turns": 5,
+        "output_tokens": 2151,
+        "cache_write_tokens": 9434,
+        "hidden_test_passes": 1.0
+      },
+      "typescript": {
+        "cost_usd": 0.072,
+        "turns": 4,
+        "output_tokens": 2397,
+        "cache_write_tokens": 9659,
+        "hidden_test_passes": 1.0
+      }
+    }
+  },
+  "overall": {
+    "chef": {
+      "runs": 39.0,
+      "total_cost_usd": 6.7,
+      "median_cost_usd": 0.155,
+      "correct_rate": 1.0
+    },
+    "control": {
+      "runs": 39.0,
+      "total_cost_usd": 3.91,
+      "median_cost_usd": 0.084,
+      "correct_rate": 1.0
+    },
+    "none": {
+      "runs": 39.0,
+      "total_cost_usd": 2.82,
+      "median_cost_usd": 0.063,
+      "correct_rate": 1.0
+    }
+  },
+  "pairwise": {
+    "chef_vs_none": {
+      "arm_a": "none",
+      "arm_b": "chef",
+      "per_task": {
+        "bugfix": {
+          "b": 1.0,
+          "a": 0.0,
+          "tie": 2.0,
+          "merge_a": 4.0,
+          "merge_b": 6.0,
+          "major_a": 2.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "csharp": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 0.0,
+          "merge_b": 5.0,
+          "major_a": 6.0,
+          "major_b": 1.0,
+          "verdicts": 6.0
+        },
+        "docker": {
+          "b": 1.0,
+          "a": 1.0,
+          "tie": 1.0,
+          "merge_a": 5.0,
+          "merge_b": 3.0,
+          "major_a": 1.0,
+          "major_b": 3.0,
+          "verdicts": 6.0
+        },
+        "github-actions": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 5.0,
+          "merge_b": 6.0,
+          "major_a": 1.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "go": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 4.0,
+          "merge_b": 6.0,
+          "major_a": 2.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "helm": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 0.0,
+          "merge_b": 6.0,
+          "major_a": 16.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "java": {
+          "b": 1.0,
+          "a": 0.0,
+          "tie": 2.0,
+          "merge_a": 6.0,
+          "merge_b": 6.0,
+          "major_a": 0.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "prometheus": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 0.0,
+          "merge_b": 5.0,
+          "major_a": 14.0,
+          "major_b": 1.0,
+          "verdicts": 6.0
+        },
+        "python": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 0.0,
+          "merge_b": 4.0,
+          "major_a": 8.0,
+          "major_b": 2.0,
+          "verdicts": 6.0
+        },
+        "refactor": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 0.0,
+          "merge_b": 4.0,
+          "major_a": 7.0,
+          "major_b": 2.0,
+          "verdicts": 6.0
+        },
+        "rust": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 6.0,
+          "merge_b": 6.0,
+          "major_a": 0.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "terraform": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 6.0,
+          "merge_b": 6.0,
+          "major_a": 0.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "typescript": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 1.0,
+          "merge_b": 6.0,
+          "major_a": 6.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        }
+      },
+      "b_win_rate": 0.91,
+      "b_win_rate_ci95": [
+        0.808,
+        1.0
+      ],
+      "tasks_b_ahead": 12,
+      "tasks_a_ahead": 0,
+      "task_sign_test_p": 0.0005
+    },
+    "chef_vs_control": {
+      "arm_a": "control",
+      "arm_b": "chef",
+      "per_task": {
+        "bugfix": {
+          "b": 0.0,
+          "a": 0.0,
+          "tie": 3.0,
+          "merge_a": 6.0,
+          "merge_b": 6.0,
+          "major_a": 0.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "csharp": {
+          "b": 2.0,
+          "a": 0.0,
+          "tie": 1.0,
+          "merge_a": 0.0,
+          "merge_b": 4.0,
+          "major_a": 6.0,
+          "major_b": 3.0,
+          "verdicts": 6.0
+        },
+        "docker": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 0.0,
+          "merge_b": 4.0,
+          "major_a": 8.0,
+          "major_b": 2.0,
+          "verdicts": 6.0
+        },
+        "github-actions": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 6.0,
+          "merge_b": 6.0,
+          "major_a": 0.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "go": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 6.0,
+          "merge_b": 6.0,
+          "major_a": 0.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "helm": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 0.0,
+          "merge_b": 6.0,
+          "major_a": 18.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "java": {
+          "b": 2.0,
+          "a": 0.0,
+          "tie": 1.0,
+          "merge_a": 6.0,
+          "merge_b": 6.0,
+          "major_a": 0.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "prometheus": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 0.0,
+          "merge_b": 6.0,
+          "major_a": 11.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "python": {
+          "b": 2.0,
+          "a": 1.0,
+          "tie": 0.0,
+          "merge_a": 2.0,
+          "merge_b": 4.0,
+          "major_a": 7.0,
+          "major_b": 3.0,
+          "verdicts": 6.0
+        },
+        "refactor": {
+          "b": 1.0,
+          "a": 0.0,
+          "tie": 2.0,
+          "merge_a": 4.0,
+          "merge_b": 4.0,
+          "major_a": 2.0,
+          "major_b": 3.0,
+          "verdicts": 6.0
+        },
+        "rust": {
+          "b": 2.0,
+          "a": 1.0,
+          "tie": 0.0,
+          "merge_a": 6.0,
+          "merge_b": 6.0,
+          "major_a": 0.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "terraform": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 4.0,
+          "merge_b": 6.0,
+          "major_a": 3.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        },
+        "typescript": {
+          "b": 3.0,
+          "a": 0.0,
+          "tie": 0.0,
+          "merge_a": 4.0,
+          "merge_b": 6.0,
+          "major_a": 2.0,
+          "major_b": 0.0,
+          "verdicts": 6.0
+        }
+      },
+      "b_win_rate": 0.859,
+      "b_win_rate_ci95": [
+        0.756,
+        0.949
+      ],
+      "tasks_b_ahead": 12,
+      "tasks_a_ahead": 0,
+      "task_sign_test_p": 0.0005
+    }
+  }
+}

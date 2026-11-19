@@ -449,7 +449,8 @@ def main(out_dir: Path) -> None:
             if scorer is None:
                 print(f"score: no scorer for task {task_dir.name}, skipped", file=sys.stderr)
                 continue
-            runs: list[Metrics] = [score_run(run_dir, scorer) for run_dir in sorted(task_dir.iterdir())]
+            run_dirs: list[Path] = sorted(path for path in task_dir.iterdir() if (path / "workspace").is_dir())
+            runs: list[Metrics] = [score_run(run_dir, scorer) for run_dir in run_dirs]
             report.setdefault(arm_dir.name, {})[task_dir.name] = {"runs": runs, "summary": summarize(runs)}
     print(json.dumps(report, indent=2))
 

@@ -17,12 +17,11 @@
 </p>
 
 <p align="center">
-  <strong>Blind reviewers merge chef's first answer as is 53% of the time, plain Claude's 40%, with 40% fewer "should fix" changes.</strong><br>
-  <strong>Tested code in 100% of the code runs, without chef 0%.</strong><br>
-  <strong>98% line coverage &middot; explicit types &middot; strict linters &middot; pinned images &middot; tested alert rules</strong><br>
-  <strong>And the output works either way:</strong> hidden tests and promtool pass in 100% of runs, with or without chef.<br>
-  <strong>The price: about 2.4–3.5× the cost of a plain run.</strong> v0.10 trims it by about 5%.<br>
-  <sub>Benchmarked in Claude Code, the same agent with and without the plugin: 3 tasks, Sonnet 5.5, 5 runs per arm, every result checked by real tools. <a href="#numbers">Details</a>.</sub>
+  <strong>Blind reviewers would merge chef's code as is 88% of the time, plain Claude's 47%.</strong><br>
+  <strong>Preferred on 12 of 13 tasks against plain Claude and against the same rules pasted in an AGENTS.md (p = 0.0005).</strong><br>
+  <strong>Tests, typed signatures, strict linters, pinned images and actions, tested alert rules.</strong><br>
+  <strong>The price: about 2.4× the cost of a plain run.</strong> Every arm passes every task's correctness check.<br>
+  <sub>Benchmarked in Claude Code on 13 tasks across 11 stacks, Sonnet 5.5, 3 runs per arm, judged by blind Opus reviewers who never knew chef existed. <a href="#numbers">Details</a>.</sub>
 </p>
 
 ---
@@ -31,135 +30,53 @@ You know the kitchen. Every pan has its place, every dish is tasted before it le
 
 ## Numbers
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/versus-dark.svg">
-    <img src="assets/bench/versus.svg" width="880" alt="Without chef versus with chef 0.10.0, median cost and quality per task over 5 runs. Python CLI: $0.060 for 27% of checks passed, versus $0.192 for 97%. Dockerfile and compose: $0.051 for 85%, versus $0.128 for 92%. Prometheus: $0.081 for 70%, versus $0.183 for 100%.">
-  </picture>
-</p>
-
-Cost is the median of 5 runs. Quality and "would merge as is" come from a panel of blind judges that never knew chef was involved; see [Blind review panel](#blind-review-panel).
+Three arms, the same prompt and model (Sonnet 5.5) for each: **plain Claude**, a **control** (plain Claude with chef's 12 core rules in a `CLAUDE.md`, the cheap alternative), and **chef 1.0**. 13 tasks, 3 runs per arm, 117 runs in all.
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/scorecard-dark.svg">
-    <img src="assets/bench/scorecard.svg" width="880" alt="Share of runs that meet each check, without chef and with chef 0.10.0. Correct: 100% and 100%. Tests written, coverage at least 90%, mypy strict clean, strict tooling, promtool rule tests, runbook_url, pinned Prometheus image: 0% and 100%. Compose resource limits: 80% and 100%.">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/pairwise-dark.svg">
+    <img src="assets/bench/pairwise.svg" width="880" alt="Blind pairwise win rate of chef 1.0 per task, ties count half. Against plain Claude: 100% on 10 tasks, 67% on the bug fix and Java, 50% on Dockerfile and compose. Against the control: 100% on 7 tasks, 83% on C# and Java, 67% on Python, the refactor and Rust, 50% on the bug fix.">
   </picture>
 </p>
 
-<details>
-<summary><strong>All checks, with chef 0.9.0</strong></summary>
-
-Share of runs that meet each check, 5 runs per arm.
-
-| Check | Without chef | Chef 0.9.0 | Chef 0.10.0 |
+| | Plain Claude | Control (`AGENTS.md` rules) | Chef 1.0 |
 |---|---|---|---|
-| Works: hidden test passes, `promtool check config` and `check rules` pass | 100% | 100% | 100% |
-| Python: tests written (median) | 0 | 33 | 29 |
-| Python: line coverage (median) | 0% | 98.4% | 98.4% |
-| Python: `mypy --strict` errors (median) | 1 | 0 | 0 |
-| Python: Ruff and strict type checker configured | 0% | 100% | 100% |
-| Docker: non-root user, healthcheck, `.dockerignore`, hardened compose | 100% | 100% | 100% |
-| Docker: compose resource limits | 80% | 100% | 100% |
-| Docker: base image pinned by digest | 0% | 40% | 40% |
-| Docker: hadolint findings (median) | 0 | 0 | 0 |
-| Prometheus: alert rule unit tests (`promtool test rules`), passing | 0% | 100% | 100% |
-| Prometheus: every alert has `runbook_url` | 0% | 100% | 100% |
-| Prometheus: Prometheus image pinned | 0% | 100% | 100% |
+| Correct: the task's hidden test or check passes | 100% | 100% | 100% |
+| Blind reviewers prefer chef's version (pairs, ties count half) | 91% [81–100] | 86% [76–95] | — |
+| Tasks where chef is ahead / behind | 12 / 0 | 12 / 0 | — |
+| Would merge as is | 47% | 56% | 88–90% |
+| Changes required before merging, per review | 0.81 | 0.73 | 0.12–0.14 |
+| Median cost per task | $0.063 | $0.084 | $0.155 |
 
-</details>
+<sub>Win rate with a 95% bootstrap interval that resamples whole tasks. Ahead / behind counts tasks; a two-sided sign test on 12 / 0 gives p = 0.0005 for both comparisons.</sub>
 
-Without chef, Claude writes code and config that work, and nothing around them: no tests, no rule tests, unpinned images, no strict tooling. With chef, the same output ships with tests, coverage, explicit types, pinned images and tested alert rules. The digest pin fell from 100% in the previous run to 40% in both chef arms; Docker Hub was answering `429 Too Many Requests` during this run, which can block the digest lookup (not verified run by run).
+Every arm writes code that works: correctness is equal. What chef changes is whether a reviewer would accept it. Without chef, about half the submissions need changes before merging; with chef, about one in ten. The same rules pasted in an `AGENTS.md` help a little (56% vs 47% merged as is) but not much, which is where chef's stack references, check commands and workflow earn their cost.
 
 ### Cost
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/cost-dark.svg">
-    <img src="assets/bench/cost.svg" width="880" alt="Median cost per task over 5 runs. Python CLI: $0.060 without chef, $0.211 with chef 0.9.0, $0.192 with chef 0.10.0. Dockerfile and compose: $0.051, $0.128, $0.128. Prometheus: $0.081, $0.189, $0.183.">
+    <img src="assets/bench/cost.svg" width="880" alt="Median cost per task for plain Claude, the control and chef 1.0. Chef costs between $0.11 and $0.38 per task, the others between $0.05 and $0.20. The largest gaps are Rust ($0.061, $0.084, $0.253), C# ($0.050, $0.050, $0.172) and Java ($0.078, $0.078, $0.202).">
   </picture>
 </p>
 
-Median per task, with the min–max over 5 runs. Cost is what `claude -p` reports in `total_cost_usd`.
+**The price is real:** 117 runs cost $2.82 for plain Claude, $3.91 for the control and $6.70 for chef, about 2.4× plain and 1.7× the control. Chef writes the tests, configs and pins the others skip, and runs the checkers. On the compiled stacks (Rust, C#, Java) it costs 2.6–4.1× plain, because building and testing take turns.
 
-| Task | Without chef | Chef 0.9.0 | Chef 0.10.0 |
-|---|---|---|---|
-| Python CLI | $0.060 (0.055–0.063) | $0.211 (0.181–0.271) | $0.192 (0.167–0.247) |
-| Dockerfile + compose | $0.051 (0.049–0.091) | $0.128 (0.115–0.139) | $0.128 (0.118–0.136) |
-| Prometheus | $0.081 (0.061–0.091) | $0.189 (0.183–0.209) | $0.183 (0.167–0.201) |
-| **Sum of medians** | **$0.192** | **$0.528** | **$0.503 (−5%)** |
-| Turns, median (Python / Docker / Prometheus) | 3 / 3 / 6 | 15 / 12 / 13 | 13 / 11 / 12 |
-
-The ranges of 0.9.0 and 0.10.0 overlap on every task, so the −5% is a trend, not a proven saving.
-
-**Checks chef enforces.** The same tasks and runs, scored on the share of each task's checks that pass. These are chef's own rules, so this view favors chef by construction; the [blind review panel](#blind-review-panel) below is the impartial one.
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/quality-dark.svg">
-    <img src="assets/bench/quality.svg" width="880" alt="Quality per task, share of the task's checks passed, mean over 5 runs. Python CLI: 27% without chef, 90% with chef 0.9.0, 97% with chef 0.10.0. Dockerfile and compose: 85%, 92%, 92%. Prometheus: 70%, 100%, 100%.">
-  </picture>
-</p>
-
-| Task | Checks counted | Without chef | Chef 0.10.0 |
-|---|---|---|---|
-| Python CLI | 6: hidden test, tests written, coverage ≥ 90%, `mypy --strict` clean, Ruff clean, strict tool config | 27% | 97% |
-| Dockerfile + compose | 8: digest pin, non-root, healthcheck, `.dockerignore`, valid compose, hardened compose, resource limits, hadolint clean | 85% | 92% |
-| Prometheus | 10: config valid, rules valid, `histogram_quantile`, `for`, `severity`, `summary`, `runbook_url` on every alert, rule tests pass, valid compose, pinned image | 70% | 100% |
-
-### Blind review panel
-
-The checks above are the rules chef enforces, so they favor chef by construction. To judge quality impartially, every output of both arms (3 tasks × 5 runs × 2 arms = 30 submissions) went to a panel of judges that do not know chef exists:
-
-- Each submission is copied to its own temp folder under a random id, without git history, caches or scoring files.
-- Four seats review it: a senior engineer, a security reviewer, an SRE who will run it, and the engineer who will maintain it. Each seat gets one line of role, nothing about tests, types or pins.
-- Every submission and seat is a separate, fresh `claude -p --restricted` session on Opus 5.5 (the code was written by Sonnet 5.5): no plugin, no settings, read-only tools confined to that one folder. No judge sees another submission, another review, or which arm wrote it. The prompt asks for a teammate's review, not a benchmark.
-- All 120 reviews are kept; none were dropped. Prompt: [`bench/judge.md`](bench/judge.md), harness: [`bench/blind_review.py`](bench/blind_review.py).
-
-| Task | Quality /10 | Would merge as is | "Major" changes asked per review | "Minor" per review |
-|---|---|---|---|---|
-| Python CLI | 7.40 → **8.10** | 30% → **65%** | 1.25 → **0.40** | 4.3 → 4.2 |
-| Dockerfile + compose | 8.00 → 7.90 | 80% → 70% | 0.25 → 0.35 | 5.65 → 5.2 |
-| Prometheus | 6.85 → **7.50** | 10% → **25%** | 1.85 → **1.25** | 5.5 → 5.85 |
-| **Mean** | 7.42 → **7.83** | 40% → **53%** | 1.12 → **0.67** | 5.15 → 5.08 |
-
-<sub>Without chef → chef 0.10.0. Correctness was rated about the same in both arms (8.2 vs 8.4 out of 10). No blocker in any chef review; one in a review without chef.</sub>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/panel-majors-dark.svg">
-    <img src="assets/bench/panel-majors.svg" width="880" alt="Blind panel: 'should fix before merge' changes requested per review, without chef versus chef 0.10.0. Python 1.25 vs 0.40, Docker 0.25 vs 0.35, Prometheus 1.85 vs 1.25, all tasks 1.12 vs 0.67.">
-  </picture>
-</p>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/panel-seats-dark.svg">
-    <img src="assets/bench/panel-seats.svg" width="880" alt="Blind panel quality score out of 10 by reviewer seat, without chef versus chef 0.10.0. Senior 7.53 vs 7.80, security 7.47 vs 8.07, SRE 7.20 vs 7.53, maintainer 7.47 vs 7.93.">
-  </picture>
-</p>
-
-The impartial verdict is smaller than the checks suggest, and still in chef's favor: on the Python and Prometheus tasks, chef's first answer is merged as is about twice as often and needs a third to two thirds fewer "should fix before merge" changes. On the Dockerfile task, plain Claude was already good, and the panel rated both arms the same within noise. Every seat (senior, security, operations, maintainer) scored chef higher on average.
-
-**Where the money goes.** A per-call trace of one chef run (Prometheus, $0.239) splits as follows, with the official cache multipliers for Sonnet 5.5 (1-hour cache write 2× input, cache read 0.05× input):
+**Where the money goes.** A per-call trace of one chef run splits its cost like this, with the official cache multipliers for Sonnet 5.5:
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/cost-split-dark.svg">
-    <img src="assets/bench/cost-split.svg" width="880" alt="Where the cost of one traced chef run goes: cache writes 57% (34k tokens), output 28% (6.7k tokens), cache reads 15% (355k tokens).">
+    <img src="assets/bench/cost-split.svg" width="880" alt="Where the cost of one traced chef run goes: cache writes 57%, output 28%, cache reads 15%.">
   </picture>
 </p>
 
-So the extra cost of chef is mostly the extra work: more files written, more checks run, and their output entering the context. The rules text is a small part. Counting cache reads as "tokens" overstates the cost: the previous README did, and its "−11% tokens" for 0.9.0 was within noise.
+The rules text is a small part of it; the extra work is most of it. Chef 1.0 keeps that work tight: one call per stack check with quiet flags, references read in one batch from an inline index, no file read back after writing it.
 
-**What 0.10.0 changes.**
+### Using chef's rules elsewhere
 
-- The skill gives the exact path of its references (`${CLAUDE_SKILL_DIR}/references/INDEX.md`) and forbids listing the folder. One traced 0.9.0 run spent 16k characters on such a listing; none of the 30 chef runs here did, so this guards a rare case.
-- A "Few tokens" section: one call per stack check, quiet flags, batched reads and writes, no read-back of a file just written.
-- One-call check commands in `python.md`, `docker.md`, `prometheus.md` and `ci.md` that fail if any tool fails, with promtool and hadolint from their images when not installed.
-- `scripts/check.sh` fails if `SKILL.md` grows past 10.5 KB, or any reference or `team.md` past 6 KB.
-
-Every result is checked by running tools on the output, with the agent's own tool config ignored: a hidden test that calls the function the prompt asked for, `promtool check config`, `check rules` and `test rules`, `mypy --strict`, Ruff, hadolint, and measured line coverage. See [Benchmark details](#benchmark-details).
+[`export/AGENTS.md`](export/AGENTS.md) holds chef's 12 core rules for any agent that reads `AGENTS.md` (Codex, Cursor, Copilot, Gemini CLI and others) or `CLAUDE.md`. It is exactly the control arm above: it buys a small part of chef's effect for about a quarter of its extra cost. CI keeps it identical to the core of [`SKILL.md`](skills/chef/SKILL.md).
 
 ## Before / after
 
@@ -251,6 +168,7 @@ The house rules, in priority order: **clarity, simplicity, maintainability, secu
 - **Typed signatures:** every function signature and public field typed, locals per the language's idiom, no `any`.
 - **Tests with every change:** unit and integration, a 90% line and branch coverage gate, mutation testing on critical logic.
 - **Never hide a warning.** Fix the cause. No suppression comments, no `|| true`, no lowered thresholds.
+- **Pin what you depend on:** lockfiles, image digests, action SHAs.
 - **SOLID, few comments.** If code needs many, it is not clear enough.
 - **`try`/`catch` only when nothing else works:** check first (`TryParse`, `dict.get`, `Result`), except for files and network.
 - **Before heavy commands** (builds, test suites, installs): check free RAM and CPU first.
@@ -327,7 +245,7 @@ That's it. A `UserPromptSubmit` hook routes every development prompt through che
 No. `.chef.md` at the project root is created only when you set a level or answer a question chef would otherwise ask again. Commit it to share the choices with your team.
 
 **It costs more. Can I turn it down?**
-`/chef:level lite` keeps every code rule but drops the council and the reviewer agent, the biggest extra cost on large tasks. On small tasks, most of the extra cost is the tests and checks themselves (see [Cost](#cost)).
+`/chef:level lite` keeps every code rule but drops the council and the reviewer agent, the biggest extra cost on large tasks. On small tasks, most of the extra cost is the tests and checks themselves (see [Cost](#cost)). For the lightest option, copy [`export/AGENTS.md`](export/AGENTS.md) into your project instead of installing the plugin.
 
 **Will it rewrite my legacy code?**
 No. Its style rules apply to the lines it adds or must change. Strict mode is asked first in an existing project, and `/chef:transform` keeps the diff to what the migration needs.
@@ -340,36 +258,48 @@ Because the kitchen has rules, and the dish is tasted before it leaves.
 
 ## Benchmark details
 
-Same prompt, same model (Sonnet 5.5), fresh git folder each time, run on Nov 19, 2026 with Claude Code 2.1.328. For each task and run, the three arms run side by side: no plugin, chef 0.9.0 and chef 0.10.0. User settings, other plugins and MCP servers are off in every arm (`--setting-sources project --strict-mcp-config`); only the chef arms get `--plugin-dir`. Each prompt ends with "Work autonomously: nobody will answer questions."
+Run on Nov 19, 2026 with Claude Code 2.1.328 and Sonnet 5.5. For each task and run, the three arms run side by side in fresh git folders. User settings, other plugins and MCP servers are off in every arm (`--setting-sources project --strict-mcp-config`); the control gets its rules as the workspace `CLAUDE.md`, chef gets `--plugin-dir`. Every prompt states the task only, never tests, types or style, and ends with "Work autonomously: nobody will answer questions." Each run is capped at $1. The machine had every toolchain installed (Node, Go, Rust, .NET, JDK + Maven, Terraform, Helm, actionlint, Docker), the same for every arm.
 
-The harness is in [`bench/`](bench/):
+| Task | The prompt asks for | Correctness check |
+|---|---|---|
+| Python CLI | A TOML endpoint validator | Hidden pytest |
+| TypeScript module | A duration parser | Hidden `node:test` |
+| Go package | A port-range parser | Hidden `_test.go` |
+| Rust crate | A semantic version comparator | Hidden integration test |
+| C# library | An invoice calculator | Hidden xUnit project |
+| Java library | A duration parser (Maven) | Hidden JUnit 5 test |
+| Dockerfile + compose | Containerize a small HTTP service | `docker build`, then `GET /health` |
+| Prometheus | Scrape config and three alerts | `promtool check config` and `check rules` |
+| Terraform module | An S3 log bucket | `terraform validate` and plan checks |
+| Helm chart | Deploy the HTTP service | `helm lint`, `kubeconform -strict`, rendered requirements |
+| GitHub Actions | CI for a small Python project | `actionlint`, triggers and test step |
+| Bug fix (TypeScript) | A user's bug report on a cart module | Hidden test of the scenario plus regressions |
+| Refactor (Python) | Clean up a messy invoice module | 89-case characterization test |
+
+**Judging.** For every task and run, chef's workspace and the other arm's go side by side, as `first/` and `second/`, to a blind Opus 5.5 reviewer asked which one it would merge, from the seats of a senior engineer, a security reviewer, an SRE and a maintainer. History, caches and files that name a tool (`CLAUDE.md`, `AGENTS.md`, `.chef.md`) are removed. Each pair is judged twice, in both orders, by separate `claude -p --restricted` sessions with read-only tools confined to that folder; a win counts only when both orders agree, otherwise it is a tie. 156 judgments in all.
+
+Reproduce:
 
 ```bash
-bash bench/run.sh <new-out-dir> 5 none= old=<chef-0.9.0-dir> new=<chef-dir>
+bash bench/run.sh <new-out-dir> 3 none= control=export/AGENTS.md chef=<chef-dir>
 python bench/score.py <out-dir> > scores.json
-python bench/blind_review.py <out-dir> <new-review-dir> none new
-python bench/blind_review.py summarize <review-dir>
-python bench/charts.py   # after copying the new numbers into it
+python bench/pairwise_review.py judge <out-dir> <review-dir> none chef
+python bench/pairwise_review.py summarize <review-dir> > chef-vs-none.json
+python bench/report.py scores.json <out-dir>/versions.txt chef-vs-none.json chef-vs-control.json
+python bench/charts.py
 ```
 
-`run.sh` keeps each run's `stream.jsonl` (every call, tool and usage) and writes `versions.txt`. `score.py` needs pytest, pytest-cov, mypy, Ruff, PyYAML and a running Docker daemon (hadolint and promtool run from their official images). It reports the median for measurements, the share of runs for checks, and cache writes, cache reads, output tokens, tool calls and tool output size separately.
-
-| Task | Prompt, in short | What is checked |
-|---|---|---|
-| Python CLI | TOML endpoint validator, `find_invalid(path)` in `endpoints.py` | Hidden pytest, tests written, line coverage, `mypy --strict`, Ruff, tool config |
-| Dockerfile + compose | Containerize a stdlib HTTP service with `/health` | `docker build` and `/health`, hadolint, digest pin, non-root, healthcheck, `.dockerignore`, `docker compose config`, `read_only` + `no-new-privileges` or `cap_drop: ALL`, resource limits |
-| Prometheus | Scrape config, alerts for down, 5xx ratio > 5%, p95 > 500 ms, compose | `promtool check config --syntax-only`, `check rules`, `test rules`, `for`, `severity`, `summary`, `runbook_url`, `histogram_quantile` on `_bucket`, pinned image |
+`TASKS="python go"` runs a subset. The scorers need pytest, pytest-cov, mypy, Ruff, PyYAML, zizmor and Docker; numbers and charts come from [`bench/results/summary.json`](bench/results/summary.json).
 
 <details>
 <summary><strong>Weak spots and limits</strong></summary>
 
-- 5 runs per arm shows trends, not proof: at this variance, a 10% effect needs far more runs. Claim a saving only when the ranges stop overlapping.
-- Docker Hub rate-limited this machine (`429 Too Many Requests`) during the runs and the scoring, so `docker build` failed in most Docker runs. The container health check is not reported here; in the previous run every Docker output built and answered `/health`, with and without chef.
-- The 0.10.0 arm ran a snapshot taken just before a final review pass. That pass only changed the wording of the one-call check commands (exit code, hadolint config mount), not their length.
-- The cost split comes from one traced run and uses Sonnet 5.5 base prices from third-party pages; the multipliers are official.
-- No run used subagents, so these tasks measure the rules, not the council or the reviewer.
-- The blind judges are Claude models too (Opus 5.5 judging Sonnet 5.5 output), so a shared taste between model families cannot be ruled out. The panel cost $7.05 for 120 reviews.
-- Times are inflated by three runs in parallel on the same machine. Compare the arms, not the absolute seconds.
-- Earlier benchmarks (0.8.1 with five tasks, and 0.8.1 vs 0.9.0 with 2 runs) are in the git history of this README.
+- 3 runs per arm per task. The task-level result (12 of 13 ahead, none behind) is significant; per-task win rates are not.
+- The judge is a Claude model (Opus 5.5 judging Sonnet 5.5 code), so a shared taste cannot be ruled out. Pairwise judging in both orders removes position bias, not model bias.
+- Blind folders hide names, not style: a reviewer can see that one side wrote tests and configs. That is what the reviewer is asked to weigh, but it means "blind" covers identity, not approach.
+- The tasks are small, single-session and mostly new code; two (the bug fix and the refactor) change existing code. No run used chef's council or reviewer agents, so they are not measured here.
+- One chef run of the refactor task wrote scratch files next to its workspace, outside it. Nothing was harmed, but the harness now ignores such folders.
+- The cost split comes from one traced run.
+- Earlier benchmarks (0.8 to 0.10) are in the git history of this README.
 
 </details>

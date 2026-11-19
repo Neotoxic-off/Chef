@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.0 (2026-11-20)
+
+Stable release. The public contract under semantic versioning: the commands (`/chef:chef`, `/chef:level`, `/chef:status`, `/chef:transform`), the levels (`lite`, `full`, `max`), the `.chef.md` keys, the agent names, the hook behaviour, and `export/AGENTS.md`.
+
+- `SKILL.md` opens with 12 core rules, then an inline index of the common stack references (one read less before the first edit), then the detailed house rules.
+- Types follow each language's idiom: every signature and public field typed, locals as the language expects (`:=` in Go, `var` in C# and Java, `let` in Rust when the type is obvious). References, reviewer, senior and transform updated to match.
+- `export/AGENTS.md`: chef's core rules for any agent that reads `AGENTS.md` or `CLAUDE.md`. `scripts/check.sh` keeps it identical to the core of `SKILL.md`, and checks that `plugin.json` matches this file's version.
+- Agents receive the skill's path in their brief instead of searching the disk for it.
+- Config comments in references no longer say "house rule", which leaked into generated code.
+- Benchmark: 13 tasks across 11 stacks (Python, TypeScript, Go, Rust, C#, Java, Docker, Prometheus, Terraform, Helm, GitHub Actions, plus a bug fix and a refactor), a control arm (the core rules in a `CLAUDE.md`), blind pairwise judging in both orders, task-level sign test and bootstrap interval, results in `bench/results/summary.json` and charts generated from it.
+- Results: every arm passes every correctness check; blind reviewers prefer chef on 12 of 13 tasks against plain Claude and against the control (p = 0.0005), would merge its code as is 88% of the time against 47% and 56%; chef costs about 2.4× plain Claude.
+
 ## 0.10.0 (2026-11-19)
 
 - Fewer tokens, from a council review and a per-call trace: cache writes are about 57% of a run's cost, output 28%, cache reads 15%.
