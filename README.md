@@ -181,29 +181,51 @@ def validate_url_parts(url: str) -> str | None:
 
 ## Benchmark
 
-Same prompt, same model (Sonnet 5.5), fresh folder each time. The only difference: the chef plugin. Every other plugin is off in both arms. 4 tasks × 2 runs per arm.
+Same prompt, same model (Sonnet 5.5), fresh git folder each time. The only difference: the chef plugin. Every other plugin is off in both arms. 5 tasks × 2 runs per arm, run on Nov 19, 2026.
+
+### Comparison: new code
 
 | Task | Metric | Without chef | With chef |
 |---|---|---|---|
-| C# library | Test cases written | 0 | 6.5 |
-| | Tests pass | no tests | 2/2 |
-| | `var` (inferred types) | 3 | 0 |
+| C# library | Test cases written | 1.5 | 8.5 |
+| | Tests pass | 1/1 | 2/2 |
+| | `var` (inferred types) | 5.5 | 0 |
 | | `TreatWarningsAsErrors` | 0/2 | 2/2 |
-| Python CLI | Test cases written | 0 | 13.5 |
+| Python CLI | Test cases written | 0 | 14.5 |
 | | Tests pass | no tests | 2/2 |
 | | Fully annotated functions | 0% | 100% |
 | | Ruff + strict type checker config | 0/2 | 2/2 |
-| | `try` blocks | 4 | 2 |
-| TypeScript module | Test cases written | 0 | 6 |
-| | Tests pass | 0/1 | 0/2 |
-| | `strict` tsconfig | 1/2 | 2/2 |
-| | Untyped `const`/`let` | 2.5 | 2.5 |
-| Dockerfile + CI | `HEALTHCHECK` | 0/2 | 2/2 |
-| | Base image pinned by digest, actions pinned by SHA | 0/2 | 0/2 |
-| All tasks | Comment lines per code line | 0.05–0.11 | 0.01–0.03 |
-| | Cost per task | $0.08–0.12 | $0.15–0.29 |
-| | Time per task | 10–24 s | 18–69 s |
+| | `try` blocks | 3.5 | 2 |
+| TypeScript module | Test cases written | 4 | 6 |
+| | Tests pass | 2/2 | 2/2 |
+| | Untyped `const`/`let` | 7.5 | 0 |
+| | ESLint config | 0/2 | 2/2 |
+| Dockerfile + CI | `HEALTHCHECK`, `permissions:` block | 0/2 | 2/2 |
+| | Base image pinned by digest | 0/2 | 2/2 |
+| | Actions pinned by SHA | 0/2 | 0/2 |
+| All four | Comment lines per code line | 0.10–0.16 | 0.04–0.07 |
+| | Cost per task | $0.10–0.14 | $0.22–0.30 |
+| | Time per task | 24–33 s | 43–143 s |
 
-Chef makes Claude write tests, explicit types and strict lint configs it otherwise skips, at about 2× the cost and 2.5× the time. Weak spots seen: the TypeScript tests it wrote did not pass (cause not captured: this harness discarded the logs), TypeScript declarations were no more typed than without chef, and digest/SHA pinning was not applied. Chef did read the Docker rules (`HEALTHCHECK` comes only from them), but the benchmark gave Claude no tool to look up a real digest or SHA, so it did not invent one.
+### Transformation: Python 3.8 to 3.13
 
-Limits: 2 runs per arm is a small sample; type and comment metrics are regex heuristics, except Python annotations (parsed with `ast`).
+The seed is a small legacy module (`distutils.util.strtobool`, `datetime.utcnow()`, `typing.List`, `python_requires=">=3.8"`) with no tests. Prompt: upgrade it to Python 3.13, keep the public functions and their behavior. With chef, the same prompt starts with `/chef:transform`. After each run, a hidden check calls the public functions on Python 3.13 with `DeprecationWarning` as an error. The untouched seed fails it.
+
+| Metric | Without chef | With chef |
+|---|---|---|
+| Hidden behavior check on 3.13 | 2/2 | 2/2 |
+| `distutils` and `utcnow()` removed, `python_requires>=3.13` | 2/2 | 2/2 |
+| Characterization tests written | 0 | 9.5, all pass |
+| `TRANSFORM.md` with baseline, batches and report | 0/2 | 2/2 |
+| Commits | 0 | 3.5 |
+| `reviewer` agent on the diff | 0/2 | 2/2 |
+| Legacy `typing.List`/`Dict` left as is | 0/2 | 2/2 |
+| Cost per task | $0.10 | $0.39–0.47 |
+
+Both arms do the migration correctly. Chef adds the safety net around it: tests written before the change, one plan with a baseline, one commit per batch and a review. Legacy `typing` imports stay because migration mode keeps the diff to what 3.13 needs. Weak spots seen: one run merged batches 2–4 into one commit, against the skill's rule. Neither run convened the council: both said there was no user and the scope was small. Both validated on Python 3.14, the only one installed; the hidden check covered 3.13.
+
+### Takeaways
+
+Chef makes Claude write tests, explicit types and strict lint configs it otherwise skips, at about 2× the cost (4× for a transformation) and 1.2–4× the time. Since the last run, chef now looks up real digests (`docker buildx imagetools inspect`), and the TypeScript tests pass. Actions are still not pinned by SHA: the benchmark did not allow `curl`, the command Claude tried for the lookup.
+
+Limits: 2 runs per arm is a small sample. Type and comment metrics are regex heuristics, except Python annotations (parsed with `ast`). The harness is not in the repo.
