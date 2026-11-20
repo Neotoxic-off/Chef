@@ -19,10 +19,11 @@ JS_TEST_CALL_PATTERN: re.Pattern[str] = re.compile(r"^\s*(?:it|test)(?:\.(?:only
 
 # GCC 14.2, CMake 3.31, cppcheck 2.17 from Debian trixie. The base is pinned by digest, the apt packages are not:
 # apt-get installs trixie's current versions when the image is built, so a rebuild can bring newer point releases.
-GCC_TOOLCHAIN_IMAGE: str = "bench-gcc-toolchain:trixie-20261027"
+# ca-certificates and git let a project fetch its test framework (FetchContent) as it would on a developer machine.
+GCC_TOOLCHAIN_IMAGE: str = "bench-gcc-toolchain:trixie-20261027-fetch"
 GCC_TOOLCHAIN_DOCKERFILE: str = (
     "FROM debian:trixie-20261027-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1debe0c24a7e0c3ec4\n"
-    "RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake cppcheck"
+    "RUN apt-get update && apt-get install -y --no-install-recommends build-essential ca-certificates cmake cppcheck git"
     " && rm -rf /var/lib/apt/lists/*\n"
 )
 # docker run itself failed (125), or the container's command could not run (126) or was not found (127).
@@ -71,15 +72,19 @@ def docker_run(
     return outcome
 
 
-def gcc_toolchain_image() -> str:
-    """Build the C and C++ scoring image once; later runs reuse it. Change the tag with the Dockerfile."""
-    if run(["docker", "image", "inspect", GCC_TOOLCHAIN_IMAGE], BENCH_DIR).returncode != 0:
+def local_image(tag: str, dockerfile: str) -> str:
+    """Build a scoring image from an inline Dockerfile once; later runs reuse it. Change the tag with the Dockerfile."""
+    if run(["docker", "image", "inspect", tag], BENCH_DIR).returncode != 0:
         built: subprocess.CompletedProcess[str] = run(
-            ["docker", "build", "-q", "-t", GCC_TOOLCHAIN_IMAGE, "-"], BENCH_DIR, GCC_TOOLCHAIN_DOCKERFILE, BUILD_TIMEOUT_SECONDS
+            ["docker", "build", "-q", "-t", tag, "-"], BENCH_DIR, dockerfile, BUILD_TIMEOUT_SECONDS
         )
         if built.returncode != 0:
-            raise RuntimeError(f"cannot build {GCC_TOOLCHAIN_IMAGE}: {built.stderr.strip()[-ERROR_TAIL_CHARS:]}")
-    return GCC_TOOLCHAIN_IMAGE
+            raise RuntimeError(f"cannot build {tag}: {built.stderr.strip()[-ERROR_TAIL_CHARS:]}")
+    return tag
+
+
+def gcc_toolchain_image() -> str:
+    return local_image(GCC_TOOLCHAIN_IMAGE, GCC_TOOLCHAIN_DOCKERFILE)
 
 
 @dataclass(frozen=True)

@@ -1,6 +1,6 @@
 """Score the php task: hidden PHPUnit test, PHPStan level max errors and the test methods the agent wrote.
 
-Everything runs in one Composer container (PHP 8.4). The workspace is copied into the container, without vendor/,
+Everything runs in one Composer container (PHP 8.4, with the bcmath and gmp extensions). The workspace is copied into the container, without vendor/,
 so dependencies come from the agent's composer.json; Composer's cache and the pinned PHPStan live in Docker volumes.
 """
 
@@ -16,6 +16,9 @@ from score import Metrics
 
 TASK_DIR: Path = Path(__file__).resolve().parent
 COMPOSER_IMAGE: str = "composer:2.8.12@sha256:5248900ab8b5f7f880c2d62180e40960cd87f60149ec9a1abfd62ac72a02577c"
+# Money code often requires ext-bcmath or ext-gmp, which the Composer image lacks; a missing extension is not the agent's fault.
+SCORING_IMAGE: str = "bench-php:2.8.12-bcmath-gmp"
+SCORING_DOCKERFILE: str = f"FROM {COMPOSER_IMAGE}\nRUN apk add --no-cache gmp-dev && docker-php-ext-install bcmath gmp\n"
 CACHE_VOLUME: str = "bench-composer-cache"
 TOOLS_VOLUME: str = "bench-php-tools"
 # Used only when the agent's composer.json does not bring PHPUnit.
@@ -62,7 +65,15 @@ def run_container(workspace: Path, out: Path) -> dict[str, int]:
         [
             *("-v", f"{workspace.resolve()}:/src:ro", "-v", f"{TASK_DIR}:/bench:ro", "-v", f"{out}:/out"),
             *("-v", f"{CACHE_VOLUME}:/tmp/composer-cache", "-e", "COMPOSER_CACHE_DIR=/tmp/composer-cache"),
-            *("-v", f"{TOOLS_VOLUME}:/tools", "--entrypoint", "sh", COMPOSER_IMAGE, "-c", SCRIPT),
+            *(
+                "-v",
+                f"{TOOLS_VOLUME}:/tools",
+                "--entrypoint",
+                "sh",
+                scorer_lib.local_image(SCORING_IMAGE, SCORING_DOCKERFILE),
+                "-c",
+                SCRIPT,
+            ),
         ],
         workspace,
     )

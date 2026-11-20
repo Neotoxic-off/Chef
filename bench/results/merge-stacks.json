@@ -1,0 +1,38 @@
+{
+  "provenance": {
+    "reviewer": "6459c25c02d6",
+    "harness": [
+      "v1.3.0-5-ga4b16a1"
+    ]
+  },
+  "arms": {
+    "chef14": {
+      "runs": 27.0,
+      "merged_first_time": 0.667,
+      "merged_in_the_end": 0.963,
+      "fix_rounds_per_run": 0.37,
+      "first_answer_cost": 5.51,
+      "total_cost": 7.01,
+      "cost_per_merged_run": 0.269,
+      "reviewer_cost": 3.41,
+      "lines_to_review": 239,
+      "first_answer_seconds": 78.6,
+      "first_review_seconds": 23.2,
+      "back_and_forth_seconds": 26.0
+    },
+    "none": {
+      "runs": 27.0,
+      "merged_first_time": 0.444,
+      "merged_in_the_end": 0.889,
+      "fix_rounds_per_run": 0.74,
+      "first_answer_cost": 2.32,
+      "total_cost": 4.04,
+      "cost_per_merged_run": 0.168,
+      "reviewer_cost": 3.76,
+      "lines_to_review": 107,
+      "first_answer_seconds": 31.7,
+      "first_review_seconds": 20.2,
+      "back_and_forth_seconds": 36.1
+    }
+  }
+}

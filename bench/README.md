@@ -4,7 +4,7 @@ How chef was measured, task by task. The short version is in the [main README](.
 
 ## Cost to mergeable (1.2)
 
-The headline numbers in the README. Same 13 tasks as below, 39 runs per arm: plain Claude and chef 1.1 reuse their first answers from the 1.1 run, chef 1.2 is new (Claude Code 2.1.328 and 2.1.329). Chef 1.3 was run later and reviewed with the 1.2 loop (`a9c043f`, same reviewer `1.2-loop`, the Prometheus seed of the earlier runs), so all four arms stay comparable. A blind Opus reviewer, the same panel prompt as in [`judge.md`](judge.md), decides whether it would merge each first answer and lists the changes it requires (`blocker` or `major`). If it would not merge, those changes go back as a new prompt to the same setup in that workspace, and a fresh reviewer looks again, up to 2 fix rounds. The reviewer's copy follows `.gitignore`, so every arm was reviewed again with it. Harness: [`merge_loop.py`](merge_loop.py), results: [`results/merge.json`](results/merge.json).
+The headline numbers in the README. Same 13 tasks as below, 39 runs per arm: plain Claude and chef 1.1 reuse their first answers from the 1.1 run, chef 1.2 is new (Claude Code 2.1.328 and 2.1.329). Chefs 1.3 and 1.4 were run later and reviewed with the 1.2 loop (`a9c043f`, same reviewer `1.2-loop`, the Prometheus seed of the earlier runs), so all five arms stay comparable. Chef 1.4: 92% first answer accepted, 0.10 fix rounds per task, $6.61 for the first answers and $7.22 with the fixes; every first answer passes its hidden test or check. A blind Opus reviewer, the same panel prompt as in [`judge.md`](judge.md), decides whether it would merge each first answer and lists the changes it requires (`blocker` or `major`). If it would not merge, those changes go back as a new prompt to the same setup in that workspace, and a fresh reviewer looks again, up to 2 fix rounds. The reviewer's copy follows `.gitignore`, so every arm was reviewed again with it. Harness: [`merge_loop.py`](merge_loop.py), results: [`results/merge.json`](results/merge.json).
 
 | | Plain Claude | Chef 1.1 | Chef 1.2 |
 |---|---|---|---|
@@ -20,7 +20,7 @@ Reviewer costs ($4.36, $4.50 and $4.04) are not counted in any arm. Agent time i
 
 ## Across versions
 
-The README's version chart uses the three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus): the median cost of those runs, and the same blind reviewer on up to 3 runs per task and version (6 to 9 reviews each). The 1.2.0 and 1.3.0 points are reviewed with the 1.1 harness (commit `598caa5`), whose copy did not yet follow `.gitignore`, so they stay comparable; the 1.3.0 runs used the Prometheus seed of the earlier versions (only `/health`), and all 9 passed every check; the new copy gives 67% to plain Claude, 1.1 and 1.2 alike on these three tasks. Data: [`results/history.json`](results/history.json).
+The README's version chart uses the three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus): the median cost of those runs, and the same blind reviewer on up to 3 runs per task and version (6 to 9 reviews each). The 1.2.0, 1.3.0 and 1.4.0 points are reviewed with the 1.1 harness (commit `598caa5`), whose copy did not yet follow `.gitignore`, so they stay comparable; the 1.3.0 and 1.4.0 runs used the Prometheus seed of the earlier versions (only `/health`), and all 9 runs of each passed every check; the new copy gives 67% to plain Claude, 1.1 and 1.2 alike on these three tasks. Data: [`results/history.json`](results/history.json).
 
 ## Chef 1.0 against plain Claude and a control
 
@@ -101,7 +101,7 @@ Run on Nov 19, 2026 with Claude Code 2.1.328 and Sonnet 5.5. For each task and r
 | C++ library | An LRU cache | Hidden test, also under ASan and UBSan |
 | Kotlin library | A CSV line parser (Gradle) | Hidden JUnit 5 test |
 
-The last nine (Node to Kotlin) were added for 1.4; the published results above cover the first 13, and the hard tasks below.
+The last nine (Node to Kotlin) were added for 1.4 and run on chef 1.4 (master at `a4b16a1`) against plain Claude, 3 runs each, with the current reviewer; results in [`results/merge-stacks.json`](results/merge-stacks.json), separate from the 13-task results, which used the 1.2 reviewer. Two scorer images were fixed after that run and the runs scored again: the PHP image lacked `ext-bcmath`, which 3 answers required, and the GCC image lacked CA certificates, so a project fetching GoogleTest could not configure. The reviews were not affected: the reviewer reads the code and runs nothing.
 
 **Judging.** For every task and run, chef's workspace and the other arm's go side by side, as `first/` and `second/`, to a blind Opus 5.5 reviewer asked which one it would merge, from the seats of a senior engineer, a security reviewer, an SRE and a maintainer. History, caches and files that name a tool (`CLAUDE.md`, `AGENTS.md`, `.chef.md`) are removed. Each pair is judged twice, in both orders, by separate `claude -p --restricted` sessions with read-only tools confined to that folder; a win counts only when both orders agree, otherwise it is a tie. 156 judgments in all.
 
