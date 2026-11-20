@@ -52,6 +52,14 @@
       "reviews": 9,
       "seconds": 40.9,
       "reviewer": "1.1-copy"
+    },
+    {
+      "version": "1.3.0",
+      "cost": 0.169,
+      "merge": 100.0,
+      "reviews": 9,
+      "seconds": 41.2,
+      "reviewer": "1.1-copy"
     }
   ],
   "baseline": {

@@ -43,7 +43,7 @@ Chef's first answer costs 129% more than a plain one, because it already does wh
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/time-dark.svg">
-    <img src="assets/bench/time.svg" width="880" alt="Agent time per task until merged, mean of 39 runs (13 tasks, 3 runs each). Plain Claude: first answer 21 s, first review 23 s, fixes and new reviews 29 s, 41% sent back. Chef 1.1: 57 s, 24 s, 13 s, 15% sent back. Chef 1.2: 42 s, 26 s, 11 s, 13% sent back. Median time of the first answer by version on the Python, Docker and Prometheus tasks: 0.8.1 45 s, 0.9.0 55 s, 0.10.0 46 s, 1.0.0 45 s, 1.1.0 50 s, 1.2.0 41 s; plain Claude 15 s.">
+    <img src="assets/bench/time.svg" width="880" alt="Agent time per task until merged, mean of 39 runs (13 tasks, 3 runs each). Plain Claude: first answer 21 s, first review 23 s, fixes and new reviews 29 s, 41% sent back. Chef 1.1: 57 s, 24 s, 13 s, 15% sent back. Chef 1.2: 42 s, 26 s, 11 s, 13% sent back. Median time of the first answer by version on the Python, Docker and Prometheus tasks: 0.8.1 45 s, 0.9.0 55 s, 0.10.0 46 s, 1.0.0 45 s, 1.1.0 50 s, 1.2.0 41 s, 1.3.0 41 s; plain Claude 15 s.">
   </picture>
 </p>
 
@@ -101,8 +101,8 @@ Edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or a stack file in [`skills/
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/history-dark.svg">
-    <img src="assets/bench/history.svg" width="880" alt="Chef by version on the Python, Docker and Prometheus tasks. Cost per task: 0.8.1 $0.167, 0.9.0 $0.184, 0.10.0 $0.180, 1.0.0 $0.155, 1.1.0 $0.145, 1.2.0 $0.156; plain Claude $0.059. Share a blind reviewer would merge as is: 50%, 44%, 67%, 78%, 78%, 89%; plain Claude 44%.">
+    <img src="assets/bench/history.svg" width="880" alt="Chef by version on the Python, Docker and Prometheus tasks. Cost per task: 0.8.1 $0.167, 0.9.0 $0.184, 0.10.0 $0.180, 1.0.0 $0.155, 1.1.0 $0.145, 1.2.0 $0.156, 1.3.0 $0.169; plain Claude $0.059. Share a blind reviewer would merge as is: 50%, 44%, 67%, 78%, 78%, 89%, 100%; plain Claude 44%.">
   </picture>
 </p>
 
-<sub>The three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus), same blind reviewer for every version, 6 to 9 reviews each: read it as a trend, not as a ranking of neighbouring versions. One review is 11 points here, so 1.1 → 1.2 (78% → 89%) is one review. With the newer reviewer, which skips files `.gitignore` excludes, plain Claude, 1.1 and 1.2 all get 67% on these three tasks.</sub>
+<sub>The three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus), same blind reviewer for every version, 6 to 9 reviews each: read it as a trend, not as a ranking of neighbouring versions. One review is 11 points here, so 1.1 → 1.2 → 1.3 (78% → 89% → 100%) is one review per step, and 1.3 changed no code rule. With the newer reviewer, which skips files `.gitignore` excludes, plain Claude, 1.1 and 1.2 all get 67% on these three tasks.</sub>
