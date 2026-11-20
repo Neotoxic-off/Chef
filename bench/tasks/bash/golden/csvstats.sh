@@ -12,13 +12,13 @@ fi
 
 column=$1
 file=${2:--}
-if [[ $file != - && ! (-f $file && -r $file) ]]; then
-  echo "$PROGRAM: cannot read $file" >&2
+if [[ ${file} != - && ! (-f ${file} && -r ${file}) ]]; then
+  echo "${PROGRAM}: cannot read ${file}" >&2
   exit 1
 fi
 
 # awk reads a last line without a newline, which a `while read` loop would drop.
-awk -F, -v column="$column" -v program="$PROGRAM" '
+awk -F, -v column="${column}" -v program="${PROGRAM}" '
   function fail(message) {
     printf "%s: %s\n", program, message > "/dev/stderr"
     failed = 1
@@ -66,4 +66,4 @@ awk -F, -v column="$column" -v program="$PROGRAM" '
     }
     printf "count=%d sum=%.2f min=%.2f max=%.2f mean=%.2f\n", count, sum, min, max, sum / count
   }
-' "$file"
+' "${file}"
