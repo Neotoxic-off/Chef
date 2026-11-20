@@ -17,6 +17,8 @@
 
 **Chef makes Claude write code a reviewer accepts the first time.** It costs more tokens, and saves most of the review round-trips.
 
+**Who gains:** teams where someone reviews the code before it merges. Chef trades a slower, costlier first answer for fewer review rounds, with more lines to read in each. If you merge your own changes, you pay the extra time and cost and keep only the cleaner first answer.
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-dark.svg">
@@ -29,6 +31,7 @@
 | The reviewer accepts the first answer | 59% | **87%** |
 | Tasks sent back for fixes | 41% | **13%** |
 | Review rounds, as a share of tasks | 46% | **15%** (−67%) |
+| Lines the reviewer reads, median (lockfiles excluded) | 98 | 231 (+136%) |
 | Agent time per task, first answer | 21 s | 42 s (+100%) |
 | Agent time per task, fixes and new reviews | 29 s | **11 s** (−62%) |
 | Cost per task, review fixes included | $0.120 | $0.194 (**+62%**) |
@@ -72,7 +75,7 @@ That's it: chef applies to every coding prompt from now on.
 - **Tests every change**, and sets up a formatter, a linter and a strict type checker. Warnings get fixed, never hidden.
 - **Types every signature**, pins dependencies, images and actions.
 - **Knows your stack:** 127 references (34 languages, frameworks, infra, CI) with the right tools and configs.
-- **Brings a council** of agents for design decisions, and a reviewer for changes.
+- **Brings a council** of agents for design decisions, and a reviewer for changes. The benchmark measures neither: its tasks are small and run without them.
 
 ## Commands
 
@@ -100,4 +103,4 @@ Edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or a stack file in [`skills/
   </picture>
 </p>
 
-<sub>The three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus), same blind reviewer for every version, 6 to 9 reviews each: read it as a trend.</sub>
+<sub>The three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus), same blind reviewer for every version, 6 to 9 reviews each: read it as a trend, not as a ranking of neighbouring versions. One review is 11 points here, so 1.1 → 1.2 (78% → 89%) is one review. With the newer reviewer, which skips files `.gitignore` excludes, plain Claude, 1.1 and 1.2 all get 67% on these three tasks.</sub>
