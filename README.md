@@ -36,7 +36,7 @@
 | Agent time per task, fixes and new reviews | 29 s | **11 s** (−62%) |
 | Cost per task, review fixes included | $0.120 | $0.194 (**+62%**) |
 
-<sub>13 tasks in 11 stacks, 3 runs each, Sonnet 5.5. The reviewer is a blind Opus session that never knows chef exists; when it would not merge, its required changes go back to the same setup, up to 2 rounds. The code works either way: every first answer passes its hidden tests. <a href="bench/README.md">How it was measured</a>.</sub>
+<sub>13 tasks in 11 stacks, 3 runs each, Sonnet 5.5. The reviewer is a blind Opus session that never knows chef exists; when it would not merge, its required changes go back to the same setup, up to 2 rounds. The code works either way: every first answer passes its hidden tests. Runs cut short by an API or usage limit are refused, not counted; each result names the harness commit and reviewer that produced it, and 6 of the 13 scorers are tested in CI on a known-good and a known-bad answer. <a href="bench/README.md">How it was measured</a>.</sub>
 
 Chef's first answer costs 129% more than a plain one, because it already does what the reviewer would ask for: tests, strict types and linters, pinned versions, configs checked by their tools. Counting the fixes plain Claude needs afterwards, the gap falls to +62%, for 67% fewer review rounds. In agent time the two end level (73 s and 79 s per task until merged, +8%); the difference is on the reviewer's side: 69% fewer tasks come back for another review.
 
@@ -71,10 +71,11 @@ That's it: chef applies to every coding prompt from now on.
 
 ## What chef does
 
-- **Asks before guessing**, and remembers your answers in `.chef.md`.
+- **Asks before guessing:** one question when that settles it, the council when it does not. Remembers your answers in `.chef.md`.
+- **Your word wins:** an explicit instruction in your prompt overrides chef's conventions and `.chef.md`, never security or the project folder.
 - **Tests every change**, and sets up a formatter, a linter and a strict type checker. Warnings get fixed, never hidden.
 - **Types every signature**, pins dependencies, images and actions.
-- **Knows your stack:** 127 references (34 languages, frameworks, infra, CI) with the right tools and configs.
+- **Knows your stack:** 127 references (34 languages, frameworks, infra, CI) with the right tools and configs. The 11 stacks the benchmark covers (Python, TypeScript, Go, Rust, Java, C#, Docker, Helm, Terraform, GitHub Actions, Prometheus) are checked by it; the others say which versions they were written for, and that they are not benchmarked.
 - **Brings a council** of agents for design decisions, and a reviewer for changes. The benchmark measures neither: its tasks are small and run without them.
 
 ## Commands
