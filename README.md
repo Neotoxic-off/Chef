@@ -20,19 +20,29 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-dark.svg">
-    <img src="assets/bench/overview.svg" width="880" alt="Same 13 tasks, same model, a blind reviewer asks for fixes until it merges. Plain Claude: first answer accepted 59%, 0.46 review rounds per task, $0.120 per task with fixes. Chef 1.2: 87%, 0.15 review rounds, $0.194 per task with fixes.">
+    <img src="assets/bench/overview.svg" width="880" alt="Same 13 tasks, same model, a blind reviewer asks for fixes until it merges. Plain Claude: first answer accepted 59%, 46 review rounds per 100 tasks, $0.120 per task with fixes. Chef 1.2: 87%, 15 review rounds per 100 tasks, $0.194 per task with fixes.">
   </picture>
 </p>
 
 | | Without chef | With chef |
 |---|---|---|
 | The reviewer accepts the first answer | 59% | **87%** |
-| Review rounds needed per task | 0.46 | **0.15** (67% fewer) |
-| Cost per task, review fixes included | $0.120 | $0.194 (**1.62×**) |
+| Tasks sent back for fixes | 41% | **13%** |
+| Review rounds, as a share of tasks | 46% | **15%** (−67%) |
+| Agent time per task, first answer | 21 s | 42 s (+100%) |
+| Agent time per task, fixes and new reviews | 29 s | **11 s** (−62%) |
+| Cost per task, review fixes included | $0.120 | $0.194 (**+62%**) |
 
 <sub>13 tasks in 11 stacks, 3 runs each, Sonnet 5.5. The reviewer is a blind Opus session that never knows chef exists; when it would not merge, its required changes go back to the same setup, up to 2 rounds. The code works either way: every first answer passes its hidden tests. <a href="bench/README.md">How it was measured</a>.</sub>
 
-Chef's first answer costs 2.3× a plain one, because it already does what the reviewer would ask for: tests, strict types and linters, pinned versions, configs checked by their tools. Counting the fixes plain Claude needs afterwards, the gap falls to 1.62×, for 67% fewer review rounds.
+Chef's first answer costs 129% more than a plain one, because it already does what the reviewer would ask for: tests, strict types and linters, pinned versions, configs checked by their tools. Counting the fixes plain Claude needs afterwards, the gap falls to +62%, for 67% fewer review rounds. In agent time the two end level (73 s and 79 s per task until merged, +8%); the difference is on the reviewer's side: 69% fewer tasks come back for another review.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/time-dark.svg">
+    <img src="assets/bench/time.svg" width="880" alt="Agent time per task until merged, mean of 39 tasks. Plain Claude: first answer 21 s, first review 23 s, fixes and new reviews 29 s, 41% sent back. Chef 1.1: 57 s, 25 s, 13 s, 15% sent back. Chef 1.2: 42 s, 26 s, 11 s, 13% sent back. Median time of the first answer by version on the Python, Docker and Prometheus tasks: 0.8.1 45 s, 0.9.0 55 s, 0.10.0 46 s, 1.0.0 45 s, 1.1.0 50 s, 1.2.0 41 s; plain Claude 15 s.">
+  </picture>
+</p>
 
 ## Install
 

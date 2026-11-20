@@ -37,7 +37,7 @@ def test_overview_chart_lists_each_looped_arm() -> None:
 
     svg: str = charts.overview_chart(charts.LIGHT, merge)
 
-    assert "Plain Claude: first answer accepted 50%, 0.50 review rounds per task, $0.100 per task with fixes" in svg
+    assert "Plain Claude: first answer accepted 50%, 50 review rounds per 100 tasks, $0.100 per task with fixes" in svg
     assert "Chef 1.2" not in svg
 
 
@@ -49,8 +49,30 @@ def test_overview_chart_draws_chef_in_its_own_color() -> None:
 
     svg: str = charts.overview_chart(charts.LIGHT, merge)
 
-    assert "Chef 1.2: first answer accepted 100%, 0.00 review rounds per task, $0.200 per task with fixes" in svg
+    assert "Chef 1.2: first answer accepted 100%, 0 review rounds per 100 tasks, $0.200 per task with fixes" in svg
     assert charts.LIGHT.chef in svg
+
+
+def test_time_chart_labels_each_arm_step_and_version() -> None:
+    times: dict[str, Any] = {
+        "tasks": 2,
+        "arms": {
+            "none": {"first_answer": 20, "first_review": 20, "back_and_forth": 30, "sent_back": 0.5},
+            "chef12": {"first_answer": 40, "first_review": 25, "back_and_forth": 10, "sent_back": 0.0},
+        },
+    }
+    history: dict[str, Any] = {
+        "versions": [{"version": "1.1.0", "seconds": 50.0}, {"version": "1.2.0", "seconds": 40.0}],
+        "baseline": {"seconds": 15.0},
+    }
+
+    svg: str = charts.time_chart(charts.DARK, times, history)
+
+    assert "Plain Claude: first answer 20 s, first review 20 s, fixes and new reviews 30 s, 50% sent back" in svg
+    assert "Chef 1.2: first answer 40 s, first review 25 s, fixes and new reviews 10 s, 0% sent back" in svg
+    assert "First answer by version: 1.1.0 50 s, 1.2.0 40 s; plain Claude 15 s." in svg
+    assert "Chef 1.1:" not in svg
+    assert charts.LIGHT.ink not in svg
 
 
 def test_history_chart_labels_every_version_and_the_baseline() -> None:

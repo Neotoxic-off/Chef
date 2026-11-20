@@ -9,42 +9,49 @@
       "version": "0.8.1",
       "cost": 0.167,
       "merge": 50.0,
-      "reviews": 6
+      "reviews": 6,
+      "seconds": 45.2
     },
     {
       "version": "0.9.0",
       "cost": 0.184,
       "merge": 44.4,
-      "reviews": 9
+      "reviews": 9,
+      "seconds": 55.0
     },
     {
       "version": "0.10.0",
       "cost": 0.18,
       "merge": 66.7,
-      "reviews": 9
+      "reviews": 9,
+      "seconds": 45.9
     },
     {
       "version": "1.0.0",
       "cost": 0.155,
       "merge": 77.8,
-      "reviews": 9
+      "reviews": 9,
+      "seconds": 44.9
     },
     {
       "version": "1.1.0",
       "cost": 0.145,
       "merge": 77.8,
-      "reviews": 9
+      "reviews": 9,
+      "seconds": 50.2
     },
     {
       "version": "1.2.0",
       "cost": 0.156,
       "merge": 88.9,
-      "reviews": 9
+      "reviews": 9,
+      "seconds": 40.9
     }
   ],
   "baseline": {
     "cost": 0.059,
     "merge": 44.4,
-    "reviews": 9
+    "reviews": 9,
+    "seconds": 15.0
   }
 }

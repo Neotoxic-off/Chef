@@ -13,6 +13,7 @@ OUT: Path = Path(__file__).resolve().parent.parent / "assets" / "bench"
 SUMMARY: Path = Path(__file__).resolve().parent / "results" / "summary.json"
 HISTORY: Path = Path(__file__).resolve().parent / "results" / "history.json"
 MERGE: Path = Path(__file__).resolve().parent / "results" / "merge.json"
+TIME: Path = Path(__file__).resolve().parent / "results" / "time.json"
 FONT: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 WIDTH: int = 880
 
@@ -172,7 +173,7 @@ def pairwise_chart(theme: Theme, summary: dict[str, Any]) -> str:
 
 OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
     ("First answer accepted", "merge"),
-    ("Review rounds (fewer is better)", "major"),
+    ("Review rounds, share of tasks", "major"),
     ("Cost per task, fixes included", "cost"),
 )
 OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef12": "Chef 1.2"}
@@ -184,14 +185,14 @@ def overview_values(merge: dict[str, dict[str, float]], arm: str) -> dict[str, f
     loop: dict[str, float] = merge[arm]
     return {
         "merge": 100 * loop["merged_first_time"],
-        "major": loop["fix_rounds_per_run"],
+        "major": 100 * loop["fix_rounds_per_run"],
         "cost": loop["total_cost"] / loop["runs"],
     }
 
 
 def overview_cell(theme: Theme, x: float, y: float, value: float, scale: tuple[float, str, str]) -> list[str]:
     top, unit, color = scale
-    shown: str = {"%": f"{value:.0f}%", "$": f"${value:.3f}", "": f"{value:.2f}"}[unit]
+    shown: str = {"%": f"{value:.0f}%", "$": f"${value:.3f}"}[unit]
     return [
         rect(x, y, PANEL_WIDTH, 16, theme.track),
         rect(x, y, max(PANEL_WIDTH * value / top, 1.0), 16, color),
@@ -205,7 +206,7 @@ def overview_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
     values: dict[str, dict[str, float]] = {arm: overview_values(merge, arm) for arm in arms}
     tops: dict[str, tuple[float, str]] = {
         "merge": (100.0, "%"),
-        "major": (max(values[arm]["major"] for arm in arms), ""),
+        "major": (max(values[arm]["major"] for arm in arms), "%"),
         "cost": (max(values[arm]["cost"] for arm in arms), "$"),
     }
     body: list[str] = [
@@ -222,7 +223,7 @@ def overview_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
             body += overview_cell(theme, LABEL_WIDTH + index * PANEL_STEP, y, values[arm][key], (top, unit, colors[arm]))
         y += 34
     label: str = "; ".join(
-        f"{OVERVIEW_ARMS[arm]}: first answer accepted {values[arm]['merge']:.0f}%, {values[arm]['major']:.2f} review rounds per task, "
+        f"{OVERVIEW_ARMS[arm]}: first answer accepted {values[arm]['merge']:.0f}%, {values[arm]['major']:.0f} review rounds per 100 tasks, "
         f"${values[arm]['cost']:.3f} per task with fixes"
         for arm in arms
     )
@@ -251,7 +252,7 @@ def history_point(panel: Panel, index: int, count: int, value: float) -> tuple[f
 
 def history_panel(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[str]:
     versions: list[dict[str, Any]] = history["versions"]
-    shown: dict[str, str] = {"$": "${:.3f}", "%": "{:.0f}%"}
+    shown: dict[str, str] = {"$": "${:.3f}", "%": "{:.0f}%", "s": "{:.0f} s"}
     body: list[str] = [text(panel.x, HISTORY_TOP - 22, panel.title, theme.muted, 13, 600)]
     base_y: float = history_point(panel, 0, len(versions), history["baseline"][panel.key])[1]
     baseline_line: str = (
@@ -306,6 +307,70 @@ def history_chart(theme: Theme, history: dict[str, Any]) -> str:
     return svg(int(HISTORY_TOP + HISTORY_PANEL_HEIGHT + 40), label, body)
 
 
+TIME_ARMS: dict[str, str] = {"none": "Plain Claude", "chef11": "Chef 1.1", "chef12": "Chef 1.2"}
+TIME_STEPS: tuple[tuple[str, str], ...] = (
+    ("first_answer", "First answer"),
+    ("first_review", "First review"),
+    ("back_and_forth", "Fixes and new reviews"),
+)
+TIME_LABEL_WIDTH: float = 95.0
+TIME_BAR_WIDTH: float = 190.0
+TIME_ROW_STEP: float = 36.0
+TIME_LEGEND_STEP: float = 115.0
+
+
+def time_colors(theme: Theme) -> tuple[str, str, str]:
+    return theme.without, theme.old, theme.chef
+
+
+def time_row(theme: Theme, y: float, steps: dict[str, float], top: float) -> list[str]:
+    body: list[str] = []
+    x: float = TIME_LABEL_WIDTH
+    for (key, _), color in zip(TIME_STEPS, time_colors(theme), strict=True):
+        width: float = TIME_BAR_WIDTH * steps[key] / top
+        body += [rect(x, y, max(width - 1, 1.0), 20, color)]
+        x += width
+    total: float = sum(steps[key] for key, _ in TIME_STEPS)
+    body += [text(x + 8, y + 15, f"{total:.0f} s, {100 * steps['sent_back']:.0f}% sent back", theme.ink, 12, 600)]
+    return body
+
+
+def time_bars(theme: Theme, times: dict[str, Any]) -> list[str]:
+    arms: list[str] = [arm for arm in TIME_ARMS if arm in times["arms"]]
+    top: float = max(sum(times["arms"][arm][key] for key, _ in TIME_STEPS) for arm in arms)
+    title: str = f"Agent time per task until merged (mean of {times['tasks']} tasks)"
+    body: list[str] = [text(0, HISTORY_TOP - 22, title, theme.muted, 13, 600)]
+    y: float = HISTORY_TOP
+    for arm in arms:
+        body += [text(0, y + 15, TIME_ARMS[arm], theme.ink, 13, 600)]
+        body += time_row(theme, y, times["arms"][arm], top)
+        y += TIME_ROW_STEP
+    for index, ((_, name), color) in enumerate(zip(TIME_STEPS, time_colors(theme), strict=True)):
+        x: float = index * TIME_LEGEND_STEP
+        body += [rect(x, y + 4, 12, 12, color), text(x + 18, y + 15, name, theme.muted, 11)]
+    return body
+
+
+def time_chart(theme: Theme, times: dict[str, Any], history: dict[str, Any]) -> str:
+    """Where an agent's time goes until the reviewer merges, and the first answer's time by version."""
+    seconds_top: float = 1.2 * max(max(entry["seconds"] for entry in history["versions"]), history["baseline"]["seconds"])
+    panel: Panel = Panel(
+        40.0 + HISTORY_PANEL_WIDTH + HISTORY_PANEL_GAP, "First answer by version (median)", "seconds", seconds_top, "s"
+    )
+    body: list[str] = [text(0, 26, "Time to a merged change", theme.ink, 18, 600)]
+    body += time_bars(theme, times) + history_panel(theme, panel, history)
+    arms: str = "; ".join(
+        f"{TIME_ARMS[arm]}: "
+        + ", ".join(f"{name.lower()} {steps[key]:.0f} s" for key, name in TIME_STEPS)
+        + f", {100 * steps['sent_back']:.0f}% sent back"
+        for arm, steps in times["arms"].items()
+        if arm in TIME_ARMS
+    )
+    versions: str = ", ".join(f"{entry['version']} {entry['seconds']:.0f} s" for entry in history["versions"])
+    label: str = f"{arms}. First answer by version: {versions}; plain Claude {history['baseline']['seconds']:.0f} s."
+    return svg(int(HISTORY_TOP + HISTORY_PANEL_HEIGHT + 40), label, body)
+
+
 def split_chart(theme: Theme) -> str:
     label: str = "Where one chef run's cost goes: cache writes 57%, output 28%, cache reads 15%"
     body: list[str] = [text(0, 26, "Where the cost of a chef run goes", theme.ink, 18, 600)]
@@ -331,6 +396,9 @@ def main() -> None:
         if HISTORY.is_file():
             history: dict[str, Any] = json.loads(HISTORY.read_text(encoding="utf-8"))
             (OUT / f"history{theme.suffix}.svg").write_text(history_chart(theme, history), encoding="utf-8")
+            if TIME.is_file():
+                times: dict[str, Any] = json.loads(TIME.read_text(encoding="utf-8"))
+                (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, times, history), encoding="utf-8")
 
 
 if __name__ == "__main__":
