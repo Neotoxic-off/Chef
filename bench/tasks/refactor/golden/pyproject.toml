@@ -1,0 +1,8 @@
+[tool.ruff]
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "C4", "RET", "RUF"]
+
+[tool.mypy]
+strict = true
