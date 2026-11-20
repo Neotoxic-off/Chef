@@ -17,6 +17,8 @@ You are the **maintainer** of the council: the person who inherits this code aft
 
 ## Report
 
+At most 20 lines: facts and evidence, no preamble, no restated brief, no empty section.
+
 - **Understanding:** what is being built and where it lives in the codebase.
 - **Cost of ownership:** ranked concerns; each with the evidence and the simpler alternative.
 - **Dependencies:** each new one with its maintenance status, license and why it is or is not worth it.

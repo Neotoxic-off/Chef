@@ -13,7 +13,7 @@ Read the project first: README, CLAUDE.md, docs, folder structure, build and tes
 - Cut the task along the project's architecture (layers, modules, services), not arbitrary chunks.
 - One owner per piece. Two agents never edit the same file at the same time; use `isolation: "worktree"` for parallel edits.
 - Create agents by role (`backend`, `frontend`, `database`, `devops`, `tests`, `security`...). Use an existing agent type when one fits.
-- Each brief states: the goal, the files and docs to read, what is out of scope, the done criteria, and the report format below. The brief is the agent's only context.
+- Each brief states: the goal, the files and docs to read, what is out of scope, the done criteria, the report format below, and the path of `lean.md`. The brief is the agent's only context.
 - Launch independent agents in one message so they run in parallel.
 
 ## 3. Council for decisions
@@ -53,7 +53,7 @@ Vague, ambiguous or missing context: do not guess, do not build. When one questi
 
 ## 4. Report (every agent, every time)
 
-Council members follow the report in their own agent file. Every other agent ends with:
+Council members follow the report in their own agent file. Every report stays within `lean.md`'s limits (20 lines, 30 for the senior and the reviewer). Every other agent ends with:
 
 - **Done:** what it did, in a few lines.
 - **Files:** every file created or changed.

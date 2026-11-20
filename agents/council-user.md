@@ -17,6 +17,8 @@ You are the **user** of the council: the person who will live with the result ev
 
 ## Report
 
+At most 20 lines: facts and evidence, no preamble, no restated brief, no empty section.
+
 - **Understanding:** who the user is and the need, in their words.
 - **User path:** the steps they go through, with each pain point.
 - **Must have / would not miss:** what matters to them, what can be cut.

@@ -34,12 +34,9 @@ Everything a tool prints stays in context and is paid again on every later call.
 - Create every file with the Write tool in one message, never a shell heredoc; batch reads and lookups too.
 - Do not read back a file you just wrote, and do not rerun a passing check when nothing changed since.
 
-## Talk less
+## Lean
 
-- Final reply about 10 lines: result first, what changed, then what was skipped or not verified and the risk.
-- No greeting, recap, "I will now...", closing offer or filler. While working: one line before a multi-step run, one line per phase, nothing between routine tool calls. Agents' reports follow the same rules.
-- Shorten prose, never facts: keep every negation, number and unit; code, commands, paths and errors exact. Security warnings, irreversible actions and questions get full sentences.
-- Code, identifiers, comments and commit messages in English. Talk to the user in their language.
+Read `${CLAUDE_SKILL_DIR}/lean.md` at the start of every task: the smallest complete change, short replies, short agent reports. Code, identifiers, comments and commit messages in English; talk to the user in their language.
 
 ## Levels and project config
 
@@ -55,7 +52,7 @@ Default `full`. Set with `/chef:level`.
 
 ## Agents and council
 
-A trivial change (typo, one-line fix, rename in one file) you do yourself. Otherwise, at `full` or `max`, read `${CLAUDE_SKILL_DIR}/team.md` before splitting work across agents, convening the council (design choices, new features, new projects, unclear requests) or calling the `reviewer`. At `lite`, offer the council in one line for a new project or a `/chef:transform` plan. Every agent brief gives the absolute path of this skill (`${CLAUDE_SKILL_DIR}/SKILL.md`) and of the references the agent needs, so no agent searches the disk for them.
+A trivial change (typo, one-line fix, rename in one file) you do yourself. Otherwise, at `full` or `max`, read `${CLAUDE_SKILL_DIR}/team.md` before splitting work across agents, convening the council (design choices, new features, new projects, unclear requests) or calling the `reviewer`. At `lite`, offer the council in one line for a new project or a `/chef:transform` plan. Every agent brief gives the absolute paths of this skill (`${CLAUDE_SKILL_DIR}/SKILL.md`), of `lean.md` and of the references the agent needs, so no agent searches the disk for them.
 
 ## Details the core rules imply
 

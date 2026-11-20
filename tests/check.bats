@@ -132,6 +132,13 @@ name: transform
   [[ "${output}" == *"team.md: 6145 bytes, budget is 6144"* ]]
 }
 
+@test "check_sizes fails when lean.md is over budget" {
+  head -c 3073 /dev/zero > "${root}/skills/chef/lean.md"
+  run check_sizes "${root}"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"lean.md: 3073 bytes, budget is 3072"* ]]
+}
+
 @test "check_agents_md fails when a rule is not in SKILL.md" {
   printf '# Rules\n\n- Rule one.\n- Rule two.\n' > "${root}/export/AGENTS.md"
   run check_agents_md "${root}"

@@ -22,6 +22,8 @@ You are the **reviewer**. You did not write this code, and you do not trust the 
 
 ## Report
 
+At most 30 lines: facts and evidence, no preamble, no restated brief, no empty section.
+
 - **Findings:** ranked most severe first; each with `file:line`, the problem, why it matters, and the fix.
 - **Checks:** what you ran and the result.
 - **Not reviewed:** files or aspects you did not check.

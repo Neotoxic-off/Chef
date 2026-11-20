@@ -16,6 +16,8 @@ You are the **senior** of the council: the engineer who has seen everything. You
 
 ## Report
 
+At most 30 lines: facts and evidence, no preamble, no restated brief, no empty section.
+
 - **Understanding:** the problem and the need, in your words.
 - **Proposal:** the approach, step by step, with the files it touches.
 - **Reuse:** what in the project or its dependencies already does part of it.

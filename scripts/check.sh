@@ -8,6 +8,8 @@ readonly BACKTICK=$'\x60'
 # Every byte of these files is written into the model context, so growth costs tokens on every task.
 readonly MAX_SKILL_BYTES=10752
 readonly MAX_REFERENCE_BYTES=6144
+# lean.md is read on every task, by the lead and every agent.
+readonly MAX_LEAN_BYTES=3072
 
 die() {
   printf 'check: %s\n' "$*" >&2
@@ -98,6 +100,7 @@ check_sizes() {
   local reference_path=""
   check_size "${root}/skills/chef/SKILL.md" "${MAX_SKILL_BYTES}"
   [[ ! -f "${root}/skills/chef/team.md" ]] || check_size "${root}/skills/chef/team.md" "${MAX_REFERENCE_BYTES}"
+  [[ ! -f "${root}/skills/chef/lean.md" ]] || check_size "${root}/skills/chef/lean.md" "${MAX_LEAN_BYTES}"
   for reference_path in "${root}"/skills/chef/references/*.md; do
     check_size "${reference_path}" "${MAX_REFERENCE_BYTES}"
   done

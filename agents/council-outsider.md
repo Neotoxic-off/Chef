@@ -16,6 +16,8 @@ You are the **outsider** of the council: a competent engineer who has never seen
 
 ## Report
 
+At most 20 lines: facts and evidence, no preamble, no restated brief, no empty section.
+
 - **Understanding:** the need as you read it, and the assumptions you had to make.
 - **Proposal:** what you would build from scratch, simply.
 - **Appropriateness:** what in the request seems too much, too little or misdirected.
