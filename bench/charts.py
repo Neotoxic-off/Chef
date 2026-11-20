@@ -175,7 +175,9 @@ OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
     ("Review rounds, share of tasks", "major"),
     ("Cost per task, fixes included", "cost"),
 )
-OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef12": "Chef 1.2"}
+# The newest chef arm is the one the break-even chart and the README headline compare with plain Claude.
+LATEST_CHEF: tuple[str, str] = ("chef13", "Chef 1.3")
+OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef12": "Chef 1.2", LATEST_CHEF[0]: LATEST_CHEF[1]}
 PANEL_WIDTH: float = 150.0
 PANEL_STEP: float = 230.0
 
@@ -213,7 +215,7 @@ def overview_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
     ]
     for index, (title, _) in enumerate(OVERVIEW_PANELS):
         body += [text(LABEL_WIDTH + index * PANEL_STEP, 62, title, theme.muted, 13, 600)]
-    colors: dict[str, str] = {"none": theme.without, "chef12": theme.chef}
+    colors: dict[str, str] = {"none": theme.without, "chef12": theme.old, LATEST_CHEF[0]: theme.chef}
     y: float = 80.0
     for arm in arms:
         body += [text(0, y + 13, OVERVIEW_ARMS[arm], theme.ink, 15, 600)]
@@ -373,7 +375,7 @@ def break_even_axes(theme: Theme, top: float) -> list[str]:
     return body + [text(PLOT_LEFT - 8, PLOT_BOTTOM + 4, "$0", theme.muted, 11, 400, "end")]
 
 
-def break_even_line(theme: Theme, loop: dict[str, float], color: str, top: float) -> list[str]:
+def break_even_line(theme: Theme, loop: dict[str, float], color: str, top: float, label_left: bool = False) -> list[str]:
     start: tuple[float, float] = plot_point(0.0, cost_with_reviews(loop, 0.0), top)
     end: tuple[float, float] = plot_point(ROUND_COST_MAX, cost_with_reviews(loop, ROUND_COST_MAX), top)
     example: float = cost_with_reviews(loop, ROUND_COST_EXAMPLE)
@@ -381,34 +383,40 @@ def break_even_line(theme: Theme, loop: dict[str, float], color: str, top: float
     return [
         f'<line x1="{start[0]:.1f}" y1="{start[1]:.1f}" x2="{end[0]:.1f}" y2="{end[1]:.1f}" stroke="{color}" stroke-width="2.5"/>',
         f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5" fill="{color}"/>',
-        text(x + 10, y + 4, f"${example:.2f}", theme.ink, 12, 600),
+        text(x - 10, y + 4, f"${example:.2f}", theme.ink, 12, 600, "end")
+        if label_left
+        else text(x + 10, y + 4, f"${example:.2f}", theme.ink, 12, 600),
     ]
 
 
 def break_even_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
     """When chef's extra machine cost is paid back by the review rounds it saves a human reviewer."""
     plain: dict[str, float] = merge["none"]
-    chef: dict[str, float] = merge["chef12"]
-    top: float = max(cost_with_reviews(loop, ROUND_COST_MAX) for loop in (plain, chef))
+    chef: dict[str, float] = merge[LATEST_CHEF[0]]
+    previous: dict[str, float] | None = merge.get("chef12")
+    loops: list[dict[str, float]] = [plain, chef] if previous is None else [plain, previous, chef]
+    top: float = max(cost_with_reviews(loop, ROUND_COST_MAX) for loop in loops)
     threshold: float = break_even(plain, chef)
     saving: float = 1 - cost_with_reviews(chef, ROUND_COST_EXAMPLE) / cost_with_reviews(plain, ROUND_COST_EXAMPLE)
     body: list[str] = [text(0, 26, "Cost per task once the reviewer's time counts", theme.ink, 18, 600)]
     body += break_even_axes(theme, top)
-    body += break_even_line(theme, plain, theme.without, top) + break_even_line(theme, chef, theme.chef, top)
-    notes: list[tuple[str, str]] = [
-        (theme.without, f"Plain Claude: {1 + plain['fix_rounds_per_run']:.2f} reviews per task"),
-        (theme.chef, f"Chef 1.2: {1 + chef['fix_rounds_per_run']:.2f} reviews per task"),
-    ]
+    body += break_even_line(theme, plain, theme.without, top)
+    notes: list[tuple[str, str]] = [(theme.without, f"Plain Claude: {1 + plain['fix_rounds_per_run']:.2f} reviews per task")]
+    if previous is not None:
+        body += break_even_line(theme, previous, theme.old, top, label_left=True)
+        notes.append((theme.old, f"Chef 1.2: {1 + previous['fix_rounds_per_run']:.2f} reviews per task"))
+    body += break_even_line(theme, chef, theme.chef, top)
+    notes.append((theme.chef, f"{LATEST_CHEF[1]}: {1 + chef['fix_rounds_per_run']:.2f} reviews per task"))
     for index, (color, note) in enumerate(notes):
         body += [
             rect(PLOT_RIGHT + 20, PLOT_TOP + index * 24, 12, 12, color),
             text(PLOT_RIGHT + 38, PLOT_TOP + 11 + index * 24, note, theme.muted, 11),
         ]
     body += [
-        text(PLOT_RIGHT + 20, PLOT_TOP + 70, f"Break-even: ${threshold:.2f} per round", theme.ink, 12, 600),
+        text(PLOT_RIGHT + 20, PLOT_TOP + 94, f"Break-even: ${threshold:.2f} per round", theme.ink, 12, 600),
         text(
             PLOT_RIGHT + 20,
-            PLOT_TOP + 90,
+            PLOT_TOP + 114,
             f"At ${ROUND_COST_EXAMPLE:.0f} per round: {100 * saving:.0f}% less",
             theme.ink,
             12,
@@ -416,14 +424,14 @@ def break_even_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
         ),
     ]
     label: str = (
-        f"Machine cost per task plus a human reviewer's cost per review round. Chef 1.2 costs less once a round costs more than "
+        f"Machine cost per task plus a human reviewer's cost per review round. {LATEST_CHEF[1]} costs less once a round costs more than "
         f"${threshold:.2f}; at ${ROUND_COST_EXAMPLE:.0f} per round, plain Claude ${cost_with_reviews(plain, ROUND_COST_EXAMPLE):.2f} "
-        f"and chef 1.2 ${cost_with_reviews(chef, ROUND_COST_EXAMPLE):.2f} per task, {100 * saving:.0f}% less."
+        f"and {LATEST_CHEF[1].lower()} ${cost_with_reviews(chef, ROUND_COST_EXAMPLE):.2f} per task, {100 * saving:.0f}% less."
     )
     return svg(int(PLOT_BOTTOM + 50), label, body)
 
 
-TIME_ARMS: dict[str, str] = {"none": "Plain Claude", "chef11": "Chef 1.1", "chef12": "Chef 1.2"}
+TIME_ARMS: dict[str, str] = {"none": "Plain Claude", "chef11": "Chef 1.1", "chef12": "Chef 1.2", LATEST_CHEF[0]: LATEST_CHEF[1]}
 TIME_STEPS: tuple[tuple[str, str], ...] = (
     ("first_answer_seconds", "First answer"),
     ("first_review_seconds", "First review"),

@@ -41,16 +41,19 @@ def test_overview_chart_lists_each_looped_arm() -> None:
     assert "Chef 1.2" not in svg
 
 
-def test_overview_chart_draws_chef_in_its_own_color() -> None:
+def test_overview_chart_draws_the_latest_chef_in_the_chef_color_and_the_previous_one_in_the_old_color() -> None:
     merge: dict[str, dict[str, float]] = {
         "none": {"runs": 2.0, "merged_first_time": 0.5, "fix_rounds_per_run": 0.5, "total_cost": 0.2},
         "chef12": {"runs": 2.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.4},
+        "chef13": {"runs": 2.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.3},
     }
 
     svg: str = charts.overview_chart(charts.LIGHT, merge)
 
     assert "Chef 1.2: first answer accepted 100%, 0 review rounds per 100 tasks, $0.200 per task with fixes" in svg
+    assert "Chef 1.3: first answer accepted 100%, 0 review rounds per 100 tasks, $0.150 per task with fixes" in svg
     assert charts.LIGHT.chef in svg
+    assert charts.LIGHT.old in svg
 
 
 def test_break_even_is_the_extra_machine_cost_over_the_rounds_saved() -> None:
@@ -63,13 +66,27 @@ def test_break_even_is_the_extra_machine_cost_over_the_rounds_saved() -> None:
 def test_break_even_chart_labels_the_threshold_and_the_example_round() -> None:
     merge: dict[str, dict[str, float]] = {
         "none": {"runs": 10.0, "total_cost": 1.0, "fix_rounds_per_run": 0.5},
-        "chef12": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
+        "chef13": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
     }
 
     svg: str = charts.break_even_chart(charts.LIGHT, merge)
 
     assert "costs less once a round costs more than $0.25" in svg
-    assert "plain Claude $15.10 and chef 1.2 $11.20 per task, 26% less" in svg
+    assert "plain Claude $15.10 and chef 1.3 $11.20 per task, 26% less" in svg
+    assert "Chef 1.2" not in svg
+
+
+def test_break_even_chart_draws_chef_12_beside_the_latest_chef() -> None:
+    merge: dict[str, dict[str, float]] = {
+        "none": {"runs": 10.0, "total_cost": 1.0, "fix_rounds_per_run": 0.5},
+        "chef12": {"runs": 10.0, "total_cost": 2.5, "fix_rounds_per_run": 0.2},
+        "chef13": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
+    }
+
+    svg: str = charts.break_even_chart(charts.LIGHT, merge)
+
+    assert "Chef 1.2: 1.20 reviews per task" in svg
+    assert charts.LIGHT.old in svg
 
 
 def test_same_reviewer_segments_breaks_the_line_where_the_reviewer_changes() -> None:

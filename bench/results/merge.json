@@ -2,6 +2,7 @@
   "provenance": {
     "reviewer": "1.2-loop",
     "harness": [
+      "a9c043f (1.2 loop)",
       "unknown (1.2 loop, before provenance)"
     ]
   },
@@ -33,6 +34,20 @@
       "first_answer_seconds": 42.5,
       "first_review_seconds": 25.8,
       "back_and_forth_seconds": 10.9
+    },
+    "chef13": {
+      "runs": 39.0,
+      "merged_first_time": 0.897,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.13,
+      "first_answer_cost": 6.56,
+      "total_cost": 7.07,
+      "cost_per_merged_run": 0.181,
+      "reviewer_cost": 4.49,
+      "lines_to_review": 242,
+      "first_answer_seconds": 44.5,
+      "first_review_seconds": 29.6,
+      "back_and_forth_seconds": 7.1
     },
     "none": {
       "runs": 39.0,
