@@ -20,7 +20,7 @@ Reviewer costs ($4.36, $4.50 and $4.04) are not counted in any arm. Every first 
 
 ## Across versions
 
-The README's version chart uses the three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus): the median cost of those runs, and the same blind reviewer on up to 3 runs per task and version (6 to 9 reviews each). Data: [`results/history.json`](results/history.json).
+The README's version chart uses the three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus): the median cost of those runs, and the same blind reviewer on up to 3 runs per task and version (6 to 9 reviews each). The 1.2.0 point is reviewed with the 1.1 harness (commit `598caa5`), whose copy did not yet follow `.gitignore`, so it stays comparable; the new copy gives 67% to plain Claude, 1.1 and 1.2 alike on these three tasks. Data: [`results/history.json`](results/history.json).
 
 ## Chef 1.0 against plain Claude and a control
 

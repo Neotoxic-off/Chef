@@ -34,6 +34,12 @@
       "cost": 0.145,
       "merge": 77.8,
       "reviews": 9
+    },
+    {
+      "version": "1.2.0",
+      "cost": 0.156,
+      "merge": 88.9,
+      "reviews": 9
     }
   ],
   "baseline": {

@@ -75,7 +75,7 @@ Edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or a stack file in [`skills/
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/history-dark.svg">
-    <img src="assets/bench/history.svg" width="880" alt="Chef by version on the Python, Docker and Prometheus tasks. Cost per task: 0.8.1 $0.167, 0.9.0 $0.184, 0.10.0 $0.180, 1.0.0 $0.155, 1.1.0 $0.145; plain Claude $0.059. Share a blind reviewer would merge as is: 50%, 44%, 67%, 78%, 78%; plain Claude 44%.">
+    <img src="assets/bench/history.svg" width="880" alt="Chef by version on the Python, Docker and Prometheus tasks. Cost per task: 0.8.1 $0.167, 0.9.0 $0.184, 0.10.0 $0.180, 1.0.0 $0.155, 1.1.0 $0.145, 1.2.0 $0.156; plain Claude $0.059. Share a blind reviewer would merge as is: 50%, 44%, 67%, 78%, 78%, 89%; plain Claude 44%.">
   </picture>
 </p>
 
