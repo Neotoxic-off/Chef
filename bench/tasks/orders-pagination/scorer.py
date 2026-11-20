@@ -13,6 +13,8 @@ SEED_DIR: Path = TASK_DIR / "seed"
 HIDDEN_TEST: Path = TASK_DIR / "hidden_test.go"
 HIDDEN_TEST_PATH: Path = Path("internal") / "api" / "bench_hidden_test.go"
 HIDDEN_TEST_FILTER: str = "^TestBenchHidden"
+# Only the HTTP contract: the store's query methods and the order package may change, NewMemory and NewServer may not.
+SEED_API_TEST: Path = Path("internal") / "api" / "server_test.go"
 GO_TEST_SUFFIX: str = "_test.go"
 LOCKFILE_NAMES: frozenset[str] = frozenset({"go.sum"})
 IGNORED_DIR_NAMES: frozenset[str] = frozenset({".git", "vendor"})
@@ -53,14 +55,13 @@ def hidden_test_passes(workspace: Path) -> bool:
 
 
 def existing_tests_pass(workspace: Path) -> bool:
-    """Only the seed's tests, unchanged, against the agent's code: the agent's own test files are removed."""
+    """The seed's HTTP test, unchanged, against the agent's code: the agent's own test files are removed."""
     with tempfile.TemporaryDirectory() as scratch:
         copy: Path = copy_workspace(workspace, Path(scratch))
         for test_file in test_files_of(copy):
             (copy / test_file).unlink()
-        for test_file in test_files_of(SEED_DIR):
-            (copy / test_file).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(SEED_DIR / test_file, copy / test_file)
+        (copy / SEED_API_TEST).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(SEED_DIR / SEED_API_TEST, copy / SEED_API_TEST)
         return go_tests_pass(copy, "./...")
 
 

@@ -20,19 +20,19 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-dark.svg">
-    <img src="assets/bench/overview.svg" width="880" alt="Same 13 tasks, same model, a blind reviewer asks for fixes until it merges. Plain Claude: first answer accepted 56%, 0.49 review rounds per task, $0.128 per task with fixes. Chef 1.1: 87%, 0.15 review rounds, $0.186 per task with fixes.">
+    <img src="assets/bench/overview.svg" width="880" alt="Same 13 tasks, same model, a blind reviewer asks for fixes until it merges. Plain Claude: first answer accepted 59%, 0.46 review rounds per task, $0.120 per task with fixes. Chef 1.2: 87%, 0.15 review rounds, $0.194 per task with fixes.">
   </picture>
 </p>
 
 | | Without chef | With chef |
 |---|---|---|
-| The reviewer accepts the first answer | 56% | **87%** |
-| Review rounds needed per task | 0.49 | **0.15** (70% fewer) |
-| Cost per task, review fixes included | $0.128 | $0.186 (**1.45×**) |
+| The reviewer accepts the first answer | 59% | **87%** |
+| Review rounds needed per task | 0.46 | **0.15** (67% fewer) |
+| Cost per task, review fixes included | $0.120 | $0.194 (**1.62×**) |
 
 <sub>13 tasks in 11 stacks, 3 runs each, Sonnet 5.5. The reviewer is a blind Opus session that never knows chef exists; when it would not merge, its required changes go back to the same setup, up to 2 rounds. The code works either way: every first answer passes its hidden tests. <a href="bench/README.md">How it was measured</a>.</sub>
 
-Chef's first answer costs 2.2× a plain one, because it already does what the reviewer would ask for: tests, strict types and linters, pinned versions, configs checked by their tools. Counting the fixes plain Claude needs afterwards, the gap falls to 1.45×, for 70% fewer review rounds.
+Chef's first answer costs 2.3× a plain one, because it already does what the reviewer would ask for: tests, strict types and linters, pinned versions, configs checked by their tools. Counting the fixes plain Claude needs afterwards, the gap falls to 1.62×, for 67% fewer review rounds.
 
 ## Install
 

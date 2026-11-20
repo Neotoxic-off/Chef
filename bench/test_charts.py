@@ -38,7 +38,19 @@ def test_overview_chart_lists_each_looped_arm() -> None:
     svg: str = charts.overview_chart(charts.LIGHT, merge)
 
     assert "Plain Claude: first answer accepted 50%, 0.50 review rounds per task, $0.100 per task with fixes" in svg
-    assert "Chef 1.1" not in svg
+    assert "Chef 1.2" not in svg
+
+
+def test_overview_chart_draws_chef_in_its_own_color() -> None:
+    merge: dict[str, dict[str, float]] = {
+        "none": {"runs": 2.0, "merged_first_time": 0.5, "fix_rounds_per_run": 0.5, "total_cost": 0.2},
+        "chef12": {"runs": 2.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.4},
+    }
+
+    svg: str = charts.overview_chart(charts.LIGHT, merge)
+
+    assert "Chef 1.2: first answer accepted 100%, 0.00 review rounds per task, $0.200 per task with fixes" in svg
+    assert charts.LIGHT.chef in svg
 
 
 def test_history_chart_labels_every_version_and_the_baseline() -> None:

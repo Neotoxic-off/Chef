@@ -175,7 +175,7 @@ OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
     ("Review rounds (fewer is better)", "major"),
     ("Cost per task, fixes included", "cost"),
 )
-OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef11": "Chef 1.1"}
+OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef12": "Chef 1.2"}
 PANEL_WIDTH: float = 150.0
 PANEL_STEP: float = 230.0
 
@@ -213,7 +213,7 @@ def overview_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
     ]
     for index, (title, _) in enumerate(OVERVIEW_PANELS):
         body += [text(LABEL_WIDTH + index * PANEL_STEP, 62, title, theme.muted, 13, 600)]
-    colors: dict[str, str] = {"none": theme.without, "chef11": theme.chef}
+    colors: dict[str, str] = {"none": theme.without, "chef12": theme.chef}
     y: float = 80.0
     for arm in arms:
         body += [text(0, y + 13, OVERVIEW_ARMS[arm], theme.ink, 15, 600)]

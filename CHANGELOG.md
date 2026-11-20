@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 (2026-11-20)
+
+- Fewer wasted turns, from a council review of the 1.1 traces: files are created with the Write tool, never shell heredocs; a filtered check keeps its exit code (`set -o pipefail`); nothing is written outside the project folder; a refactor is proven first by characterization tests kept in the repo.
+- References checked on the real tools: C# test projects for xUnit v3, Rust tests without `expect` and no `-A` on the command line, hadolint from stdin, `depends_on: service_healthy` only for startup dependencies, Go `-race` only with cgo, Python test ignores and parsed-input checks, and a TypeScript CLI's `bin` file starts with `#!/usr/bin/env node`.
+- Benchmark: the reviewer copy follows `.gitignore` (no `node_modules` or `dist`), the merge loop records reviewer cost and lines to review, and three harder tasks (Python streaming import, TypeScript retry with backoff, Go cursor pagination) with hidden tests. Their scorers accept streaming reads in blocks of up to 2 MiB and a changed store query method in Go.
+- Results, 39 runs per arm, every arm reviewed again with the new copy: chef 1.2's first answer is accepted 87% of the time (chef 1.1: 85%, plain Claude: 59%), with 0.15 fix rounds per task (0.23, 0.46), at 1.62× plain Claude's cost once its fixes are counted. 1.2 is not measurably better than 1.1; the three harder tasks do not separate the arms yet.
+
 ## 1.1.0 (2026-11-20)
 
 - Fixes from the blind reviewers' reasons in the 1.0 benchmark: the task's stated contract (exception types, exit codes, formats) wins over conventions; tests assert the exact exception or exit code; never invent data to signal an error; error messages say what and where; a refactor keeps behavior, fallbacks and supported runtimes exactly; input size is bounded before expensive parsing.

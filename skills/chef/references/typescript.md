@@ -50,6 +50,7 @@ Write TypeScript, not JavaScript, for any new file.
 - `const` over `let`, never `var`. `readonly` on fields and arrays that do not change.
 - Named exports, no default exports, except where a framework or tool requires one (config files, Next.js `page`/`layout`/`route` files).
 - `async`/`await`, no floating promises.
+- A CLI: the source file behind `package.json` `bin` starts with `#!/usr/bin/env node` (tsc keeps it), or the installed command does not run on Linux and macOS.
 
 ## Tests
 

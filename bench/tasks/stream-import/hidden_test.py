@@ -21,6 +21,8 @@ from ledger_import.cli import EXIT_ABORTED, EXIT_OK, main
 
 HEADER: str = "date,description,amount,currency\n"
 ACCOUNT: str = "ACME-EUR"
+# About 4.2 MB: reading in blocks of up to 2 MiB still counts as streaming, reading it all at once does not.
+LARGE_ROW_COUNT: int = 120_000
 
 
 def rows(count: int) -> str:
@@ -61,29 +63,29 @@ class SpySink(InMemorySink):
 
 
 class FailingStream(io.StringIO):
-    """A file whose disk fails after a number of lines."""
+    """A file whose disk fails at a given offset, whether it is read by lines or by blocks."""
 
-    def __init__(self, text: str, readable_lines: int) -> None:
+    def __init__(self, text: str, readable_chars: int) -> None:
         super().__init__(text)
-        self._remaining: int = readable_lines
+        self._readable_chars: int = readable_chars
 
-    def _count_line(self) -> None:
-        if self._remaining <= 0:
+    def _check_offset(self) -> None:
+        if self.tell() >= self._readable_chars:
             raise OSError("read error")
-        self._remaining -= 1
 
     def readline(self, size: int | None = -1) -> str:
-        self._count_line()
+        self._check_offset()
         return super().readline(size)
 
     def __next__(self) -> str:
-        self._count_line()
+        self._check_offset()
         return super().__next__()
 
     def read(self, size: int | None = -1) -> str:
         if size is None or size < 0:
             raise OSError("read error")
-        return super().read(size)
+        self._check_offset()
+        return super().read(min(size, self._readable_chars - self.tell()))
 
 
 def import_text(text: str, sink: InMemorySink, **options: int) -> ImportReport:
@@ -132,11 +134,11 @@ def test_rejected_rows_do_not_count_towards_a_batch() -> None:
 
 
 def test_batches_are_written_while_the_file_is_still_being_read() -> None:
-    text = HEADER + rows(3000)
+    text = HEADER + rows(LARGE_ROW_COUNT)
     stream = io.StringIO(text)
     sink = SpySink(stream)
-    import_csv(stream, sink, ImportOptions(account=ACCOUNT, batch_size=100))
-    assert len(sink.batch_sizes) == 30
+    import_csv(stream, sink, ImportOptions(account=ACCOUNT, batch_size=1000))
+    assert len(sink.batch_sizes) == LARGE_ROW_COUNT // 1000
     assert sink.positions[0] < len(text) // 2
 
 
@@ -194,10 +196,11 @@ def test_abort_after_batches_were_written_leaves_the_sink_unchanged() -> None:
 
 
 def test_read_failure_midway_leaves_the_sink_unchanged() -> None:
-    stream = FailingStream(HEADER + rows(100), readable_lines=50)
+    text = HEADER + rows(LARGE_ROW_COUNT)
+    stream = FailingStream(text, readable_chars=len(text) // 2)
     sink = SpySink()
     with pytest.raises(OSError, match="read error"):
-        import_csv(stream, sink, ImportOptions(account=ACCOUNT, batch_size=10))
+        import_csv(stream, sink, ImportOptions(account=ACCOUNT, batch_size=1000))
     assert sink.batch_sizes != []
     assert sink.committed == []
     assert "commit" not in sink.calls

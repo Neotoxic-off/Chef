@@ -2,19 +2,21 @@
 
 How chef was measured, task by task. The short version is in the [main README](../README.md).
 
-## Cost to mergeable (1.1)
+## Cost to mergeable (1.2)
 
-The headline numbers in the README. Same 13 tasks and first answers as below (plain Claude from the 1.0 run, chef 1.1 rerun on the same day), 39 runs per arm. A blind Opus reviewer, the same panel prompt as in [`judge.md`](judge.md), decides whether it would merge each first answer and lists the changes it requires (`blocker` or `major`). If it would not merge, those changes go back as a new prompt to the same setup in that workspace, and a fresh reviewer looks again, up to 2 fix rounds. Harness: [`merge_loop.py`](merge_loop.py), results: [`results/merge.json`](results/merge.json).
+The headline numbers in the README. Same 13 tasks as below, 39 runs per arm: plain Claude and chef 1.1 reuse their first answers from the 1.1 run, chef 1.2 is new (Claude Code 2.1.328 and 2.1.329). A blind Opus reviewer, the same panel prompt as in [`judge.md`](judge.md), decides whether it would merge each first answer and lists the changes it requires (`blocker` or `major`). If it would not merge, those changes go back as a new prompt to the same setup in that workspace, and a fresh reviewer looks again, up to 2 fix rounds. The reviewer's copy follows `.gitignore`, so every arm was reviewed again with it. Harness: [`merge_loop.py`](merge_loop.py), results: [`results/merge.json`](results/merge.json).
 
-| | Plain Claude | Chef 1.1 |
-|---|---|---|
-| First answer accepted | 56% | 87% |
-| Merged after at most 2 fix rounds | 100% | 97% |
-| Fix rounds per task | 0.49 | 0.15 |
-| First answers, cost of 39 runs | $2.82 | $6.33 |
-| With the fixes | $5.00 | $7.26 |
+| | Plain Claude | Chef 1.1 | Chef 1.2 |
+|---|---|---|---|
+| First answer accepted | 59% | 85% | 87% |
+| Merged after at most 2 fix rounds | 97% | 100% | 100% |
+| Fix rounds per task | 0.46 | 0.23 | 0.15 |
+| First answers, cost of 39 runs | $2.82 | $6.33 | $6.47 |
+| With the fixes | $4.68 | $7.29 | $7.56 |
 
-Reviewer costs ($4.67 and $6.66) are not counted in either arm. One chef run was still not accepted after 2 rounds.
+Reviewer costs ($4.36, $4.50 and $4.04) are not counted in any arm. Every first answer passes its hidden test or check in every arm. The 1.2 candidate left out the `#!/usr/bin/env node` shebang of an npm `bin` entry in all 3 TypeScript runs (0 of 3 accepted, against 3 of 3 for 1.1); the fix is in `references/typescript.md` and the TypeScript task was rerun with it (3 of 3 accepted). 1.2 is not measurably better than 1.1 on these tasks: 87% against 85% is one run.
+
+**Three harder tasks** (Python streaming import, TypeScript retry with backoff, Go cursor pagination), 3 runs per arm. Every arm passes every hidden test, so they do not separate the arms on correctness yet. First answer accepted: plain Claude 44%, chef 1.1 33%, chef 1.2 56%; merged after 2 rounds: 78%, 100%, 89%; cost with fixes for 9 runs: $3.21, $4.61, $4.61. Nine runs per arm is too few to rank them. The streaming task's hidden test and the pagination task's existing-tests check were fixed after these runs, then every run was scored again: the first rejected reads in 64 KiB and 1 MiB blocks that stream correctly (it now uses a 4.2 MB file and accepts blocks of up to 2 MiB), the second replayed the store's internal unit test against a changed `List` signature, where only the HTTP contract is fixed by the task.
 
 ## Across versions
 
@@ -114,6 +116,7 @@ python bench/charts.py
 - The tasks are small, single-session and mostly new code; two (the bug fix and the refactor) change existing code. No run used chef's council or reviewer agents, so they are not measured here.
 - One chef run of the refactor task wrote scratch files next to its workspace, outside it. Nothing was harmed, but the harness now ignores such folders.
 - The cost split comes from one traced run.
+- In the 1.2 run, 35 runs ended on the account's usage limit (`terminal_reason: api_error`, $0, empty workspace) and 2 ran while Docker was stopped. They were run again and the failed ones are not counted.
 - Earlier benchmarks (0.8 to 0.10) are in the git history of this README.
 
 </details>
