@@ -307,6 +307,94 @@ def history_chart(theme: Theme, history: dict[str, Any]) -> str:
     return svg(int(HISTORY_TOP + HISTORY_PANEL_HEIGHT + 40), label, body)
 
 
+ROUND_COST_MAX: float = 20.0
+ROUND_COST_EXAMPLE: float = 10.0
+ROUND_COST_TICKS: tuple[float, ...] = (0.0, 5.0, 10.0, 15.0, 20.0)
+PLOT_LEFT: float = 70.0
+PLOT_RIGHT: float = 600.0
+PLOT_TOP: float = 60.0
+PLOT_BOTTOM: float = 230.0
+
+
+def cost_with_reviews(loop: dict[str, float], round_cost: float) -> float:
+    """Machine cost per task plus every review a human makes: the first one and one after each fix."""
+    return loop["total_cost"] / loop["runs"] + (1 + loop["fix_rounds_per_run"]) * round_cost
+
+
+def break_even(plain: dict[str, float], chef: dict[str, float]) -> float:
+    extra_cost: float = chef["total_cost"] / chef["runs"] - plain["total_cost"] / plain["runs"]
+    return extra_cost / (plain["fix_rounds_per_run"] - chef["fix_rounds_per_run"])
+
+
+def plot_point(round_cost: float, cost: float, top: float) -> tuple[float, float]:
+    x: float = PLOT_LEFT + (PLOT_RIGHT - PLOT_LEFT) * round_cost / ROUND_COST_MAX
+    return x, PLOT_BOTTOM - (PLOT_BOTTOM - PLOT_TOP) * cost / top
+
+
+def break_even_axes(theme: Theme, top: float) -> list[str]:
+    body: list[str] = [
+        f'<line x1="{PLOT_LEFT}" y1="{PLOT_BOTTOM}" x2="{PLOT_RIGHT}" y2="{PLOT_BOTTOM}" stroke="{theme.track}" stroke-width="1"/>'
+    ]
+    for tick in ROUND_COST_TICKS:
+        x: float = plot_point(tick, 0.0, top)[0]
+        body += [text(x, PLOT_BOTTOM + 18, f"${tick:.0f}", theme.muted, 11, 400, "middle")]
+    body += [
+        text((PLOT_LEFT + PLOT_RIGHT) / 2, PLOT_BOTTOM + 38, "Cost of one human review round", theme.muted, 12, 600, "middle")
+    ]
+    body += [text(PLOT_LEFT - 8, PLOT_TOP + 4, f"${top:.0f}", theme.muted, 11, 400, "end")]
+    return body + [text(PLOT_LEFT - 8, PLOT_BOTTOM + 4, "$0", theme.muted, 11, 400, "end")]
+
+
+def break_even_line(theme: Theme, loop: dict[str, float], color: str, top: float) -> list[str]:
+    start: tuple[float, float] = plot_point(0.0, cost_with_reviews(loop, 0.0), top)
+    end: tuple[float, float] = plot_point(ROUND_COST_MAX, cost_with_reviews(loop, ROUND_COST_MAX), top)
+    example: float = cost_with_reviews(loop, ROUND_COST_EXAMPLE)
+    x, y = plot_point(ROUND_COST_EXAMPLE, example, top)
+    return [
+        f'<line x1="{start[0]:.1f}" y1="{start[1]:.1f}" x2="{end[0]:.1f}" y2="{end[1]:.1f}" stroke="{color}" stroke-width="2.5"/>',
+        f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5" fill="{color}"/>',
+        text(x + 10, y + 4, f"${example:.2f}", theme.ink, 12, 600),
+    ]
+
+
+def break_even_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
+    """When chef's extra machine cost is paid back by the review rounds it saves a human reviewer."""
+    plain: dict[str, float] = merge["none"]
+    chef: dict[str, float] = merge["chef12"]
+    top: float = max(cost_with_reviews(loop, ROUND_COST_MAX) for loop in (plain, chef))
+    threshold: float = break_even(plain, chef)
+    saving: float = 1 - cost_with_reviews(chef, ROUND_COST_EXAMPLE) / cost_with_reviews(plain, ROUND_COST_EXAMPLE)
+    body: list[str] = [text(0, 26, "Cost per task once the reviewer's time counts", theme.ink, 18, 600)]
+    body += break_even_axes(theme, top)
+    body += break_even_line(theme, plain, theme.without, top) + break_even_line(theme, chef, theme.chef, top)
+    notes: list[tuple[str, str]] = [
+        (theme.without, f"Plain Claude: {1 + plain['fix_rounds_per_run']:.2f} reviews per task"),
+        (theme.chef, f"Chef 1.2: {1 + chef['fix_rounds_per_run']:.2f} reviews per task"),
+    ]
+    for index, (color, note) in enumerate(notes):
+        body += [
+            rect(PLOT_RIGHT + 20, PLOT_TOP + index * 24, 12, 12, color),
+            text(PLOT_RIGHT + 38, PLOT_TOP + 11 + index * 24, note, theme.muted, 11),
+        ]
+    body += [
+        text(PLOT_RIGHT + 20, PLOT_TOP + 70, f"Break-even: ${threshold:.2f} per round", theme.ink, 12, 600),
+        text(
+            PLOT_RIGHT + 20,
+            PLOT_TOP + 90,
+            f"At ${ROUND_COST_EXAMPLE:.0f} per round: {100 * saving:.0f}% less",
+            theme.ink,
+            12,
+            600,
+        ),
+    ]
+    label: str = (
+        f"Machine cost per task plus a human reviewer's cost per review round. Chef 1.2 costs less once a round costs more than "
+        f"${threshold:.2f}; at ${ROUND_COST_EXAMPLE:.0f} per round, plain Claude ${cost_with_reviews(plain, ROUND_COST_EXAMPLE):.2f} "
+        f"and chef 1.2 ${cost_with_reviews(chef, ROUND_COST_EXAMPLE):.2f} per task, {100 * saving:.0f}% less."
+    )
+    return svg(int(PLOT_BOTTOM + 50), label, body)
+
+
 TIME_ARMS: dict[str, str] = {"none": "Plain Claude", "chef11": "Chef 1.1", "chef12": "Chef 1.2"}
 TIME_STEPS: tuple[tuple[str, str], ...] = (
     ("first_answer", "First answer"),
@@ -390,6 +478,7 @@ def main() -> None:
     for theme in (LIGHT, DARK):
         merge: dict[str, dict[str, float]] = json.loads(MERGE.read_text(encoding="utf-8"))
         (OUT / f"overview{theme.suffix}.svg").write_text(overview_chart(theme, merge), encoding="utf-8")
+        (OUT / f"break-even{theme.suffix}.svg").write_text(break_even_chart(theme, merge), encoding="utf-8")
         (OUT / f"cost{theme.suffix}.svg").write_text(cost_chart(theme, summary), encoding="utf-8")
         (OUT / f"pairwise{theme.suffix}.svg").write_text(pairwise_chart(theme, summary), encoding="utf-8")
         (OUT / f"cost-split{theme.suffix}.svg").write_text(split_chart(theme), encoding="utf-8")

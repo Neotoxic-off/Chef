@@ -53,6 +53,25 @@ def test_overview_chart_draws_chef_in_its_own_color() -> None:
     assert charts.LIGHT.chef in svg
 
 
+def test_break_even_is_the_extra_machine_cost_over_the_rounds_saved() -> None:
+    plain: dict[str, float] = {"runs": 10.0, "total_cost": 1.0, "fix_rounds_per_run": 0.5}
+    chef: dict[str, float] = {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1}
+
+    assert round(charts.break_even(plain, chef), 3) == 0.25
+
+
+def test_break_even_chart_labels_the_threshold_and_the_example_round() -> None:
+    merge: dict[str, dict[str, float]] = {
+        "none": {"runs": 10.0, "total_cost": 1.0, "fix_rounds_per_run": 0.5},
+        "chef12": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
+    }
+
+    svg: str = charts.break_even_chart(charts.LIGHT, merge)
+
+    assert "costs less once a round costs more than $0.25" in svg
+    assert "plain Claude $15.10 and chef 1.2 $11.20 per task, 26% less" in svg
+
+
 def test_time_chart_labels_each_arm_step_and_version() -> None:
     times: dict[str, Any] = {
         "tasks": 2,

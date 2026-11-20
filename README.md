@@ -44,6 +44,17 @@ Chef's first answer costs 129% more than a plain one, because it already does wh
   </picture>
 </p>
 
+Per token, chef is less cost-effective: $1 buys 8.2 accepted first answers without it and 5.3 with it. What it saves is the reviewer's rounds: 1.15 reviews per task instead of 1.46. Once a review round costs more than **$0.24** of the reviewer's time (about 15 seconds at $60/h), chef is the cheaper option; at $10 per round, $11.69 per task against $14.72 (−21%).
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/break-even-dark.svg">
+    <img src="assets/bench/break-even.svg" width="880" alt="Machine cost per task plus a human reviewer's cost per review round, from $0 to $20. Chef 1.2 costs less once a round costs more than $0.24; at $10 per round, plain Claude $14.72 and chef 1.2 $11.69 per task, 21% less.">
+  </picture>
+</p>
+
+<sub>Reviews per task are the first review plus one after each fix. The model prices a round, not the lines in it: chef's code takes 2.3 times as many lines to read (median 231 against 98, lockfiles excluded).</sub>
+
 ## Install
 
 ```
