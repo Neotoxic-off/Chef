@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.0 (2026-11-20)
+
+Lean rules, and a benchmark that covers the most-used stacks.
+
+- Skill: `lean.md`, adapted from ponytail (MIT): the smallest complete change, and short replies and agent reports.
+- Benchmark harness: `run.sh` resumes a batch (`RESUME=1`) and stops at a dollar cap (`MAX_TOTAL_USD`); timeouts kill the whole process tree; runs that could not be scored are left out of the correct rate; a shared `scorer_lib.py`; every scorer is tested in CI on a known-good and a known-bad answer, with a weekly strict run of the Docker fixtures; `scripts/check_references.py` checks the version line, links and code blocks of all 127 references.
+- Nine new tasks for the most-used stacks: Node, React, Bash, SQL, PHP, PowerShell, C, C++, Kotlin. 3 runs each: chef 1.4's first answer is accepted 67% of the time (plain Claude: 44%), 0.37 fix rounds per task (0.74), $0.260 per task with fixes ($0.150); every chef first answer passes its hidden test, plain Claude fails 2 of 27. With 3 runs per stack, read the total, not a single stack.
+- Results, 39 runs on the 13 tasks, reviewed with the 1.2 loop: chef 1.4's first answer is accepted 92% of the time (1.3: 90%, plain Claude: 59%), 0.10 fix rounds per task (0.13, 0.46), $0.185 per task with fixes (1.54x plain Claude). 1.3 and 1.4 differ by one review out of 39: read them as equal.
+- Version chart: chef 1.4 on the Python, Docker and Prometheus tasks: 9 of 9 merged as is, $0.173 per task, 47 s median first answer.
+
 ## 1.3.0 (2026-11-20)
 
 A benchmark-and-honesty release, decided by a council on the 1.2 results: no new code rules.
