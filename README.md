@@ -88,6 +88,7 @@ That's it: chef applies to every coding prompt from now on.
 ## Spend less
 
 - `/chef:level lite` drops the council and the reviewer agent, the biggest cost on large tasks.
+- Turn chef off in one project, for you only: `claude plugin disable chef@chef --scope local`.
 - Or skip the plugin: copy [`export/AGENTS.md`](export/AGENTS.md), chef's 12 core rules, into your project. It works with any agent (Codex, Cursor, Copilot) and gets part of the effect (in the 1.0 benchmark: 56% merged as is against 89% with chef, at $0.084 per task).
 
 ## Change a rule

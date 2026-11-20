@@ -49,7 +49,7 @@ Two rounds maximum. Still split: the disagreement goes to the user with both sid
 
 ## Unclear request
 
-Vague, ambiguous or missing context: do not guess, do not build. Convene the core plus `council-outsider` and `council-user` with the user's exact words and this question: *what does the user most likely want, and what would be logical given what already exists in this repo?* The senior and the skeptic ground each reading in the repo's code, conventions and recent history; the novice lists what is ambiguous; the outsider says what a reasonable person would mean; the user says what the person asking most likely needs. Then show the user the one or two most likely readings, recommended first, and ask them to confirm.
+Vague, ambiguous or missing context: do not guess, do not build. When one question to the user would settle it, ask that question first. Otherwise, or if the answer leaves it unclear, convene the core plus `council-outsider` and `council-user` with the user's exact words and this question: *what does the user most likely want, and what would be logical given what already exists in this repo?* The senior and the skeptic ground each reading in the repo's code, conventions and recent history; the novice lists what is ambiguous; the outsider says what a reasonable person would mean; the user says what the person asking most likely needs. Then show the user the one or two most likely readings, recommended first, and ask them to confirm.
 
 ## 4. Report (every agent, every time)
 
