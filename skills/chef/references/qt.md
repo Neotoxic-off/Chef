@@ -1,6 +1,6 @@
 # Qt (Qt Quick / QML, Qt Widgets)
 
-Builds on `cpp.md` (CMake presets, clang-tidy, warnings as errors, sanitizers). Verified against the Qt 6 docs for qmllint and `qt_add_qml_module` (6.10 pages, Nov 2026). Current release: the folders under `download.qt.io/official_releases/qt/` (6.12 listed in Nov 2026) or the Qt Maintenance Tool. Use Qt 6 for new code; Qt 5.15 standard support has ended.
+Builds on `cpp.md` (CMake presets, clang-tidy, warnings as errors, sanitizers). Written for the Qt 6 docs for qmllint and `qt_add_qml_module` (6.10 pages, Nov 2026), not benchmarked. Current release: the folders under `download.qt.io/official_releases/qt/` (6.12 listed in Nov 2026) or the Qt Maintenance Tool. Use Qt 6 for new code; Qt 5.15 standard support has ended.
 
 ## Build
 

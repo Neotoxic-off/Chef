@@ -1,6 +1,6 @@
 # Distributed tracing (Tempo, Jaeger)
 
-Verified against Tempo 3.1.1, Jaeger 2.23.0 (Nov 2026). Instrument with OpenTelemetry (see `opentelemetry.md`). Look up backend versions on their GitHub releases pages; never guess one.
+Written for Tempo 3.1.1, Jaeger 2.23.0 (Nov 2026), not benchmarked. Instrument with OpenTelemetry (see `opentelemetry.md`). Look up backend versions on their GitHub releases pages; never guess one.
 
 ## Backends
 

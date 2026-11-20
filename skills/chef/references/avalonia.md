@@ -1,6 +1,6 @@
 # Avalonia
 
-Builds on `csharp.md` (project settings, `.editorconfig`, tests). Verified against the Avalonia 12 docs (compiled bindings, headless testing) and NuGet: Avalonia 12.1.6, Avalonia.Headless.XUnit 12.1.6 (depends on `xunit.v3.extensibility.core`), CommunityToolkit.Mvvm 8.4.2 (Nov 2026). Current version: `dotnet package search Avalonia --exact-match`. Keep every `Avalonia.*` package on the same version (central `Directory.Packages.props`).
+Builds on `csharp.md` (project settings, `.editorconfig`, tests). Written for the Avalonia 12 docs (compiled bindings, headless testing) and NuGet: Avalonia 12.1.6, Avalonia.Headless.XUnit 12.1.6 (depends on `xunit.v3.extensibility.core`), CommunityToolkit.Mvvm 8.4.2 (Nov 2026), not benchmarked. Current version: `dotnet package search Avalonia --exact-match`. Keep every `Avalonia.*` package on the same version (central `Directory.Packages.props`).
 
 ## Compiled bindings
 

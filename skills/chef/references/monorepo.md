@@ -1,6 +1,6 @@
 # Monorepos (pnpm workspaces, Turborepo, Nx, Bazel, Gradle)
 
-Verified against pnpm 11.18 and 12.21, Turborepo 2.11, Nx 23.3, Bazel 9.3, Gradle 9.9 (Nov 2026).
+Written for pnpm 11.18 and 12.21, Turborepo 2.11, Nx 23.3, Bazel 9.3, Gradle 9.9 (Nov 2026), not benchmarked.
 
 ## Lint and validate
 

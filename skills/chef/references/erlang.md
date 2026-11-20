@@ -1,6 +1,6 @@
 # Erlang/OTP
 
-Verified against Erlang/OTP 29 (29.0 released May 2026), rebar3 3.28.0, erlfmt 1.9.0, elvis_core / rebar3_lint 6.0.0, ELP 2026-11-16, PropEr 1.5.0 (Nov 2026). Current versions: https://www.erlang.org/downloads, hex.pm for packages. Pin OTP in `.tool-versions` (asdf/mise) and in CI.
+Written for Erlang/OTP 29 (29.0 released May 2026), rebar3 3.28.0, erlfmt 1.9.0, elvis_core / rebar3_lint 6.0.0, ELP 2026-11-16, PropEr 1.5.0 (Nov 2026), not benchmarked. Current versions: https://www.erlang.org/downloads, hex.pm for packages. Pin OTP in `.tool-versions` (asdf/mise) and in CI.
 
 ## Lint and format: compiler + erlfmt + Elvis + Dialyzer + eqWAlizer
 

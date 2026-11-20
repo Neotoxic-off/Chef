@@ -1,6 +1,6 @@
 # Clojure
 
-Verified against Clojure 1.12.7, clj-kondo 2026.10.26, cljfmt 0.16.6, kaocha 1.91.1392, cloverage 1.2.4, test.check 1.1.3, Malli 0.20.3 (Nov 2026). Current versions: Maven Central for `org.clojure/*`, https://clojars.org for the rest. Pin every dependency in `deps.edn` with an exact version.
+Written for Clojure 1.12.7, clj-kondo 2026.10.26, cljfmt 0.16.6, kaocha 1.91.1392, cloverage 1.2.4, test.check 1.1.3, Malli 0.20.3 (Nov 2026), not benchmarked. Current versions: Maven Central for `org.clojure/*`, https://clojars.org for the rest. Pin every dependency in `deps.edn` with an exact version.
 
 ## Lint and format: clj-kondo + cljfmt
 

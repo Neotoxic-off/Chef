@@ -1,6 +1,6 @@
 # Tailwind CSS
 
-Verified against Tailwind CSS 4.3, prettier-plugin-tailwindcss 0.8, eslint-plugin-better-tailwindcss 4.11 (Nov 2026).
+Written for Tailwind CSS 4.3, prettier-plugin-tailwindcss 0.8, eslint-plugin-better-tailwindcss 4.11 (Nov 2026), not benchmarked.
 
 ## Setup
 

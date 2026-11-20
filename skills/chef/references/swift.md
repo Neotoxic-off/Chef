@@ -1,6 +1,6 @@
 # Swift / SwiftUI
 
-Use `swift-tools-version: 6.2` or later so the package builds in the Swift 6 language mode, where data-race checks are errors. Verified against Swift 6.4.2, Xcode 27.2, SwiftLint 0.65.1, swift-format 604.0 (Nov 2026).
+Use `swift-tools-version: 6.2` or later so the package builds in the Swift 6 language mode, where data-race checks are errors. Written for Swift 6.4.2, Xcode 27.2, SwiftLint 0.65.1, swift-format 604.0 (Nov 2026), not benchmarked.
 
 ## Lint and format: SwiftLint + swift-format
 

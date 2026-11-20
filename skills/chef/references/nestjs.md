@@ -1,6 +1,6 @@
 # Node backends: NestJS, Express, Fastify
 
-Builds on `typescript.md`. Verified against NestJS 12.5, @nestjs/config 12.1, @nestjs/terminus 12.2, Express 5.3, Fastify 5.12 (Nov 2026). Nest 12 packages are ESM-only: apps need Node.js 20.19+ or 22.12+; the CLI generators need 22.22.3+, 24.15+ or 26+.
+Builds on `typescript.md`. Written for NestJS 12.5, @nestjs/config 12.1, @nestjs/terminus 12.2, Express 5.3, Fastify 5.12 (Nov 2026), not benchmarked. Nest 12 packages are ESM-only: apps need Node.js 20.19+ or 22.12+; the CLI generators need 22.22.3+, 24.15+ or 26+.
 
 ## NestJS structure
 

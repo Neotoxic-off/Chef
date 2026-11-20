@@ -1,6 +1,6 @@
 # .NET MAUI
 
-Builds on `csharp.md` (project settings, `.editorconfig`, tests). Verified against the .NET MAUI 10 docs on compiled bindings, Microsoft.Maui.Controls 11.0.10 and CommunityToolkit.Mvvm 8.4.2 on NuGet (Nov 2026). Current versions: `dotnet workload list`, `dotnet package search Microsoft.Maui.Controls --exact-match`.
+Builds on `csharp.md` (project settings, `.editorconfig`, tests). Written for the .NET MAUI 10 docs on compiled bindings, Microsoft.Maui.Controls 11.0.10 and CommunityToolkit.Mvvm 8.4.2 on NuGet (Nov 2026), not benchmarked. Current versions: `dotnet workload list`, `dotnet package search Microsoft.Maui.Controls --exact-match`.
 
 ## Project settings
 

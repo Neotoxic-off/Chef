@@ -1,6 +1,6 @@
 # Reverse proxies (Nginx, Caddy, Traefik, HAProxy)
 
-Verified against Nginx 1.30.7 stable / 1.31.9 mainline, Caddy 2.11.9, Traefik 3.7.19, HAProxy 3.4.8 LTS (Nov 2026).
+Written for Nginx 1.30.7 stable / 1.31.9 mainline, Caddy 2.11.9, Traefik 3.7.19, HAProxy 3.4.8 LTS (Nov 2026), not benchmarked.
 
 ## Lint and validate
 

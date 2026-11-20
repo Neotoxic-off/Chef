@@ -1,6 +1,6 @@
 # Nix (flakes, devShells, NixOS modules)
 
-Verified against Nix 2.35, NixOS 26.05, nixfmt 1.5 (Nov 2026).
+Written for Nix 2.35, NixOS 26.05, nixfmt 1.5 (Nov 2026), not benchmarked.
 
 ## Lint and validate
 

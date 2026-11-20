@@ -1,6 +1,6 @@
 # Elixir
 
-Verified against Elixir 1.20.5, Credo 1.7.19, Dialyxir 1.4.9, ExCoveralls 0.18.5, Mox 1.3.2, StreamData 1.4.0 (Nov 2026).
+Written for Elixir 1.20.5, Credo 1.7.19, Dialyxir 1.4.9, ExCoveralls 0.18.5, Mox 1.3.2, StreamData 1.4.0 (Nov 2026), not benchmarked.
 
 ## Lint and format: mix format + Credo
 

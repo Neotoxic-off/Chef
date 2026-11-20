@@ -1,6 +1,6 @@
 # TypeScript: turn on strict, upgrade TypeScript, Node and frameworks
 
-Builds on `typescript.md`. Verified against TypeScript 6.0 release notes and tsconfig reference, `@andrewbranch/ts5to6` 1.1.1, nodejs/userland-migrations with `codemod` 1.18, npm registry data for ts-migrate and typescript-strict-plugin (Nov 2026).
+Builds on `typescript.md`. Written for TypeScript 6.0 release notes and tsconfig reference, `@andrewbranch/ts5to6` 1.1.1, nodejs/userland-migrations with `codemod` 1.18, npm registry data for ts-migrate and typescript-strict-plugin (Nov 2026), not benchmarked.
 
 ## When it applies
 

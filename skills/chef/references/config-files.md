@@ -1,6 +1,6 @@
 # Config files (YAML, JSON, TOML)
 
-Verified against yamllint 1.38, check-jsonschema 0.39, Taplo 0.10 (last release May 2025), Tombi 1.11, JSON Schema 2020-12 (Nov 2026).
+Written for yamllint 1.38, check-jsonschema 0.39, Taplo 0.10 (last release May 2025), Tombi 1.11, JSON Schema 2020-12 (Nov 2026), not benchmarked.
 
 ## Lint and validate
 

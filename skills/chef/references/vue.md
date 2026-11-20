@@ -1,6 +1,6 @@
 # Vue and Nuxt
 
-Builds on `typescript.md`. Verified against Vue 3.5, Nuxt 4.6, Pinia 4.1, vue-tsc 3.3, eslint-plugin-vue 10.12, @vue/eslint-config-typescript 14.9, Vue Test Utils 2.6 (Nov 2026).
+Builds on `typescript.md`. Written for Vue 3.5, Nuxt 4.6, Pinia 4.1, vue-tsc 3.3, eslint-plugin-vue 10.12, @vue/eslint-config-typescript 14.9, Vue Test Utils 2.6 (Nov 2026), not benchmarked.
 
 ## Lint and type check
 

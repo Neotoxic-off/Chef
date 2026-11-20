@@ -1,6 +1,6 @@
 # React
 
-Builds on `typescript.md`. Verified against React 19.3, eslint-plugin-react-hooks 7.1, TanStack Query 5, Zustand 5, Testing Library 16, Vitest 5 (Nov 2026).
+Builds on `typescript.md`. Written for React 19.3, eslint-plugin-react-hooks 7.1, TanStack Query 5, Zustand 5, Testing Library 16, Vitest 5 (Nov 2026), not benchmarked.
 
 ## Lint and config
 

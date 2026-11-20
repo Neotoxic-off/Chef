@@ -1,6 +1,6 @@
 # Java and Spring Boot upgrade with OpenRewrite
 
-Builds on `java.md` (and `spring-boot.md` for Spring code). Verified against the OpenRewrite docs ("Migrate to Java 21/25", "Migrate to Spring Boot 3.x", plugin references), the Spring Boot 4.0 migration guide, OpenJDK JEPs, and Maven Central: rewrite-maven-plugin 6.46.1, Gradle plugin `org.openrewrite.rewrite` 7.41.0, rewrite-migrate-java 3.42.1, rewrite-spring 6.37.1 (Nov 2026).
+Builds on `java.md` (and `spring-boot.md` for Spring code). Written for the OpenRewrite docs ("Migrate to Java 21/25", "Migrate to Spring Boot 3.x", plugin references), the Spring Boot 4.0 migration guide, OpenJDK JEPs, and Maven Central: rewrite-maven-plugin 6.46.1, Gradle plugin `org.openrewrite.rewrite` 7.41.0, rewrite-migrate-java 3.42.1, rewrite-spring 6.37.1 (Nov 2026), not benchmarked.
 
 ## When it applies
 

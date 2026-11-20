@@ -1,6 +1,6 @@
 # SQL, migrations
 
-Verified against SQLFluff 4.5 (Nov 2026).
+Written for SQLFluff 4.5 (Nov 2026), not benchmarked.
 
 ## Lint and format: SQLFluff
 

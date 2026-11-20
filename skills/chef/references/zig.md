@@ -1,6 +1,6 @@
 # Zig
 
-Verified against Zig 0.17.1 (Nov 2026). Zig is pre-1.0: the standard library and build API break between minor versions. Pin the version in `build.zig.zon` (`.minimum_zig_version`) and check the current one at https://ziglang.org/download/ (or `index.json` there). Read the release notes before an upgrade.
+Written for Zig 0.17.1 (Nov 2026), not benchmarked. Zig is pre-1.0: the standard library and build API break between minor versions. Pin the version in `build.zig.zon` (`.minimum_zig_version`) and check the current one at https://ziglang.org/download/ (or `index.json` there). Read the release notes before an upgrade.
 
 ## Lint and format: zig fmt + the compiler
 

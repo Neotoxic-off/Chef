@@ -1,6 +1,6 @@
 # PHP
 
-Verified against PHP-CS-Fixer 3.95.32, PHPStan 2.3.6, phpstan-strict-rules 2.1.1, Psalm 7.10.0, PHPUnit 13.4.7, Pest 5.3.7, Infection 0.35.12 (Nov 2026).
+Written for PHP-CS-Fixer 3.95.32, PHPStan 2.3.6, phpstan-strict-rules 2.1.1, Psalm 7.10.0, PHPUnit 13.4.7, Pest 5.3.7, Infection 0.35.12 (Nov 2026), not benchmarked.
 
 Composer manages tools as dev dependencies (`composer.lock` committed); run them from `vendor/bin`.
 

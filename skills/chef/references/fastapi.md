@@ -1,6 +1,6 @@
 # FastAPI (and Flask)
 
-Builds on `python.md`. Verified against FastAPI 0.165 (Python 3.11+), Pydantic 2.14, pydantic-settings 2.16, SQLAlchemy 2.1, Alembic 1.20, Flask 3.1 (Nov 2026).
+Builds on `python.md`. Written for FastAPI 0.165 (Python 3.11+), Pydantic 2.14, pydantic-settings 2.16, SQLAlchemy 2.1, Alembic 1.20, Flask 3.1 (Nov 2026), not benchmarked.
 
 ## Lint
 

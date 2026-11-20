@@ -1,6 +1,6 @@
 # Python minor-version upgrade
 
-Builds on `python.md`. Verified against Python 3.15.2 and 3.14.10 (python.org), the "What's New" pages for 3.12-3.15, pyupgrade 3.22.0, Ruff 0.17.5, uv CLI reference (Nov 2026).
+Builds on `python.md`. Written for Python 3.15.2 and 3.14.10 (python.org), the "What's New" pages for 3.12-3.15, pyupgrade 3.22.0, Ruff 0.17.5, uv CLI reference (Nov 2026), not benchmarked.
 
 ## When it applies
 

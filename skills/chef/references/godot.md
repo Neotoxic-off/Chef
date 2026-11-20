@@ -1,6 +1,6 @@
 # Godot (GDScript, C#)
 
-Verified against the Godot stable docs (ProjectSettings class reference, GDScript static typing and warning system; 4.6/4.7 era) and PyPI gdtoolkit 4.5.0 (Nov 2026). Current engine: the godotengine.org download page; pin it in `project.godot` (`config/features`) and in CI. C# builds on `csharp.md`.
+Written for the Godot stable docs (ProjectSettings class reference, GDScript static typing and warning system; 4.6/4.7 era) and PyPI gdtoolkit 4.5.0 (Nov 2026), not benchmarked. Current engine: the godotengine.org download page; pin it in `project.godot` (`config/features`) and in CI. C# builds on `csharp.md`.
 
 ## GDScript: static typing as errors
 

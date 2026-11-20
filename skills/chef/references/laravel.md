@@ -1,6 +1,6 @@
 # Laravel
 
-Builds on `php.md`. Verified against Laravel 13.43.0 (PHP 8.3+), Larastan 3.15.0, Pest 5.3.7 (Nov 2026).
+Builds on `php.md`. Written for Laravel 13.43.0 (PHP 8.3+), Larastan 3.15.0, Pest 5.3.7 (Nov 2026), not benchmarked.
 
 ## Structure
 

@@ -1,6 +1,6 @@
 # End-to-end testing: Playwright, Cypress
 
-Builds on `typescript.md`. Verified against @playwright/test 1.65, eslint-plugin-playwright 2.12, @axe-core/playwright 4.14, Cypress 16.3, eslint-plugin-cypress 7.0 (Nov 2026). Look up the current version with `npm view <package> version`. Playwright 1.65 supports Node 22, 24 and 26; Cypress 16 needs Node 22, 24 or 26+.
+Builds on `typescript.md`. Written for @playwright/test 1.65, eslint-plugin-playwright 2.12, @axe-core/playwright 4.14, Cypress 16.3, eslint-plugin-cypress 7.0 (Nov 2026), not benchmarked. Look up the current version with `npm view <package> version`. Playwright 1.65 supports Node 22, 24 and 26; Cypress 16 needs Node 22, 24 or 26+.
 
 ## Choice
 

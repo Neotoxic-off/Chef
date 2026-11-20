@@ -1,6 +1,6 @@
 # ASP.NET Core
 
-Builds on `csharp.md`. Verified against ASP.NET Core 10.0.15 (LTS) and 11.0.0 (STS, released 10 Nov 2026) (Nov 2026).
+Builds on `csharp.md`. Written for ASP.NET Core 10.0.15 (LTS) and 11.0.0 (STS, released 10 Nov 2026) (Nov 2026), not benchmarked.
 
 ## Endpoints
 

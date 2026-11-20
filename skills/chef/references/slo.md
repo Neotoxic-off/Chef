@@ -1,6 +1,6 @@
 # SLOs and error budgets
 
-Verified against Sloth 0.16.0, Pyrra 0.10.2 (Nov 2026). Burn-rate math from the SRE Workbook ("Alerting on SLOs"). Look up tool versions on their GitHub releases pages; never guess one.
+Written for Sloth 0.16.0, Pyrra 0.10.2 (Nov 2026), not benchmarked. Burn-rate math from the SRE Workbook ("Alerting on SLOs"). Look up tool versions on their GitHub releases pages; never guess one.
 
 ## Definitions
 

@@ -1,6 +1,6 @@
 # Quarkus (and Micronaut)
 
-Builds on `java.md` (and `kotlin.md`). Verified against Quarkus 3.40.1.2 (LTS; 3.33 LTS maintained to 25 Mar 2027), Micronaut platform 5.2.7 (Nov 2026). Quarkus 4.0.0 artifacts reached Maven Central on 18 Nov 2026; the release is planned for 25 Nov 2026. Current versions: `https://quarkus.io/releases`; upgrade with `quarkus update`.
+Builds on `java.md` (and `kotlin.md`). Written for Quarkus 3.40.1.2 (LTS; 3.33 LTS maintained to 25 Mar 2027), Micronaut platform 5.2.7 (Nov 2026), not benchmarked. Quarkus 4.0.0 artifacts reached Maven Central on 18 Nov 2026; the release is planned for 25 Nov 2026. Current versions: `https://quarkus.io/releases`; upgrade with `quarkus update`.
 
 ## REST
 

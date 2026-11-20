@@ -1,6 +1,6 @@
 # Grafana
 
-Verified against Grafana 13.3.1, gcx 1.8.0 (Nov 2026). Look up the current release on github.com/grafana/grafana/releases; never guess one.
+Written for Grafana 13.3.1, gcx 1.8.0 (Nov 2026), not benchmarked. Look up the current release on github.com/grafana/grafana/releases; never guess one.
 
 ## Dashboards as code
 

@@ -1,6 +1,6 @@
 # F#
 
-Verified against .NET SDK 10.0.401, FSharp.Core 11.0.101 on NuGet, Fantomas 8.1.2, FSharpLint 0.27.2, xUnit v3 (Nov 2026). Current versions: `dotnet --list-sdks`, `dotnet package search <id>` or nuget.org. Shared .NET rules (central package versions, MTP, coverage): see `csharp.md`.
+Written for .NET SDK 10.0.401, FSharp.Core 11.0.101 on NuGet, Fantomas 8.1.2, FSharpLint 0.27.2, xUnit v3 (Nov 2026), not benchmarked. Current versions: `dotnet --list-sdks`, `dotnet package search <id>` or nuget.org. Shared .NET rules (central package versions, MTP, coverage): see `csharp.md`.
 
 ## Project settings (`Directory.Build.props`)
 

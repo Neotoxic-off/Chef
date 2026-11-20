@@ -1,6 +1,6 @@
 # Rust web: Axum, Actix Web, Tokio, sqlx
 
-Builds on `rust.md`. Verified against axum 0.8.9 (0.9 not released), tower-http 0.7.1, actix-web 4.20, tokio 1.54, sqlx 0.9.1 (Nov 2026). Current versions: `cargo info <crate>` or `cargo search <crate>`.
+Builds on `rust.md`. Written for axum 0.8.9 (0.9 not released), tower-http 0.7.1, actix-web 4.20, tokio 1.54, sqlx 0.9.1 (Nov 2026), not benchmarked. Current versions: `cargo info <crate>` or `cargo search <crate>`.
 
 ## Axum
 

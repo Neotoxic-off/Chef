@@ -1,6 +1,6 @@
 # Blazor
 
-Builds on `csharp.md` and `aspnetcore.md`. Verified against .NET 10 (LTS), .NET 11 (STS, Nov 2026) and bUnit 2.15 (Nov 2026). Current versions: `dotnet --list-sdks`, and nuget.org for `bunit`.
+Builds on `csharp.md` and `aspnetcore.md`. Written for .NET 10 (LTS), .NET 11 (STS, Nov 2026) and bUnit 2.15 (Nov 2026), not benchmarked. Current versions: `dotnet --list-sdks`, and nuget.org for `bunit`.
 
 ## Render modes
 

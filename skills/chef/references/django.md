@@ -1,6 +1,6 @@
 # Django
 
-Builds on `python.md`. Verified against Django 6.1.3 (Python 3.12-3.15; 5.2 is the current LTS), django-stubs 6.1, pytest-django 4.14, Django REST framework 3.18 (Nov 2026).
+Builds on `python.md`. Written for Django 6.1.3 (Python 3.12-3.15; 5.2 is the current LTS), django-stubs 6.1, pytest-django 4.14, Django REST framework 3.18 (Nov 2026), not benchmarked.
 
 ## Settings
 

@@ -1,6 +1,6 @@
 # Dart / Flutter
 
-Verified against Dart 3.14.1, Flutter 3.50, very_good_analysis 11.0, coverage 1.16, very_good_cli 1.7, mocktail 1.0.5, mutation_test 1.8 (Nov 2026).
+Written for Dart 3.14.1, Flutter 3.50, very_good_analysis 11.0, coverage 1.16, very_good_cli 1.7, mocktail 1.0.5, mutation_test 1.8 (Nov 2026), not benchmarked.
 
 ## Lint and format: analyzer + very_good_analysis
 

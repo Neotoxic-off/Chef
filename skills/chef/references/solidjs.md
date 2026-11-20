@@ -1,6 +1,6 @@
 # SolidJS
 
-Builds on `typescript.md`. Verified against solid-js 2.0.1, @solidjs/vite-plugin 3.0, @solidjs/router 2.0, eslint-plugin-solid 0.20, SolidStart 2.2 (Nov 2026). Current versions: `npm view solid-js dist-tags`, and `npm view @solidjs/start peerDependencies` to see which Solid a framework supports.
+Builds on `typescript.md`. Written for solid-js 2.0.1, @solidjs/vite-plugin 3.0, @solidjs/router 2.0, eslint-plugin-solid 0.20, SolidStart 2.2 (Nov 2026), not benchmarked. Current versions: `npm view solid-js dist-tags`, and `npm view @solidjs/start peerDependencies` to see which Solid a framework supports.
 
 ## Which Solid
 

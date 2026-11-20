@@ -1,6 +1,6 @@
 # Make and task runners (just, Task)
 
-Verified against GNU Make 4.4.1, just 1.59, Task 3.54, checkmake 0.3 (Nov 2026).
+Written for GNU Make 4.4.1, just 1.59, Task 3.54, checkmake 0.3 (Nov 2026), not benchmarked.
 
 ## Lint and validate
 

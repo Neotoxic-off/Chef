@@ -1,6 +1,6 @@
 # Linux servers (systemd, users, packages, logs, firewall, SSH)
 
-Verified against systemd 262, OpenSSH 10.6p2 (Nov 2026).
+Written for systemd 262, OpenSSH 10.6p2 (Nov 2026), not benchmarked.
 
 ## Lint and validate
 

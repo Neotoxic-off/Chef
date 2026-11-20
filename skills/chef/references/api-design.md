@@ -1,6 +1,6 @@
 # HTTP API design (REST, OpenAPI)
 
-Verified against OpenAPI 3.2.1, RFC 9110, RFC 9457, RFC 9745, Redocly CLI 2.80, Spectral 6.17, oasdiff 1.39, Schemathesis 4.33 and the IETF drafts named below (Nov 2026).
+Written for OpenAPI 3.2.1, RFC 9110, RFC 9457, RFC 9745, Redocly CLI 2.80, Spectral 6.17, oasdiff 1.39, Schemathesis 4.33 and the IETF drafts named below (Nov 2026), not benchmarked.
 
 ## Contract first
 

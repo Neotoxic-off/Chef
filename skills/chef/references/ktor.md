@@ -1,6 +1,6 @@
 # Ktor (server)
 
-Builds on `kotlin.md`. Verified against Ktor 3.6.1 (Nov 2026). Current version: `https://ktor.io/docs/releases.html` or Maven Central `io.ktor:ktor-server-core-jvm`; keep all `io.ktor` artifacts on one version in the catalog.
+Builds on `kotlin.md`. Written for Ktor 3.6.1 (Nov 2026), not benchmarked. Current version: `https://ktor.io/docs/releases.html` or Maven Central `io.ktor:ktor-server-core-jvm`; keep all `io.ktor` artifacts on one version in the catalog.
 
 ## Structure
 

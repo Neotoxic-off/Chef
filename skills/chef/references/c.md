@@ -1,6 +1,6 @@
 # C
 
-Build with CMake and `CMakePresets.json` (committed). Target C17, or C23 where all compilers support it. Verified against CMake 4.5, LLVM (clang-tidy, clang-format) 23.1, cppcheck 2.22, gcovr 8.8, Mull 0.39 (Nov 2026).
+Build with CMake and `CMakePresets.json` (committed). Target C17, or C23 where all compilers support it. Written for CMake 4.5, LLVM (clang-tidy, clang-format) 23.1, cppcheck 2.22, gcovr 8.8, Mull 0.39 (Nov 2026), not benchmarked.
 
 ## Lint and format: clang-tidy, clang-format
 

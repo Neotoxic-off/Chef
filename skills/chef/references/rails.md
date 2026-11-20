@@ -1,6 +1,6 @@
 # Rails
 
-Builds on `ruby.md`. Verified against Rails 8.1.4 (security fixes until October 2027), rubocop-rails 2.38, Brakeman 8.1, bundler-audit 0.9, Bullet 8.3 (Nov 2026).
+Builds on `ruby.md`. Written for Rails 8.1.4 (security fixes until October 2027), rubocop-rails 2.38, Brakeman 8.1, bundler-audit 0.9, Bullet 8.3 (Nov 2026), not benchmarked.
 
 ## Lint and security
 

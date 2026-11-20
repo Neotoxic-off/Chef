@@ -1,6 +1,6 @@
 # Electron
 
-Builds on `typescript.md` (and `react.md` for a React renderer). Verified against the Electron security tutorial (latest docs) and npm: electron 45.3.4, @electron/fuses 2.1.3 (Nov 2026). Current version: `npm view electron version`. Upgrade one major at a time with the Breaking Changes page; an unsupported major gets no Chromium security fixes.
+Builds on `typescript.md` (and `react.md` for a React renderer). Written for the Electron security tutorial (latest docs) and npm: electron 45.3.4, @electron/fuses 2.1.3 (Nov 2026), not benchmarked. Current version: `npm view electron version`. Upgrade one major at a time with the Breaking Changes page; an unsupported major gets no Chromium security fixes.
 
 ## Security (non-negotiable)
 

@@ -1,6 +1,6 @@
 # OpenTelemetry
 
-Verified against OpenTelemetry Collector 0.165.0 (contrib 0.165.1), semantic conventions 1.45.0 (Nov 2026). Look up current versions on the language's OTel page or GitHub releases; never guess one.
+Written for OpenTelemetry Collector 0.165.0 (contrib 0.165.1), semantic conventions 1.45.0 (Nov 2026), not benchmarked. Look up current versions on the language's OTel page or GitHub releases; never guess one.
 
 ## Setup
 

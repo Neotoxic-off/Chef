@@ -1,6 +1,6 @@
 # Astro
 
-Builds on `typescript.md`. Verified against Astro 7.4, @astrojs/check 0.9, eslint-plugin-astro 3.2 (Nov 2026). Current version: `npm view astro version`; upgrade with `npx @astrojs/upgrade`.
+Builds on `typescript.md`. Written for Astro 7.4, @astrojs/check 0.9, eslint-plugin-astro 3.2 (Nov 2026), not benchmarked. Current version: `npm view astro version`; upgrade with `npx @astrojs/upgrade`.
 
 ## Setup
 

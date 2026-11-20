@@ -1,6 +1,6 @@
 # Unreal Engine (C++)
 
-Verified against Epic's C++ Coding Standard, the object pointer and Automation Spec pages, and the build configuration page on dev.epicgames.com (Nov 2026). Current engine: the Epic Games Launcher or the version selector on dev.epicgames.com; pin it in the `.uproject` (`EngineAssociation`). `cpp.md` applies only to engine-free code: its clang-tidy set does not fit UE macros and naming.
+Written for Epic's C++ Coding Standard, the object pointer and Automation Spec pages, and the build configuration page on dev.epicgames.com (Nov 2026), not benchmarked. Current engine: the Epic Games Launcher or the version selector on dev.epicgames.com; pin it in the `.uproject` (`EngineAssociation`). `cpp.md` applies only to engine-free code: its clang-tidy set does not fit UE macros and naming.
 
 ## House rules vs Epic's standard
 

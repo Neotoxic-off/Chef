@@ -1,6 +1,6 @@
 # .NET upgrade: .NET Framework to .NET, and .NET majors
 
-Builds on `csharp.md`. Verified against the .NET release index (10.0.15 LTS, 11.0.0 STS; 8.0 and 9.0 out of support since 10 Nov 2026), the `dotnet package list` docs and the Microsoft Learn porting pages (Nov 2026).
+Builds on `csharp.md`. Written for the .NET release index (10.0.15 LTS, 11.0.0 STS; 8.0 and 9.0 out of support since 10 Nov 2026), the `dotnet package list` docs and the Microsoft Learn porting pages (Nov 2026), not benchmarked.
 
 ## When it applies
 

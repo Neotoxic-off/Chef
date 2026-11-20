@@ -1,6 +1,6 @@
 # Git
 
-Verified against Git 2.56, pre-commit 4.7, pre-commit-hooks 6.0.0, gitleaks 8.30.1, lefthook 2.2 (Nov 2026).
+Written for Git 2.56, pre-commit 4.7, pre-commit-hooks 6.0.0, gitleaks 8.30.1, lefthook 2.2 (Nov 2026), not benchmarked.
 
 ## Lint and validate
 

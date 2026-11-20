@@ -1,6 +1,6 @@
 # htmx
 
-Server-agnostic: read with the file for the server stack. Verified against htmx 2.0.11 and 4.0 (Nov 2026). Look up versions with `npm view htmx.org dist-tags`.
+Server-agnostic: read with the file for the server stack. Written for htmx 2.0.11 and 4.0 (Nov 2026), not benchmarked. Look up versions with `npm view htmx.org dist-tags`.
 
 ## Version
 

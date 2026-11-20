@@ -1,6 +1,6 @@
 # Tauri
 
-Builds on `rust.md` (backend) and `typescript.md` (frontend). Verified against the Tauri 2 security docs (capabilities) and registries: tauri 2.12.7, @tauri-apps/api 2.12.5, tauri-specta 2.0.0-rc.29 (Nov 2026; tauri 3 is alpha). Current versions: `cargo info tauri`, `npm view @tauri-apps/api version`. Keep the Rust crates and the npm packages on the same minor.
+Builds on `rust.md` (backend) and `typescript.md` (frontend). Written for the Tauri 2 security docs (capabilities) and registries: tauri 2.12.7, @tauri-apps/api 2.12.5, tauri-specta 2.0.0-rc.29 (Nov 2026; tauri 3 is alpha), not benchmarked. Current versions: `cargo info tauri`, `npm view @tauri-apps/api version`. Keep the Rust crates and the npm packages on the same minor.
 
 ## Capabilities: least privilege
 

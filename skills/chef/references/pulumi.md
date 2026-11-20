@@ -1,6 +1,6 @@
 # Pulumi
 
-Check the current CLI with `pulumi version` and the latest with `gh release list -R pulumi/pulumi -L 1`. Pin provider packages in the lock file of the language (`package-lock.json`, `uv.lock`, `go.sum`). Verified against Pulumi CLI 3.277 (Nov 2026).
+Check the current CLI with `pulumi version` and the latest with `gh release list -R pulumi/pulumi -L 1`. Pin provider packages in the lock file of the language (`package-lock.json`, `uv.lock`, `go.sum`). Written for Pulumi CLI 3.277 (Nov 2026), not benchmarked.
 
 ## Lint and validate
 

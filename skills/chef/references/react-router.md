@@ -1,6 +1,6 @@
 # React Router (framework mode, ex-Remix)
 
-Builds on `typescript.md` and `react.md`. Verified against React Router 8.5 (Nov 2026). Current version: `npm view react-router version`; peer ranges: `npm view @react-router/dev peerDependencies`.
+Builds on `typescript.md` and `react.md`. Written for React Router 8.5 (Nov 2026), not benchmarked. Current version: `npm view react-router version`; peer ranges: `npm view @react-router/dev peerDependencies`.
 
 ## Versions
 

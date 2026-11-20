@@ -1,6 +1,6 @@
 # Raise an existing repo to the 90% coverage gate
 
-Builds on SKILL.md (Tests) and the language file of each stack in the repo. Verified against diff-cover 11.0.4 (Nov 2026); each language's coverage tool is verified in its own file.
+Builds on SKILL.md (Tests) and the language file of each stack in the repo. Written for diff-cover 11.0.4 (Nov 2026), not benchmarked; each language's coverage tool is verified in its own file.
 
 ## When it applies
 

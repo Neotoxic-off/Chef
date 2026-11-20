@@ -1,6 +1,6 @@
 # React Native (Expo)
 
-Builds on `typescript.md` and `react.md`. Verified against Expo SDK 58, React Native 0.88, jest-expo 58, eslint-config-expo 58, @testing-library/react-native 14.1 (Nov 2026). Current versions: `npm view expo version`; let `npx expo install` pick every SDK-bound package.
+Builds on `typescript.md` and `react.md`. Written for Expo SDK 58, React Native 0.88, jest-expo 58, eslint-config-expo 58, @testing-library/react-native 14.1 (Nov 2026), not benchmarked. Current versions: `npm view expo version`; let `npx expo install` pick every SDK-bound package.
 
 ## Project and dependencies
 

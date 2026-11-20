@@ -1,6 +1,6 @@
 # Storybook
 
-Builds on `typescript.md` and the UI framework's file (`react.md`, `vue.md`...). Verified against Storybook 10.6, @storybook/addon-vitest 10.6, @storybook/addon-a11y 10.6, eslint-plugin-storybook 10.6, Vitest 5.1 (Nov 2026). Look up the current version with `npm view storybook version`; upgrade with `npx storybook@latest upgrade`.
+Builds on `typescript.md` and the UI framework's file (`react.md`, `vue.md`...). Written for Storybook 10.6, @storybook/addon-vitest 10.6, @storybook/addon-a11y 10.6, eslint-plugin-storybook 10.6, Vitest 5.1 (Nov 2026), not benchmarked. Look up the current version with `npm view storybook version`; upgrade with `npx storybook@latest upgrade`.
 
 ## Setup
 

@@ -1,6 +1,6 @@
 # SwiftUI
 
-Builds on `swift.md`. Verified against Apple's Observation docs (Nov 2026). Current toolchain: `swift --version`; current SwiftLint: its GitHub releases page.
+Builds on `swift.md`. Written for Apple's Observation docs (Nov 2026), not benchmarked. Current toolchain: `swift --version`; current SwiftLint: its GitHub releases page.
 
 ## State and data flow
 

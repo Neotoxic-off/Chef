@@ -1,6 +1,6 @@
 # Go web: net/http, chi, Gin, Echo
 
-Builds on `go.md`. Verified against Go 1.27.4, chi 5.5.0, Gin 1.12.0, Echo 5.4.6 (Nov 2026). Current versions: `curl -s 'https://go.dev/VERSION?m=text'` for Go, `go list -m -u all` for modules.
+Builds on `go.md`. Written for Go 1.27.4, chi 5.5.0, Gin 1.12.0, Echo 5.4.6 (Nov 2026), not benchmarked. Current versions: `curl -s 'https://go.dev/VERSION?m=text'` for Go, `go list -m -u all` for modules.
 
 ## Router choice
 

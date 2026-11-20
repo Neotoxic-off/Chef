@@ -1,6 +1,6 @@
 # Next.js
 
-Builds on `typescript.md` and `react.md`. Verified against Next.js 16.4 (Nov 2026). App Router only for new code.
+Builds on `typescript.md` and `react.md`. Written for Next.js 16.4 (Nov 2026), not benchmarked. App Router only for new code.
 
 ## Lint and config
 

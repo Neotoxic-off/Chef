@@ -1,6 +1,6 @@
 # Haskell
 
-Verified against GHC 9.14.1, HLint 3.10, Fourmolu 0.21, hspec 2.11, hedgehog 1.7 (Nov 2026). Pick the GHC version with GHCup (`ghcup list`; it marks the recommended one) and pin it in `cabal.project` (`with-compiler: ghc-9.14.1`). Package versions: Hackage.
+Written for GHC 9.14.1, HLint 3.10, Fourmolu 0.21, hspec 2.11, hedgehog 1.7 (Nov 2026), not benchmarked. Pick the GHC version with GHCup (`ghcup list`; it marks the recommended one) and pin it in `cabal.project` (`with-compiler: ghc-9.14.1`). Package versions: Hackage.
 
 ## Lint and format: GHC warnings + HLint + Fourmolu
 

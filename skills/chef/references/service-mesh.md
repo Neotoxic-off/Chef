@@ -1,6 +1,6 @@
 # Service mesh (Istio ambient, Linkerd, Cilium)
 
-Verified against Istio 1.32.0, Linkerd 2.20 (edge-26.11.2), Cilium 1.20.5 (Nov 2026).
+Written for Istio 1.32.0, Linkerd 2.20 (edge-26.11.2), Cilium 1.20.5 (Nov 2026), not benchmarked.
 
 ## When not to use one
 

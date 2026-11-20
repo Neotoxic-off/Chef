@@ -1,6 +1,6 @@
 # Perl
 
-Target Perl 5.36 or later and start every file with `use v5.36;` (or the project's newer version): it enables `strict`, `warnings` and subroutine signatures. Manage dependencies with a `cpanfile` and Carton (`cpanfile.snapshot` committed). Check current tool versions on metacpan.org or with `cpanm --info <Module>`. Verified against Perl 5.44, Perl::Critic 1.156, Perl::Tidy 20260826, Devel::Cover 1.52 (Nov 2026).
+Target Perl 5.36 or later and start every file with `use v5.36;` (or the project's newer version): it enables `strict`, `warnings` and subroutine signatures. Manage dependencies with a `cpanfile` and Carton (`cpanfile.snapshot` committed). Check current tool versions on metacpan.org or with `cpanm --info <Module>`. Written for Perl 5.44, Perl::Critic 1.156, Perl::Tidy 20260826, Devel::Cover 1.52 (Nov 2026), not benchmarked.
 
 ## Lint and format: Perl::Critic, perltidy
 

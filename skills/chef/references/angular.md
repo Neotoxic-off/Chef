@@ -1,6 +1,6 @@
 # Angular
 
-Builds on `typescript.md`. Verified against Angular 22.3, angular-eslint 22.8 (Nov 2026).
+Builds on `typescript.md`. Written for Angular 22.3, angular-eslint 22.8 (Nov 2026), not benchmarked.
 
 ## Setup
 

@@ -1,6 +1,6 @@
 # Unity
 
-Builds on `csharp.md` for style and naming, with Unity's limits. Verified against the Unity 6.6 manual (C# compiler page, Roslyn analyzers and rulesets) and the Code Coverage package docs (Nov 2026). Current version: Unity Hub or the "Unity 6 releases" page; pin it in `ProjectSettings/ProjectVersion.txt`.
+Builds on `csharp.md` for style and naming, with Unity's limits. Written for the Unity 6.6 manual (C# compiler page, Roslyn analyzers and rulesets) and the Code Coverage package docs (Nov 2026), not benchmarked. Current version: Unity Hub or the "Unity 6 releases" page; pin it in `ProjectSettings/ProjectVersion.txt`.
 
 ## What differs from `csharp.md`
 

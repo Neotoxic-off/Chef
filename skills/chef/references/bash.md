@@ -1,6 +1,6 @@
 # Bash, sh
 
-Verified against ShellCheck 0.11.0, shfmt 3.14.1, bats-core 1.14.0, bashcov 4.0.3 with SimpleCov 1.3 (Nov 2026).
+Written for ShellCheck 0.11.0, shfmt 3.14.1, bats-core 1.14.0, bashcov 4.0.3 with SimpleCov 1.3 (Nov 2026), not benchmarked.
 
 Target `bash` unless the script must run on a minimal image; then write POSIX `sh` and lint it as `sh`.
 

@@ -1,6 +1,6 @@
 # C++
 
-Build with CMake and `CMakePresets.json` (committed). Target C++20 or later. Every CI job uses a preset. Verified against CMake 4.5, LLVM (clang-tidy, clang-format) 23.1, gcovr 8.8, GoogleTest 1.18, Catch2 3.16, Mull 0.39 (Nov 2026).
+Build with CMake and `CMakePresets.json` (committed). Target C++20 or later. Every CI job uses a preset. Written for CMake 4.5, LLVM (clang-tidy, clang-format) 23.1, gcovr 8.8, GoogleTest 1.18, Catch2 3.16, Mull 0.39 (Nov 2026), not benchmarked.
 
 ## Lint and format: clang-tidy, clang-format
 

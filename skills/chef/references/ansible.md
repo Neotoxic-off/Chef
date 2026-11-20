@@ -1,6 +1,6 @@
 # Ansible
 
-Verified against ansible-core 2.22, ansible-lint 26.11, Molecule 26.11 (Nov 2026).
+Written for ansible-core 2.22, ansible-lint 26.11, Molecule 26.11 (Nov 2026), not benchmarked.
 
 ## Lint and validate
 

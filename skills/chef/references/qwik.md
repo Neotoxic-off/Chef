@@ -1,6 +1,6 @@
 # Qwik and Qwik City
 
-Builds on `typescript.md`. Verified against Qwik 1.20.4 (`@builder.io/qwik`, `@builder.io/qwik-city`), eslint-plugin-qwik 1.20.4, and Qwik 2.0.0-rc.5 (Nov 2026). Look up versions with `npm view @builder.io/qwik dist-tags` and `npm view @qwik.dev/core dist-tags`.
+Builds on `typescript.md`. Written for Qwik 1.20.4 (`@builder.io/qwik`, `@builder.io/qwik-city`), eslint-plugin-qwik 1.20.4, and Qwik 2.0.0-rc.5 (Nov 2026), not benchmarked. Look up versions with `npm view @builder.io/qwik dist-tags` and `npm view @qwik.dev/core dist-tags`.
 
 ## Version
 

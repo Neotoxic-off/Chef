@@ -1,6 +1,6 @@
 # Deno, Bun, Hono
 
-Builds on `typescript.md`. Verified against Deno 2.9.8, Bun 1.4.4, Hono 4.13.19, @hono/zod-validator 0.9 (Nov 2026). Current versions: `deno --version` / GitHub releases of `denoland/deno`; `npm view bun version`; `npm view hono version`.
+Builds on `typescript.md`. Written for Deno 2.9.8, Bun 1.4.4, Hono 4.13.19, @hono/zod-validator 0.9 (Nov 2026), not benchmarked. Current versions: `deno --version` / GitHub releases of `denoland/deno`; `npm view bun version`; `npm view hono version`.
 
 ## Deno
 

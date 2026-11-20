@@ -1,6 +1,6 @@
 # OCaml
 
-Verified against OCaml 5.5.2, dune 3.25, ocamlformat 0.29.0, alcotest 1.10, qcheck-core 0.91, bisect_ppx 2.8.3 (Nov 2026). Current versions: `opam show <package>` or https://ocaml.org/p/<package>/latest. Lock dependencies (`opam lock` or dune package management).
+Written for OCaml 5.5.2, dune 3.25, ocamlformat 0.29.0, alcotest 1.10, qcheck-core 0.91, bisect_ppx 2.8.3 (Nov 2026), not benchmarked. Current versions: `opam show <package>` or https://ocaml.org/p/<package>/latest. Lock dependencies (`opam lock` or dune package management).
 
 ## Lint and format: compiler warnings + ocamlformat
 

@@ -1,6 +1,6 @@
 # Lua
 
-Name the runtime first (Lua 5.5, Lua 5.4, LuaJIT, Neovim, Roblox Luau, LÖVE): it sets the `std` for every tool below. Install tools with LuaRocks (`.rockspec` committed). Verified against Lua 5.5.1, StyLua 2.6, selene 0.32, luacheck 1.2, lua-language-server 3.19.2, busted 2.3, luacov 0.17 (Nov 2026).
+Name the runtime first (Lua 5.5, Lua 5.4, LuaJIT, Neovim, Roblox Luau, LÖVE): it sets the `std` for every tool below. Install tools with LuaRocks (`.rockspec` committed). Written for Lua 5.5.1, StyLua 2.6, selene 0.32, luacheck 1.2, lua-language-server 3.19.2, busted 2.3, luacov 0.17 (Nov 2026), not benchmarked.
 
 ## Lint and format: StyLua + selene (or luacheck)
 

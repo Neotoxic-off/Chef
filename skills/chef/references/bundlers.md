@@ -1,6 +1,6 @@
 # Bundlers: Vite, Rolldown, esbuild, webpack
 
-Builds on `typescript.md`. Verified against Vite 8.3, Rolldown 1.3, esbuild 0.28, webpack 5.112, Rspack 2.3, tsdown 0.23 (Nov 2026). Look up the current version with `npm view <package> version`.
+Builds on `typescript.md`. Written for Vite 8.3, Rolldown 1.3, esbuild 0.28, webpack 5.112, Rspack 2.3, tsdown 0.23 (Nov 2026), not benchmarked. Look up the current version with `npm view <package> version`.
 
 ## Choice
 

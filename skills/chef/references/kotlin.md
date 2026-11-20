@@ -1,6 +1,6 @@
 # Kotlin
 
-Verified against Kotlin 2.4.21, Spotless 8.11.0, detekt 1.23.8 (2.0.0-alpha.6 next), Kover 0.9.11, Kotest 6.2.7, MockK 1.14.12 (Nov 2026).
+Written for Kotlin 2.4.21, Spotless 8.11.0, detekt 1.23.8 (2.0.0-alpha.6 next), Kover 0.9.11, Kotest 6.2.7, MockK 1.14.12 (Nov 2026), not benchmarked.
 
 Build with Gradle (Kotlin DSL), version catalog in `gradle/libs.versions.toml`, wrapper committed.
 

@@ -1,6 +1,6 @@
 # Svelte and SvelteKit
 
-Builds on `typescript.md`. Verified against Svelte 5.58, SvelteKit 3.3, svelte-check 4.7, eslint-plugin-svelte 3.24 (Nov 2026). SvelteKit 3 needs TypeScript 6, Vite 8 and Node 22.17+.
+Builds on `typescript.md`. Written for Svelte 5.58, SvelteKit 3.3, svelte-check 4.7, eslint-plugin-svelte 3.24 (Nov 2026), not benchmarked. SvelteKit 3 needs TypeScript 6, Vite 8 and Node 22.17+.
 
 ## Setup
 

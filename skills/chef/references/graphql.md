@@ -1,6 +1,6 @@
 # GraphQL
 
-Verified against the GraphQL spec (September 2026 edition), the GraphQL over HTTP draft, @graphql-eslint/eslint-plugin 4.4, GraphQL Inspector 7.0 and the OWASP GraphQL Cheat Sheet (Nov 2026).
+Written for the GraphQL spec (September 2026 edition), the GraphQL over HTTP draft, @graphql-eslint/eslint-plugin 4.4, GraphQL Inspector 7.0 and the OWASP GraphQL Cheat Sheet (Nov 2026), not benchmarked.
 
 ## Schema
 

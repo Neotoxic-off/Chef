@@ -1,6 +1,6 @@
 # Jetpack Compose
 
-Builds on `kotlin.md`. Verified against Compose BOM 2026.09.00, slack compose-lint-checks 1.6.1, ktlint 1.x rules docs, detekt 1.23.8 (Nov 2026). Current BOM: the "BOM to library version mapping" page on developer.android.com; current lint checks: `maven-metadata.xml` of `com.slack.lint.compose:compose-lint-checks` on Maven Central.
+Builds on `kotlin.md`. Written for Compose BOM 2026.09.00, slack compose-lint-checks 1.6.1, ktlint 1.x rules docs, detekt 1.23.8 (Nov 2026), not benchmarked. Current BOM: the "BOM to library version mapping" page on developer.android.com; current lint checks: `maven-metadata.xml` of `com.slack.lint.compose:compose-lint-checks` on Maven Central.
 
 ## Build and lint
 

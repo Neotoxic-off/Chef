@@ -1,6 +1,6 @@
 # Loki
 
-Verified against Loki 3.7.10, Alloy 1.22.0 (Nov 2026). Look up current releases on github.com/grafana/loki/releases and github.com/grafana/alloy/releases; never guess one.
+Written for Loki 3.7.10, Alloy 1.22.0 (Nov 2026), not benchmarked. Look up current releases on github.com/grafana/loki/releases and github.com/grafana/alloy/releases; never guess one.
 
 ## Shipping logs
 

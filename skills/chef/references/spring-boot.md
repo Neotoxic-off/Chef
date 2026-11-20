@@ -1,6 +1,6 @@
 # Spring Boot
 
-Builds on `java.md` (and `kotlin.md`). Verified against Spring Boot 4.1.2, Spring Framework 7.0.10, Testcontainers 2.0.5 (Nov 2026). Boot 4.2.0-RC2 (Framework 7.1.0-RC2) was out on 5 Nov 2026, not GA.
+Builds on `java.md` (and `kotlin.md`). Written for Spring Boot 4.1.2, Spring Framework 7.0.10, Testcontainers 2.0.5 (Nov 2026), not benchmarked. Boot 4.2.0-RC2 (Framework 7.1.0-RC2) was out on 5 Nov 2026, not GA.
 
 ## Structure
 

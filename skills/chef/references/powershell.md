@@ -1,6 +1,6 @@
 # PowerShell
 
-Verified against PowerShell 7.7 (7.6 is the current LTS; 7.4 reached end of support on 2026-11-10), PSScriptAnalyzer 1.25.0, Pester 6.2.0 (Nov 2026).
+Written for PowerShell 7.7 (7.6 is the current LTS; 7.4 reached end of support on 2026-11-10), PSScriptAnalyzer 1.25.0, Pester 6.2.0 (Nov 2026), not benchmarked.
 
 Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host requires it, and say so in the manifest (`PowerShellVersion`, `CompatiblePSEditions`).
 
