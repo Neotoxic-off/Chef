@@ -72,12 +72,30 @@ def test_break_even_chart_labels_the_threshold_and_the_example_round() -> None:
     assert "plain Claude $15.10 and chef 1.2 $11.20 per task, 26% less" in svg
 
 
+def test_same_reviewer_segments_breaks_the_line_where_the_reviewer_changes() -> None:
+    versions: list[dict[str, Any]] = [{"reviewer": "old"}, {"reviewer": "old"}, {"reviewer": "new"}]
+    points: list[tuple[float, float]] = [(0.0, 1.0), (1.0, 2.0), (2.0, 3.0)]
+
+    segments: list[list[tuple[float, float]]] = charts.same_reviewer_segments(versions, points)
+
+    assert segments == [[(0.0, 1.0), (1.0, 2.0)], [(2.0, 3.0)]]
+
+
 def test_time_chart_labels_each_arm_step_and_version() -> None:
-    times: dict[str, Any] = {
-        "tasks": 2,
-        "arms": {
-            "none": {"first_answer": 20, "first_review": 20, "back_and_forth": 30, "sent_back": 0.5},
-            "chef12": {"first_answer": 40, "first_review": 25, "back_and_forth": 10, "sent_back": 0.0},
+    merge: dict[str, dict[str, float]] = {
+        "none": {
+            "runs": 2.0,
+            "merged_first_time": 0.5,
+            "first_answer_seconds": 20,
+            "first_review_seconds": 20,
+            "back_and_forth_seconds": 30,
+        },
+        "chef12": {
+            "runs": 2.0,
+            "merged_first_time": 1.0,
+            "first_answer_seconds": 40,
+            "first_review_seconds": 25,
+            "back_and_forth_seconds": 10,
         },
     }
     history: dict[str, Any] = {
@@ -85,7 +103,7 @@ def test_time_chart_labels_each_arm_step_and_version() -> None:
         "baseline": {"seconds": 15.0},
     }
 
-    svg: str = charts.time_chart(charts.DARK, times, history)
+    svg: str = charts.time_chart(charts.DARK, merge, history)
 
     assert "Plain Claude: first answer 20 s, first review 20 s, fixes and new reviews 30 s, 50% sent back" in svg
     assert "Chef 1.2: first answer 40 s, first review 25 s, fixes and new reviews 10 s, 0% sent back" in svg
@@ -105,3 +123,20 @@ def test_history_chart_labels_every_version_and_the_baseline() -> None:
 
     assert "0.9.0 $0.200 per task, 40% merged as is; 1.1.0 $0.150 per task, 90% merged as is" in svg
     assert "Plain Claude: $0.060, 45%." in svg
+
+
+def test_history_chart_hides_plain_claude_merge_line_judged_by_another_reviewer() -> None:
+    history: dict[str, Any] = {
+        "tasks": ["python"],
+        "versions": [
+            {"version": "1.2.0", "cost": 0.2, "merge": 40.0, "reviewer": "old"},
+            {"version": "1.3.0", "cost": 0.15, "merge": 90.0, "reviewer": "new"},
+        ],
+        "baseline": {"cost": 0.06, "merge": 45.0, "reviewer": "old"},
+    }
+
+    svg: str = charts.history_chart(charts.LIGHT, history)
+
+    assert ">plain Claude $0.060<" in svg
+    assert ">plain Claude 45%<" not in svg
+    assert svg.count("<polyline") == 3

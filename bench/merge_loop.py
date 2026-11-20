@@ -2,7 +2,7 @@
 
 Usage:
   python bench/merge_loop.py run <out-dir> <loop-dir> <arm>=<plugin-dir or empty> ...
-  python bench/merge_loop.py summarize <loop-dir>
+  python bench/merge_loop.py summarize <loop-dir> ... > bench/results/merge.json
 
 For every run of every listed arm, the workspace is copied into the loop dir. A blind reviewer
 (a fresh `claude -p --restricted` session that sees an anonymized copy) lists the changes it
@@ -23,14 +23,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from blind_review import PARALLEL_JUDGES, copy_submission, read_review, run_judge, submission_files
+from blind_review import BENCH_DIR, PARALLEL_JUDGES, copy_submission, read_review, reviewer_id, run_judge, submission_files
 from score import refuse_failed_runs, run_failure, usage_metrics
 
 ROUND_LIMIT: int = 2
+MILLISECONDS_PER_SECOND: float = 1000.0
 NUL_BYTE: bytes = bytes([0])
 WORKER_MODEL: str = "claude-sonnet-5-5"
 WORKER_BUDGET_USD: str = "1"
 REQUIRED: tuple[str, ...] = ("blocker", "major")
+# Hashed into the reviewer id: change it whenever is_mergeable changes. The 1.2 loop also accepted merge_as_is.
+MERGE_RULE: str = "merged when no " + "/".join(REQUIRED) + " change is listed"
 SEAT: str = (
     "the whole review panel: a senior engineer (design and correctness), a security reviewer, an SRE who will run it, "
     "and the engineer who will maintain it."
@@ -48,6 +51,7 @@ class Sample:
     run: str
     workspace: Path
     first_cost: float
+    first_seconds: float
 
 
 def required_changes(review: dict[str, Any]) -> list[str]:
@@ -59,9 +63,21 @@ def is_mergeable(review: dict[str, Any]) -> bool:
     return not required_changes(review)
 
 
+def stream_number(stream_path: Path, key: str) -> float:
+    value: float | int | bool | None = usage_metrics(stream_path)[key]
+    return float(value) if isinstance(value, (int, float)) else 0.0
+
+
 def stream_cost(stream_path: Path) -> float:
-    cost: float | int | bool | None = usage_metrics(stream_path)["cost_usd"]
-    return float(cost) if isinstance(cost, (int, float)) else 0.0
+    return stream_number(stream_path, "cost_usd")
+
+
+def harness_commit() -> str:
+    """The bench commit that ran the loop, `-dirty` when it had local changes."""
+    described: subprocess.CompletedProcess[str] = subprocess.run(
+        ["git", "-C", str(BENCH_DIR), "describe", "--always", "--dirty"], capture_output=True, text=True, check=False
+    )
+    return described.stdout.strip() if described.returncode == 0 else "unknown"
 
 
 def review(sample: Sample, review_path: Path) -> dict[str, Any] | None:
@@ -72,13 +88,18 @@ def review(sample: Sample, review_path: Path) -> dict[str, Any] | None:
     return read_review(review_path)
 
 
-def review_cost(review_path: Path) -> float:
+def review_number(review_path: Path, key: str) -> float:
+    """A number from the judge's result file, 0 when the judge crashed and left none."""
     text: str = review_path.read_text(encoding="utf-8") if review_path.is_file() else ""
     try:
-        cost: Any = json.loads(text).get("total_cost_usd") if text.strip() else None
+        value: Any = json.loads(text).get(key) if text.strip() else None
     except json.JSONDecodeError:
         return 0.0
-    return float(cost) if isinstance(cost, (int, float)) else 0.0
+    return float(value) if isinstance(value, (int, float)) else 0.0
+
+
+def review_cost(review_path: Path) -> float:
+    return review_number(review_path, "total_cost_usd")
 
 
 def lines_to_review(workspace: Path) -> int:
@@ -110,15 +131,31 @@ def fix(sample: Sample, changes: list[str], plugin_dir: str, stream_path: Path) 
     return stream_cost(stream_path)
 
 
+def new_record(sample: Sample) -> dict[str, Any]:
+    return {
+        "arm": sample.arm,
+        "task": sample.task,
+        "run": sample.run,
+        "harness": harness_commit(),
+        "reviewer": reviewer_id(SEAT, MERGE_RULE),
+        "first_cost": sample.first_cost,
+        "first_seconds": sample.first_seconds,
+        "lines_to_review": lines_to_review(sample.workspace),
+        "review_seconds": [],
+        "fix_seconds": [],
+    }
+
+
 def loop(sample: Sample, plugin_dir: str, record_dir: Path) -> dict[str, Any]:
     """Review, fix, review again; returns the record of the sample's rounds."""
-    record: dict[str, Any] = {"arm": sample.arm, "task": sample.task, "run": sample.run, "first_cost": sample.first_cost}
-    record["lines_to_review"] = lines_to_review(sample.workspace)
+    record: dict[str, Any] = new_record(sample)
     fix_costs: list[float] = []
     reviewer_costs: list[float] = []
     for round_index in range(ROUND_LIMIT + 1):
-        verdict: dict[str, Any] | None = review(sample, record_dir / f"review-{round_index}.json")
-        reviewer_costs.append(review_cost(record_dir / f"review-{round_index}.json"))
+        review_path: Path = record_dir / f"review-{round_index}.json"
+        verdict: dict[str, Any] | None = review(sample, review_path)
+        reviewer_costs.append(review_cost(review_path))
+        record["review_seconds"].append(review_number(review_path, "duration_ms") / MILLISECONDS_PER_SECOND)
         if verdict is None:
             record["error"] = f"no readable review in round {round_index}"
             break
@@ -130,6 +167,7 @@ def loop(sample: Sample, plugin_dir: str, record_dir: Path) -> dict[str, Any]:
             break
         fix_stream: Path = record_dir / f"fix-{round_index + 1}.jsonl"
         fix_costs.append(fix(sample, required_changes(verdict), plugin_dir, fix_stream))
+        record["fix_seconds"].append(stream_number(fix_stream, "seconds"))
         failure: str | None = run_failure(fix_stream)
         if failure is not None:
             record["error"] = f"fix {round_index + 1} gave no answer: {failure}"
@@ -151,7 +189,8 @@ def collect_samples(out_dir: Path, loop_dir: Path, arm: str) -> list[Sample]:
         task: str = run_dir.parent.name
         copy: Path = loop_dir / arm / task / run_dir.name / "workspace"
         shutil.copytree(run_dir / "workspace", copy)
-        samples.append(Sample(arm, task, run_dir.name, copy, stream_cost(run_dir / "stream.jsonl")))
+        stream: Path = run_dir / "stream.jsonl"
+        samples.append(Sample(arm, task, run_dir.name, copy, stream_cost(stream), stream_number(stream, "seconds")))
     return samples
 
 
@@ -185,30 +224,52 @@ def arm_summary(records: list[dict[str, Any]]) -> dict[str, float]:
         "cost_per_merged_run": round(sum(record["total_cost"] for record in records) / len(merged), 3) if merged else 0.0,
         "reviewer_cost": round(sum(record.get("reviewer_cost", 0.0) for record in records), 2),
         "lines_to_review": round(statistics.median(record.get("lines_to_review", 0) for record in records)),
+        "first_answer_seconds": round(statistics.fmean(record["first_seconds"] for record in records), 1),
+        "first_review_seconds": round(statistics.fmean(record["review_seconds"][0] for record in records), 1),
+        "back_and_forth_seconds": round(
+            statistics.fmean(sum(record["fix_seconds"]) + sum(record["review_seconds"][1:]) for record in records), 1
+        ),
     }
 
 
-def summarize(loop_dir: Path) -> dict[str, dict[str, float]]:
-    by_arm: dict[str, list[dict[str, Any]]] = {}
-    for record_path in sorted(loop_dir.glob("*/*/*/record.json")):
-        record: dict[str, Any] = json.loads(record_path.read_text(encoding="utf-8"))
-        by_arm.setdefault(record["arm"], []).append(record)
-    if not by_arm:
-        raise SystemExit(f"merge_loop: no record in {loop_dir}")
-    unfinished: list[str] = [
-        f"{record['arm']}/{record['task']}/{record['run']}: {record['error']}"
-        for records in by_arm.values()
-        for record in records
-        if "error" in record
-    ]
+def sample_name(record: dict[str, Any]) -> str:
+    return f"{record['arm']}/{record['task']}/{record['run']}"
+
+
+def load_records(loop_dirs: list[Path]) -> list[dict[str, Any]]:
+    """Every record of the loop dirs; refuses none, duplicates and unfinished ones."""
+    paths: list[Path] = sorted(path for loop_dir in loop_dirs for path in loop_dir.glob("*/*/*/record.json"))
+    records: list[dict[str, Any]] = [json.loads(path.read_text(encoding="utf-8")) for path in paths]
+    if not records:
+        raise SystemExit(f"merge_loop: no record in {', '.join(map(str, loop_dirs))}")
+    names: list[str] = [sample_name(record) for record in records]
+    duplicates: list[str] = sorted({name for name in names if names.count(name) > 1})
+    if duplicates:
+        raise SystemExit("merge_loop: samples present in more than one loop dir:\n" + "\n".join(duplicates))
+    unfinished: list[str] = [f"{sample_name(record)}: {record['error']}" for record in records if "error" in record]
     if unfinished:
         raise SystemExit("merge_loop: unfinished records, run the loop again in a new loop dir:\n" + "\n".join(unfinished))
-    return {arm: arm_summary(records) for arm, records in sorted(by_arm.items())}
+    return records
+
+
+def summarize(loop_dirs: list[Path]) -> dict[str, Any]:
+    """The results/merge.json content: one summary per arm, and where the records come from."""
+    records: list[dict[str, Any]] = load_records(loop_dirs)
+    reviewers: list[str] = sorted({record["reviewer"] for record in records})
+    if len(reviewers) > 1:
+        raise SystemExit(f"merge_loop: records from different reviewers are not comparable: {', '.join(reviewers)}")
+    by_arm: dict[str, list[dict[str, Any]]] = {}
+    for record in records:
+        by_arm.setdefault(record["arm"], []).append(record)
+    return {
+        "provenance": {"reviewer": reviewers[0], "harness": sorted({record["harness"] for record in records})},
+        "arms": {arm: arm_summary(arm_records) for arm, arm_records in sorted(by_arm.items())},
+    }
 
 
 def main(arguments: list[str]) -> None:
     if arguments[0] == "summarize":
-        print(json.dumps(summarize(Path(arguments[1])), indent=2))
+        print(json.dumps(summarize([Path(argument) for argument in arguments[1:]]), indent=2))
         return
     arm_sources: dict[str, str] = dict(argument.split("=", 1) for argument in arguments[3:])
     run_all(Path(arguments[1]), Path(arguments[2]), arm_sources)

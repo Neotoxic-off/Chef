@@ -1,9 +1,12 @@
 """Build bench/results/summary.json, the single source of the README numbers and charts.
 
 Usage: python bench/report.py <scores.json> <versions.txt> <pairwise-summary.json> [...]
+       python bench/report.py history-point <version> <scores.json> <arm> <loop-dir> [...]
 
 <scores.json> is the output of score.py; each pairwise summary is the output of
 `pairwise_review.py summarize`. charts.py renders the README charts from the result.
+`history-point` adds one version to results/history.json, from that version's scores and merge-loop
+records on the chart's tasks.
 """
 
 import json
@@ -12,7 +15,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from merge_loop import load_records
+
 RESULTS: Path = Path(__file__).resolve().parent / "results" / "summary.json"
+HISTORY: Path = RESULTS.parent / "history.json"
 TASK_METRICS: tuple[str, ...] = ("cost_usd", "turns", "output_tokens", "cache_write_tokens", "hidden_test_passes")
 
 
@@ -85,7 +91,59 @@ def build(scores: dict[str, dict[str, dict[str, Any]]], versions: str, pairwise:
     }
 
 
+def history_point(
+    version: str, arm_tasks: dict[str, dict[str, Any]], records: list[dict[str, Any]], tasks: list[str]
+) -> dict[str, Any]:
+    """One version on the version chart: median cost and time of its first answers, share merged as is."""
+    unscored: list[str] = [task for task in tasks if not arm_tasks.get(task, {}).get("runs")]
+    if unscored:
+        raise SystemExit(f"report: no scored run for the chart tasks {', '.join(unscored)}")
+    runs: list[dict[str, Any]] = [run for task in tasks for run in arm_tasks[task]["runs"]]
+    reviewed: list[dict[str, Any]] = [record for record in records if record["task"] in tasks]
+    reviewers: set[str] = {record["reviewer"] for record in reviewed}
+    if len(reviewers) != 1:
+        raise SystemExit(f"report: one reviewer expected for the version point, got {sorted(reviewers)}")
+    return {
+        "version": version,
+        "cost": round(statistics.median(measured(runs, "cost_usd")), 3),
+        "merge": round(100 * sum(1 for record in reviewed if record.get("merged_after_fixes") == 0) / len(reviewed), 1),
+        "reviews": len(reviewed),
+        "seconds": round(statistics.median(measured(runs, "seconds")), 1),
+        "reviewer": reviewers.pop(),
+    }
+
+
+def measured(runs: list[dict[str, Any]], key: str) -> list[float]:
+    """The values a run reported; score.py writes None when a stream had no figure for it."""
+    values: list[float] = [run[key] for run in runs if run.get(key) is not None]
+    if not values:
+        raise SystemExit(f"report: no run reported {key}")
+    return values
+
+
+def add_history_point(history: dict[str, Any], point: dict[str, Any]) -> dict[str, Any]:
+    if any(entry["version"] == point["version"] for entry in history["versions"]):
+        raise SystemExit(f"report: version {point['version']} is already in {HISTORY.name}")
+    return history | {"versions": [*history["versions"], point]}
+
+
+def main_history_point(arguments: list[str]) -> None:
+    version: str = arguments[0]
+    arm: str = arguments[2]
+    scores: dict[str, dict[str, dict[str, Any]]] = json.loads(Path(arguments[1]).read_text(encoding="utf-8"))
+    records: list[dict[str, Any]] = [
+        record for record in load_records([Path(path) for path in arguments[3:]]) if record["arm"] == arm
+    ]
+    history: dict[str, Any] = json.loads(HISTORY.read_text(encoding="utf-8"))
+    point: dict[str, Any] = history_point(version, scores[arm], records, history["tasks"])
+    HISTORY.write_text(json.dumps(add_history_point(history, point), indent=2) + "\n", encoding="utf-8")
+    print(f"wrote {HISTORY}: {point}")
+
+
 def main(arguments: list[str]) -> None:
+    if arguments[0] == "history-point":
+        main_history_point(arguments[1:])
+        return
     scores: dict[str, dict[str, dict[str, Any]]] = json.loads(Path(arguments[0]).read_text(encoding="utf-8"))
     versions: str = Path(arguments[1]).read_text(encoding="utf-8")
     pairwise: list[dict[str, Any]] = [json.loads(Path(path).read_text(encoding="utf-8")) for path in arguments[2:]]

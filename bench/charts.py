@@ -13,7 +13,6 @@ OUT: Path = Path(__file__).resolve().parent.parent / "assets" / "bench"
 SUMMARY: Path = Path(__file__).resolve().parent / "results" / "summary.json"
 HISTORY: Path = Path(__file__).resolve().parent / "results" / "history.json"
 MERGE: Path = Path(__file__).resolve().parent / "results" / "merge.json"
-TIME: Path = Path(__file__).resolve().parent / "results" / "time.json"
 FONT: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 WIDTH: int = 880
 
@@ -250,33 +249,62 @@ def history_point(panel: Panel, index: int, count: int, value: float) -> tuple[f
     return panel.x + index * step, HISTORY_TOP + HISTORY_PANEL_HEIGHT * (1 - value / panel.top)
 
 
-def history_panel(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[str]:
-    versions: list[dict[str, Any]] = history["versions"]
-    shown: dict[str, str] = {"$": "${:.3f}", "%": "{:.0f}%", "s": "{:.0f} s"}
-    body: list[str] = [text(panel.x, HISTORY_TOP - 22, panel.title, theme.muted, 13, 600)]
-    base_y: float = history_point(panel, 0, len(versions), history["baseline"][panel.key])[1]
+def same_reviewer_segments(versions: list[dict[str, Any]], points: list[tuple[float, float]]) -> list[list[tuple[float, float]]]:
+    """Points to join with a line: consecutive versions judged by the same reviewer, so a reviewer change shows as a gap."""
+    segments: list[list[tuple[float, float]]] = []
+    previous: str | None = None
+    for entry, point in zip(versions, points, strict=True):
+        reviewer: str | None = entry.get("reviewer")
+        if not segments or reviewer != previous:
+            segments.append([])
+        segments[-1].append(point)
+        previous = reviewer
+    return segments
+
+
+HISTORY_SHOWN: dict[str, str] = {"$": "${:.3f}", "%": "{:.0f}%", "s": "{:.0f} s"}
+REVIEWED_KEY: str = "merge"
+
+
+def baseline_marks(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[str]:
+    """Plain Claude's dashed line; on the reviewed panel only while it shares the latest version's reviewer."""
+    baseline: dict[str, Any] = history["baseline"]
+    if panel.key == REVIEWED_KEY and baseline.get("reviewer") != history["versions"][-1].get("reviewer"):
+        return []
+    base_y: float = history_point(panel, 0, len(history["versions"]), baseline[panel.key])[1]
     baseline_line: str = (
         f'<line x1="{panel.x}" y1="{base_y:.1f}" x2="{panel.x + HISTORY_PANEL_WIDTH}" y2="{base_y:.1f}" '
         f'stroke="{theme.without}" stroke-width="2" stroke-dasharray="6 4"/>'
     )
-    body += [
+    return [
         baseline_line,
         text(
             panel.x + HISTORY_PANEL_WIDTH,
             base_y - 6,
-            "plain Claude " + shown[panel.unit].format(history["baseline"][panel.key]),
+            "plain Claude " + HISTORY_SHOWN[panel.unit].format(baseline[panel.key]),
             theme.muted,
             11,
             400,
             "end",
         ),
     ]
+
+
+def history_panel(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[str]:
+    versions: list[dict[str, Any]] = history["versions"]
+    shown: dict[str, str] = HISTORY_SHOWN
+    body: list[str] = [text(panel.x, HISTORY_TOP - 22, panel.title, theme.muted, 13, 600)]
+    body += baseline_marks(theme, panel, history)
     points: list[tuple[float, float]] = [
         history_point(panel, index, len(versions), entry[panel.key]) for index, entry in enumerate(versions)
     ]
-    body += [
-        f'<polyline points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in points)}" fill="none" stroke="{theme.chef}" stroke-width="2"/>'
-    ]
+    segments: list[list[tuple[float, float]]] = (
+        same_reviewer_segments(versions, points) if panel.key == REVIEWED_KEY else [points]
+    )
+    for segment in segments:
+        body += [
+            f'<polyline points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in segment)}" fill="none" stroke="{theme.chef}" stroke-width="2"/>'
+        ]
     for (x, y), entry in zip(points, versions, strict=True):
         body += [f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5" fill="{theme.chef}"/>']
         body += [text(x, y - 10, shown[panel.unit].format(entry[panel.key]), theme.ink, 12, 600, "middle")]
@@ -397,9 +425,9 @@ def break_even_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
 
 TIME_ARMS: dict[str, str] = {"none": "Plain Claude", "chef11": "Chef 1.1", "chef12": "Chef 1.2"}
 TIME_STEPS: tuple[tuple[str, str], ...] = (
-    ("first_answer", "First answer"),
-    ("first_review", "First review"),
-    ("back_and_forth", "Fixes and new reviews"),
+    ("first_answer_seconds", "First answer"),
+    ("first_review_seconds", "First review"),
+    ("back_and_forth_seconds", "Fixes and new reviews"),
 )
 TIME_LABEL_WIDTH: float = 95.0
 TIME_BAR_WIDTH: float = 190.0
@@ -419,19 +447,23 @@ def time_row(theme: Theme, y: float, steps: dict[str, float], top: float) -> lis
         body += [rect(x, y, max(width - 1, 1.0), 20, color)]
         x += width
     total: float = sum(steps[key] for key, _ in TIME_STEPS)
-    body += [text(x + 8, y + 15, f"{total:.0f} s, {100 * steps['sent_back']:.0f}% sent back", theme.ink, 12, 600)]
+    body += [text(x + 8, y + 15, f"{total:.0f} s, {sent_back(steps):.0f}% sent back", theme.ink, 12, 600)]
     return body
 
 
-def time_bars(theme: Theme, times: dict[str, Any]) -> list[str]:
-    arms: list[str] = [arm for arm in TIME_ARMS if arm in times["arms"]]
-    top: float = max(sum(times["arms"][arm][key] for key, _ in TIME_STEPS) for arm in arms)
-    title: str = f"Agent time per task until merged (mean of {times['tasks']} tasks)"
+def sent_back(steps: dict[str, float]) -> float:
+    return 100 * (1 - steps["merged_first_time"])
+
+
+def time_bars(theme: Theme, merge: dict[str, dict[str, float]]) -> list[str]:
+    arms: list[str] = [arm for arm in TIME_ARMS if arm in merge]
+    top: float = max(sum(merge[arm][key] for key, _ in TIME_STEPS) for arm in arms)
+    title: str = f"Agent time per task until merged (mean of {merge[arms[0]]['runs']:.0f} runs)"
     body: list[str] = [text(0, HISTORY_TOP - 22, title, theme.muted, 13, 600)]
     y: float = HISTORY_TOP
     for arm in arms:
         body += [text(0, y + 15, TIME_ARMS[arm], theme.ink, 13, 600)]
-        body += time_row(theme, y, times["arms"][arm], top)
+        body += time_row(theme, y, merge[arm], top)
         y += TIME_ROW_STEP
     for index, ((_, name), color) in enumerate(zip(TIME_STEPS, time_colors(theme), strict=True)):
         x: float = index * TIME_LEGEND_STEP
@@ -439,20 +471,20 @@ def time_bars(theme: Theme, times: dict[str, Any]) -> list[str]:
     return body
 
 
-def time_chart(theme: Theme, times: dict[str, Any], history: dict[str, Any]) -> str:
+def time_chart(theme: Theme, merge: dict[str, dict[str, float]], history: dict[str, Any]) -> str:
     """Where an agent's time goes until the reviewer merges, and the first answer's time by version."""
     seconds_top: float = 1.2 * max(max(entry["seconds"] for entry in history["versions"]), history["baseline"]["seconds"])
     panel: Panel = Panel(
         40.0 + HISTORY_PANEL_WIDTH + HISTORY_PANEL_GAP, "First answer by version (median)", "seconds", seconds_top, "s"
     )
     body: list[str] = [text(0, 26, "Time to a merged change", theme.ink, 18, 600)]
-    body += time_bars(theme, times) + history_panel(theme, panel, history)
+    body += time_bars(theme, merge) + history_panel(theme, panel, history)
     arms: str = "; ".join(
         f"{TIME_ARMS[arm]}: "
-        + ", ".join(f"{name.lower()} {steps[key]:.0f} s" for key, name in TIME_STEPS)
-        + f", {100 * steps['sent_back']:.0f}% sent back"
-        for arm, steps in times["arms"].items()
-        if arm in TIME_ARMS
+        + ", ".join(f"{name.lower()} {merge[arm][key]:.0f} s" for key, name in TIME_STEPS)
+        + f", {sent_back(merge[arm]):.0f}% sent back"
+        for arm in TIME_ARMS
+        if arm in merge
     )
     versions: str = ", ".join(f"{entry['version']} {entry['seconds']:.0f} s" for entry in history["versions"])
     label: str = f"{arms}. First answer by version: {versions}; plain Claude {history['baseline']['seconds']:.0f} s."
@@ -476,7 +508,7 @@ def main() -> None:
     summary: dict[str, Any] = json.loads(SUMMARY.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
     for theme in (LIGHT, DARK):
-        merge: dict[str, dict[str, float]] = json.loads(MERGE.read_text(encoding="utf-8"))
+        merge: dict[str, dict[str, float]] = json.loads(MERGE.read_text(encoding="utf-8"))["arms"]
         (OUT / f"overview{theme.suffix}.svg").write_text(overview_chart(theme, merge), encoding="utf-8")
         (OUT / f"break-even{theme.suffix}.svg").write_text(break_even_chart(theme, merge), encoding="utf-8")
         (OUT / f"cost{theme.suffix}.svg").write_text(cost_chart(theme, summary), encoding="utf-8")
@@ -485,9 +517,7 @@ def main() -> None:
         if HISTORY.is_file():
             history: dict[str, Any] = json.loads(HISTORY.read_text(encoding="utf-8"))
             (OUT / f"history{theme.suffix}.svg").write_text(history_chart(theme, history), encoding="utf-8")
-            if TIME.is_file():
-                times: dict[str, Any] = json.loads(TIME.read_text(encoding="utf-8"))
-                (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, times, history), encoding="utf-8")
+            (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, merge, history), encoding="utf-8")
 
 
 if __name__ == "__main__":

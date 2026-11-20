@@ -65,6 +65,15 @@ def test_anonymize_refuses_a_run_that_gave_no_answer(tmp_path: Path) -> None:
         blind_review.anonymize(tmp_path / "out", ["none"])
 
 
+def test_reviewer_id_is_stable_and_changes_with_the_seat_or_the_merge_rule() -> None:
+    first: str = blind_review.reviewer_id("senior", "rule")
+
+    assert blind_review.reviewer_id("senior", "rule") == first
+    assert blind_review.reviewer_id("security", "rule") != first
+    assert blind_review.reviewer_id("senior", "other rule") != first
+    assert len(first) == blind_review.REVIEWER_ID_LENGTH
+
+
 def test_judge_prompt_names_the_seat_and_the_task_only() -> None:
     prompt: str = blind_review.judge_prompt("docker", blind_review.ROLES["security"])
 

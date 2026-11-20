@@ -1,6 +1,57 @@
 from typing import Any
 
+import pytest
+
 import report
+
+
+def chart_record(task: str, merged_after_fixes: int, reviewer: str = "r1") -> dict[str, Any]:
+    return {"task": task, "reviewer": reviewer, "merged_after_fixes": merged_after_fixes}
+
+
+def test_history_point_takes_medians_of_the_chart_tasks_and_the_first_review() -> None:
+    arm_tasks: dict[str, dict[str, Any]] = {
+        "python": {"runs": [{"cost_usd": 0.1, "seconds": 30.0}, {"cost_usd": 0.3, "seconds": 50.0}]},
+        "docker": {"runs": [{"cost_usd": 0.2, "seconds": 40.0}]},
+        "go": {"runs": [{"cost_usd": 9.0, "seconds": 900.0}]},
+    }
+    records: list[dict[str, Any]] = [chart_record("python", 0), chart_record("docker", 1), chart_record("go", 1)]
+
+    point: dict[str, Any] = report.history_point("1.3.0", arm_tasks, records, ["python", "docker"])
+
+    assert point == {"version": "1.3.0", "cost": 0.2, "merge": 50.0, "reviews": 2, "seconds": 40.0, "reviewer": "r1"}
+
+
+def test_history_point_refuses_a_chart_task_without_scored_runs() -> None:
+    arm_tasks: dict[str, dict[str, Any]] = {"python": {"runs": []}}
+
+    with pytest.raises(SystemExit, match="no scored run for the chart tasks python, docker"):
+        report.history_point("1.3.0", arm_tasks, [chart_record("python", 0)], ["python", "docker"])
+
+
+def test_history_point_skips_runs_without_a_figure() -> None:
+    arm_tasks: dict[str, dict[str, Any]] = {
+        "python": {"runs": [{"cost_usd": None, "seconds": 30.0}, {"cost_usd": 0.4, "seconds": None}]}
+    }
+
+    point: dict[str, Any] = report.history_point("1.3.0", arm_tasks, [chart_record("python", 0)], ["python"])
+
+    assert (point["cost"], point["seconds"]) == (0.4, 30.0)
+
+
+def test_history_point_refuses_records_from_two_reviewers() -> None:
+    arm_tasks: dict[str, dict[str, Any]] = {"python": {"runs": [{"cost_usd": 0.1, "seconds": 30.0}]}}
+    records: list[dict[str, Any]] = [chart_record("python", 0, "r1"), chart_record("python", 0, "r2")]
+
+    with pytest.raises(SystemExit, match="one reviewer expected"):
+        report.history_point("1.3.0", arm_tasks, records, ["python"])
+
+
+def test_add_history_point_refuses_a_version_already_there() -> None:
+    history: dict[str, Any] = {"versions": [{"version": "1.2.0"}]}
+
+    with pytest.raises(SystemExit, match="1.2.0 is already"):
+        report.add_history_point(history, {"version": "1.2.0"})
 
 
 def arm(cost: float, passed: bool) -> dict[str, Any]:

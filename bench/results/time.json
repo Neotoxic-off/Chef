@@ -1,8 +1,0 @@
-{
-  "tasks": 39,
-  "arms": {
-    "none": {"first_answer": 21, "first_review": 23, "back_and_forth": 29, "sent_back": 0.41},
-    "chef11": {"first_answer": 57, "first_review": 25, "back_and_forth": 13, "sent_back": 0.154},
-    "chef12": {"first_answer": 42, "first_review": 26, "back_and_forth": 11, "sent_back": 0.128}
-  }
-}

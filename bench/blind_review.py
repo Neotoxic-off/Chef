@@ -9,6 +9,7 @@ no settings, read-only tools confined to that folder. No judge sees another samp
 or the id-to-arm key kept in the review dir. `blind_review.py summarize <review-dir>` aggregates.
 """
 
+import hashlib
 import json
 import secrets
 import shutil
@@ -25,6 +26,7 @@ from score import refuse_failed_runs
 BENCH_DIR: Path = Path(__file__).resolve().parent
 JUDGE_MODEL: str = "claude-opus-5-5"
 JUDGE_BUDGET_USD: str = "2"
+JUDGE_TOOLS: str = "Read,Glob,Grep"
 EXCLUDED: tuple[str, ...] = (
     ".git",
     ".venv",
@@ -42,6 +44,9 @@ EXCLUDED: tuple[str, ...] = (
     "AGENTS.md",
     "TRANSFORM.md",
 )
+# Bump when submission_files changes what the judge sees: 1 = every file but EXCLUDED, 2 = also follows .gitignore.
+REVIEW_COPY_VERSION: int = 2
+REVIEWER_ID_LENGTH: int = 12
 PARALLEL_JUDGES: int = 4
 ROLES: dict[str, str] = {
     "senior": "senior engineer on the team, reviewing design and correctness.",
@@ -110,6 +115,27 @@ def anonymize(out_dir: Path, arms: list[str]) -> dict[str, dict[str, str]]:
     return key
 
 
+def reviewer_id(seat: str, merge_rule: str) -> str:
+    """Hash of everything but the code that decides a verdict: prompt, seat, schema, model, budget, tools,
+    copy rules, and the rule that turns a review into "merged".
+
+    Verdicts are comparable only between equal ids; line endings are normalized so a Windows checkout matches CI.
+    """
+    template: str = (BENCH_DIR / "judge.md").read_text(encoding="utf-8").replace("\r\n", "\n")
+    parts: list[str] = [
+        template,
+        seat,
+        merge_rule,
+        json.dumps(REVIEW_SCHEMA, sort_keys=True),
+        JUDGE_MODEL,
+        JUDGE_BUDGET_USD,
+        JUDGE_TOOLS,
+        *EXCLUDED,
+        str(REVIEW_COPY_VERSION),
+    ]
+    return hashlib.sha256("\0".join(parts).encode("utf-8")).hexdigest()[:REVIEWER_ID_LENGTH]
+
+
 def judge_prompt(task: str, seat: str) -> str:
     template: str = (BENCH_DIR / "judge.md").read_text(encoding="utf-8")
     task_text: str = (BENCH_DIR / "tasks" / task / "prompt.md").read_text(encoding="utf-8").strip()
@@ -125,7 +151,7 @@ def run_judge(submission: Path, task: str, seat: str, review_path: Path) -> None
         "--restricted",
         "--strict-mcp-config",
         "--no-session-persistence",
-        "--tools", "Read,Glob,Grep",
+        "--tools", JUDGE_TOOLS,
         "--max-budget-usd", JUDGE_BUDGET_USD,
     ]  # fmt: skip
     with review_path.open("w", encoding="utf-8") as review_file:

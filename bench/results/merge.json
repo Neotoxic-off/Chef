@@ -1,35 +1,52 @@
 {
-  "none": {
-    "runs": 39.0,
-    "merged_first_time": 0.59,
-    "merged_in_the_end": 0.974,
-    "fix_rounds_per_run": 0.46,
-    "first_answer_cost": 2.82,
-    "total_cost": 4.68,
-    "cost_per_merged_run": 0.123,
-    "reviewer_cost": 4.36,
-    "lines_to_review": 102
+  "provenance": {
+    "reviewer": "1.2-loop",
+    "harness": [
+      "unknown (1.2 loop, before provenance)"
+    ]
   },
-  "chef11": {
-    "runs": 39.0,
-    "merged_first_time": 0.846,
-    "merged_in_the_end": 1.0,
-    "fix_rounds_per_run": 0.23,
-    "first_answer_cost": 6.33,
-    "total_cost": 7.29,
-    "cost_per_merged_run": 0.187,
-    "reviewer_cost": 4.5,
-    "lines_to_review": 211
-  },
-  "chef12": {
-    "runs": 39.0,
-    "merged_first_time": 0.872,
-    "merged_in_the_end": 1.0,
-    "fix_rounds_per_run": 0.15,
-    "first_answer_cost": 6.47,
-    "total_cost": 7.56,
-    "cost_per_merged_run": 0.194,
-    "reviewer_cost": 4.04,
-    "lines_to_review": 237
+  "arms": {
+    "chef11": {
+      "runs": 39.0,
+      "merged_first_time": 0.846,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.23,
+      "first_answer_cost": 6.33,
+      "total_cost": 7.29,
+      "cost_per_merged_run": 0.187,
+      "reviewer_cost": 4.5,
+      "lines_to_review": 211,
+      "first_answer_seconds": 57.4,
+      "first_review_seconds": 24.5,
+      "back_and_forth_seconds": 12.9
+    },
+    "chef12": {
+      "runs": 39.0,
+      "merged_first_time": 0.872,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.15,
+      "first_answer_cost": 6.47,
+      "total_cost": 7.56,
+      "cost_per_merged_run": 0.194,
+      "reviewer_cost": 4.04,
+      "lines_to_review": 237,
+      "first_answer_seconds": 42.5,
+      "first_review_seconds": 25.8,
+      "back_and_forth_seconds": 10.9
+    },
+    "none": {
+      "runs": 39.0,
+      "merged_first_time": 0.59,
+      "merged_in_the_end": 0.974,
+      "fix_rounds_per_run": 0.46,
+      "first_answer_cost": 2.82,
+      "total_cost": 4.68,
+      "cost_per_merged_run": 0.123,
+      "reviewer_cost": 4.36,
+      "lines_to_review": 102,
+      "first_answer_seconds": 21.3,
+      "first_review_seconds": 22.6,
+      "back_and_forth_seconds": 29.1
+    }
   }
 }
