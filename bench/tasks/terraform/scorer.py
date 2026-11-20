@@ -18,9 +18,7 @@ from score import Metrics, docker_mount
 TERRAFORM_IMAGE: str = "hashicorp/terraform:1.17.1"
 TFLINT_IMAGE: str = "ghcr.io/terraform-linters/tflint:v0.53.0"
 PLUGIN_CACHE_VOLUME: str = "bench-terraform-plugins"
-DOCKER_FAILURE_CODES: frozenset[int] = frozenset({125, 126, 127})
 TFLINT_OK_CODES: frozenset[int] = frozenset({0, 1})
-ERROR_TAIL_CHARS: int = 500
 
 BUCKET_NAME: str = "bench-app-logs"
 TAGS: dict[str, str] = {"team": "bench"}
@@ -70,15 +68,8 @@ ROOT_DIR: str = "/work/root"
 EMPTY_METRICS: Metrics = {"hidden_test_passes": False, "tflint_findings": 0, "providers_pinned": False}
 
 
-def docker_run(arguments: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
-    outcome: subprocess.CompletedProcess[str] = scorer_lib.docker_run(arguments, cwd)
-    if outcome.returncode in DOCKER_FAILURE_CODES:
-        raise RuntimeError(f"docker run {arguments[-3:]} failed: {outcome.stderr.strip()[-ERROR_TAIL_CHARS:]}")
-    return outcome
-
-
 def terraform(scratch: Path, workdir: str, script: str) -> subprocess.CompletedProcess[str]:
-    return docker_run(
+    return scorer_lib.docker_run(
         [
             *docker_mount(scratch),
             "-v",
@@ -102,7 +93,7 @@ def terraform(scratch: Path, workdir: str, script: str) -> subprocess.CompletedP
 
 
 def report_failure(step: str, outcome: subprocess.CompletedProcess[str]) -> None:
-    print(f"score: terraform {step} failed: {outcome.stderr.strip()[-ERROR_TAIL_CHARS:]}", file=sys.stderr)
+    print(f"score: terraform {step} failed: {outcome.stderr.strip()[-scorer_lib.ERROR_TAIL_CHARS :]}", file=sys.stderr)
 
 
 def prepare(workspace: Path, scratch: Path) -> None:
@@ -181,12 +172,12 @@ def requirements_hold(resources: list[dict[str, Any]]) -> bool:
 
 
 def count_tflint_findings(scratch: Path) -> int:
-    outcome: subprocess.CompletedProcess[str] = docker_run(
+    outcome: subprocess.CompletedProcess[str] = scorer_lib.docker_run(
         [*docker_mount(scratch), "-w", MODULE_DIR, TFLINT_IMAGE, f"--config={TFLINT_CONFIG_PATH}", "--force", "--format=json"],
         scratch,
     )
     if outcome.returncode not in TFLINT_OK_CODES or not outcome.stdout.strip():
-        raise RuntimeError(f"tflint failed: {outcome.stderr.strip()[-ERROR_TAIL_CHARS:]}")
+        raise RuntimeError(f"tflint failed: {outcome.stderr.strip()[-scorer_lib.ERROR_TAIL_CHARS :]}")
     report: dict[str, list[Any]] = json.loads(outcome.stdout)
     return len(report["issues"]) + len(report["errors"])
 

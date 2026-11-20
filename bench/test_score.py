@@ -299,3 +299,36 @@ def test_docker_run_removes_its_named_container_on_timeout(tmp_path: Path, monke
 
     name: str = commands[0][commands[0].index("--name") + 1]
     assert commands[1] == ["docker", "rm", "-f", name]
+
+
+def test_docker_run_raises_when_docker_cannot_run_the_command(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def missing_command(command: list[str], *_arguments: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 127, "", "exec: not found")
+
+    monkeypatch.setattr(scorer_lib, "run", missing_command)
+
+    with pytest.raises(RuntimeError, match="exit code 127"):
+        scorer_lib.docker_run(["alpine", "nope"], tmp_path)
+
+
+@pytest.mark.parametrize("compile_commands", [None, "[]"])
+def test_cppcheck_finds_nothing_without_compile_commands(
+    compile_commands: str | None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def no_docker(*_arguments: object) -> subprocess.CompletedProcess[str]:
+        raise AssertionError("cppcheck should not run")
+
+    monkeypatch.setattr(scorer_lib, "in_gcc_toolchain", no_docker)
+    if compile_commands is not None:
+        (tmp_path / scorer_lib.CMAKE_BUILD_DIR).mkdir()
+        (tmp_path / scorer_lib.CMAKE_BUILD_DIR / "compile_commands.json").write_text(compile_commands, encoding="utf-8")
+
+    assert scorer_lib.cppcheck_findings(tmp_path) == 0
+
+
+def test_source_files_match_name_suffixes_outside_ignored_directories(tmp_path: Path) -> None:
+    for name in ("DotEnv.Tests.ps1", "DotEnv.ps1", ".git/hooks/x.Tests.ps1"):
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text("", encoding="utf-8")
+
+    assert scorer_lib.source_files(tmp_path, (".Tests.ps1",), (".git",)) == [Path("DotEnv.Tests.ps1")]

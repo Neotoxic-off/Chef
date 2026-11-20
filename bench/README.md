@@ -91,6 +91,17 @@ Run on Nov 19, 2026 with Claude Code 2.1.328 and Sonnet 5.5. For each task and r
 | GitHub Actions | CI for a small Python project | `actionlint`, triggers and test step |
 | Bug fix (TypeScript) | A user's bug report on a cart module | Hidden test of the scenario plus regressions |
 | Refactor (Python) | Clean up a messy invoice module | 89-case characterization test |
+| Node API (JavaScript) | An Express reservations endpoint with validation | Hidden `node:test` suite over HTTP |
+| React component | An accessible paginated list | Hidden Vitest + Testing Library test |
+| Bash script | A CSV column statistics CLI | Hidden bats tests, shellcheck |
+| SQL (PostgreSQL) | A migration with a normalized email and a monthly revenue view | Hidden SQL test in PostgreSQL 18, sqlfluff |
+| PHP library | A money allocator by weights | Hidden PHPUnit test, PHPStan max |
+| PowerShell module | A `.env` reader | Hidden Pester tests, PSScriptAnalyzer |
+| C library | A byte ring buffer | Hidden test, also under ASan and UBSan |
+| C++ library | An LRU cache | Hidden test, also under ASan and UBSan |
+| Kotlin library | A CSV line parser (Gradle) | Hidden JUnit 5 test |
+
+The last nine (Node to Kotlin) were added for 1.4; the published results above cover the first 13, and the hard tasks below.
 
 **Judging.** For every task and run, chef's workspace and the other arm's go side by side, as `first/` and `second/`, to a blind Opus 5.5 reviewer asked which one it would merge, from the seats of a senior engineer, a security reviewer, an SRE and a maintainer. History, caches and files that name a tool (`CLAUDE.md`, `AGENTS.md`, `.chef.md`) are removed. Each pair is judged twice, in both orders, by separate `claude -p --restricted` sessions with read-only tools confined to that folder; a win counts only when both orders agree, otherwise it is a tie. 156 judgments in all.
 

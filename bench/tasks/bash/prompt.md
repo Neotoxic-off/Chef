@@ -1,0 +1,5 @@
+Write a Bash script `csvstats.sh` in this folder that prints statistics of one numeric column of a CSV file, so our ops team can sanity-check exports: `csvstats.sh COLUMN [FILE]`, reading standard input when FILE is missing or `-`. The first line is the header naming the columns; fields are separated by commas and never quoted.
+
+On success it prints exactly one line such as `count=3 sum=36.00 min=-4.50 max=30.50 mean=12.00` (numbers rounded to 2 decimals) and exits 0. Empty cells in the column are skipped; values are integers or decimals such as `-4.5`. Errors print nothing on stdout: a wrong number of arguments prints `usage: csvstats.sh COLUMN [FILE]` on stderr and exits 2; a file that cannot be read, an unknown column, a value that is not a number (the message contains `line <n>`, the header being line 1) or a column with no value at all exit 1 with a message on stderr starting with `csvstats: `. Some exports come from Excel, so a file with Windows (CRLF) line endings or without a newline after its last line gives the same result as a clean one.
+
+Work autonomously: nobody will answer questions.

@@ -1,9 +1,11 @@
 """Each fixture task's scorer, on a known-correct solution and a known-flawed one, without running Claude.
 
 The correct solutions in tasks/<task>/golden are first answers of the 1.2 benchmark (python, refactor, stream-import,
-http-retry, orders-pagination, bugfix) and of the 1.3 benchmark (the others) that passed every check.
+http-retry, orders-pagination, bugfix) and of the 1.3 benchmark (go, rust, java, csharp, typescript, terraform, helm,
+github-actions, docker, prometheus) that passed every check; the nine newer tasks have hand-written ones.
 """
 
+import json
 import os
 import shutil
 from collections.abc import Callable
@@ -33,6 +35,15 @@ MAIN_METRIC: dict[str, str] = {
     "github-actions": "hidden_test_passes",
     "docker": "container_healthy",
     "prometheus": "rules_valid",
+    "node": "hidden_test_passes",
+    "react": "hidden_test_passes",
+    "bash": "hidden_test_passes",
+    "sql": "hidden_test_passes",
+    "php": "hidden_test_passes",
+    "powershell": "hidden_test_passes",
+    "c": "hidden_test_passes",
+    "cpp": "hidden_test_passes",
+    "kotlin": "hidden_test_passes",
 }
 SEEDED_FIXTURE_TASKS: tuple[str, ...] = (
     "stream-import",
@@ -43,6 +54,7 @@ SEEDED_FIXTURE_TASKS: tuple[str, ...] = (
     "github-actions",
     "docker",
     "prometheus",
+    "sql",
 )
 REFACTOR_SLIP: tuple[str, str] = ("total - total * 0.08", "total - total * 0.07")
 # One-line slips in a golden that its hidden test must catch, for the tasks that start from an empty workspace.
@@ -57,6 +69,16 @@ GOLDEN_SLIPS: dict[str, tuple[str, str, str]] = {
     "csharp": ("src/Billing/InvoiceCalculator.cs", "MidpointRounding.AwayFromZero", "MidpointRounding.ToEven"),
     "typescript": ("src/duration.ts", "MAX_DURATION_MS = 30 * MS_PER_DAY", "MAX_DURATION_MS = 31 * MS_PER_DAY"),
     "terraform": ("main.tf", "infrequent_access_after_days = 30", "infrequent_access_after_days = 60"),
+    "node": ("app.js", "MAX_PARTY_SIZE = 12", "MAX_PARTY_SIZE = 13"),
+    "react": ("src/PagedList.jsx", "Math.min(page, pageCount)", "page"),
+    "bash": ("csvstats.sh", 'sub(/\\r$/, "")', 'sub(/\\r\\r$/, "")'),
+    # The slip groups orders by the session's month instead of the UTC one.
+    "sql": ("migrations/002_email_and_revenue.sql", " AT TIME ZONE 'UTC'", ""),
+    "php": ("src/Allocator.php", "arsort($remainders);", "ksort($remainders);"),
+    "powershell": ("DotEnv.psm1", r"-replace '\s#.*$'", "-replace '#.*$'"),
+    "kotlin": ("src/main/kotlin/com/example/csv/CsvLine.kt", "index += 2", "index += 1"),
+    "c": ("src/ringbuf.c", "length > buffer->capacity - buffer->count", "buffer->count + length > buffer->capacity"),
+    "cpp": ("include/lru_cache.hpp", "entries_.size() == capacity_", "entries_.size() > capacity_"),
 }
 TOOLS: dict[str, tuple[str, ...]] = {
     "http-retry": ("node", "npx"),
@@ -66,8 +88,26 @@ TOOLS: dict[str, tuple[str, ...]] = {
     "go": ("go", "gofmt"),
     "rust": ("cargo",),
     "csharp": ("dotnet",),
+    "node": ("node", "npm"),
+    "react": ("node", "npm"),
 }
-DOCKER_TASKS: frozenset[str] = frozenset({"java", "terraform", "helm", "github-actions", "docker", "prometheus"})
+DOCKER_TASKS: frozenset[str] = frozenset(
+    {
+        "java",
+        "kotlin",
+        "c",
+        "cpp",
+        "terraform",
+        "helm",
+        "github-actions",
+        "docker",
+        "prometheus",
+        "bash",
+        "sql",
+        "php",
+        "powershell",
+    }
+)
 # Push CI sets it to "off": image pulls and builds do not fit its time limit; fixtures.yml runs them weekly.
 DOCKER_FIXTURES_OFF: bool = os.environ.get("BENCH_DOCKER_FIXTURES") == "off"
 DOCKER_UP: bool = shutil.which("docker") is not None and run(["docker", "info"], BENCH_DIR).returncode == 0
@@ -129,6 +169,42 @@ def test_golden_with_a_one_line_slip_fails_the_hidden_test(task: str, tmp_path: 
     metrics: Metrics = score(task, workspace)
 
     assert metrics[MAIN_METRIC[task]] is False
+
+
+@needs_tools("react")
+def test_react_scores_a_package_json_whose_peers_clash_with_the_bench_vitest(tmp_path: Path) -> None:
+    workspace: Path = tmp_path / "workspace"
+    shutil.copytree(TASKS_DIR / "react" / "golden", workspace)
+    manifest: Path = workspace / "package.json"
+    package: dict[str, dict[str, str]] = json.loads(manifest.read_text(encoding="utf-8"))
+    package["devDependencies"] |= {"vitest": "3.2.4", "@vitest/coverage-v8": "3.2.4"}
+    manifest.write_text(json.dumps(package), encoding="utf-8")
+
+    metrics: Metrics = score("react", workspace)
+
+    assert metrics["hidden_test_passes"] is True
+
+
+@needs_tools("c")
+def test_c_sanitizers_apply_when_the_cmakelists_overwrites_the_c_flags(tmp_path: Path) -> None:
+    workspace: Path = tmp_path / "workspace"
+    shutil.copytree(TASKS_DIR / "c" / "golden", workspace)
+    lists: Path = workspace / "CMakeLists.txt"
+    project_line: str = "project(ringbuf LANGUAGES C)\n"
+    text: str = lists.read_text(encoding="utf-8")
+    assert text.count(project_line) == 1
+    lists.write_text(text.replace(project_line, f'{project_line}set(CMAKE_C_FLAGS "-O2")\n'), encoding="utf-8")
+    # Undefined behavior only UBSan sees: a signed overflow when the library loads.
+    with (workspace / "src" / "ringbuf.c").open("a", encoding="utf-8") as source:
+        source.write(
+            "\n#include <limits.h>\n__attribute__((constructor)) static void bench_overflow(void) {\n"
+            "  volatile int value = INT_MAX;\n  value = value + 1;\n}\n"
+        )
+
+    metrics: Metrics = score("c", workspace)
+
+    assert metrics["compiles"] is True
+    assert metrics["sanitizers_clean"] is False
 
 
 def test_python_task_without_code_fails_the_hidden_test(tmp_path: Path) -> None:

@@ -15,8 +15,6 @@ HELM_IMAGE: str = "alpine/helm:3.16.2"
 KUBECONFORM_IMAGE: str = "ghcr.io/yannh/kubeconform:v0.6.7"
 KUBERNETES_VERSION: str = "1.31.0"
 SCHEMA_CACHE_VOLUME: str = "bench-kubeconform-schemas"
-DOCKER_FAILURE_CODES: frozenset[int] = frozenset({125, 126, 127})
-ERROR_TAIL_CHARS: int = 500
 
 CHART_DIR: str = "/work/chart"
 IMAGE_REPOSITORY: str = "bench/app"
@@ -38,10 +36,7 @@ EMPTY_METRICS: Metrics = {
 
 
 def docker_run(arguments: list[str], cwd: Path, stdin: str | None = None) -> subprocess.CompletedProcess[str]:
-    outcome: subprocess.CompletedProcess[str] = scorer_lib.docker_run(["-i", *arguments], cwd, stdin)
-    if outcome.returncode in DOCKER_FAILURE_CODES:
-        raise RuntimeError(f"docker run {arguments[-3:]} failed: {outcome.stderr.strip()[-ERROR_TAIL_CHARS:]}")
-    return outcome
+    return scorer_lib.docker_run(["-i", *arguments], cwd, stdin)
 
 
 def helm(workspace: Path, *arguments: str) -> subprocess.CompletedProcess[str]:

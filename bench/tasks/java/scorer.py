@@ -11,7 +11,7 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 from score import Metrics
-from scorer_lib import docker_run
+from scorer_lib import ERROR_TAIL_CHARS, docker_run
 
 TASK_DIR: Path = Path(__file__).resolve().parent
 HIDDEN_TEST: Path = TASK_DIR / "BenchHiddenTest.java"
@@ -21,7 +21,6 @@ MAIN_SOURCES: Path = Path("src") / "main" / "java"
 MAVEN_IMAGE: str = "maven:3.9-eclipse-temurin-21"
 MAVEN_CACHE_VOLUME: str = "bench-maven-repository"
 MAVEN: tuple[str, ...] = ("mvn", "-q", "-B")
-DOCKER_FAILURE_CODES: frozenset[int] = frozenset({125, 126, 127})
 NETWORK_FAILURE: str = "Could not transfer artifact"
 POM_NAMESPACE: str = "http://maven.apache.org/POM/4.0.0"
 JUNIT_GROUP: str = "org.junit.jupiter"
@@ -50,8 +49,10 @@ def in_container(copy: Path, command: list[str]) -> subprocess.CompletedProcess[
     """Run in the Maven image; a build error is a result, Docker or the network failing means the tool did not run."""
     mounts: list[str] = ["-v", f"{copy}:/work", "-v", f"{MAVEN_CACHE_VOLUME}:/root/.m2", "-w", "/work"]
     outcome: subprocess.CompletedProcess[str] = docker_run([*mounts, MAVEN_IMAGE, *command], copy)
-    if outcome.returncode in DOCKER_FAILURE_CODES or NETWORK_FAILURE in outcome.stdout:
-        raise RuntimeError(f"{command[:3]} did not run in {copy}: {(outcome.stderr or outcome.stdout).strip()[-500:]}")
+    if NETWORK_FAILURE in outcome.stdout:
+        raise RuntimeError(
+            f"{command[:3]} did not run in {copy}: {(outcome.stderr or outcome.stdout).strip()[-ERROR_TAIL_CHARS:]}"
+        )
     return outcome
 
 
@@ -60,7 +61,9 @@ def count_lint_warnings(copy: Path) -> int:
         return 0
     linted: subprocess.CompletedProcess[str] = in_container(copy, ["sh", "-c", LINT_SCRIPT])
     if linted.returncode != 0:
-        raise RuntimeError(f"javac -Xlint:all failed in {copy} after mvn compile passed: {linted.stderr.strip()[-500:]}")
+        raise RuntimeError(
+            f"javac -Xlint:all failed in {copy} after mvn compile passed: {linted.stderr.strip()[-ERROR_TAIL_CHARS:]}"
+        )
     return sum(1 for line in linted.stderr.splitlines() if WARNING_LINE.search(line))
 
 
