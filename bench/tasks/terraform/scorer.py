@@ -12,7 +12,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from score import Metrics, docker_mount, run
+import scorer_lib
+from score import Metrics, docker_mount
 
 TERRAFORM_IMAGE: str = "hashicorp/terraform:1.17.1"
 TFLINT_IMAGE: str = "ghcr.io/terraform-linters/tflint:v0.53.0"
@@ -70,7 +71,7 @@ EMPTY_METRICS: Metrics = {"hidden_test_passes": False, "tflint_findings": 0, "pr
 
 
 def docker_run(arguments: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
-    outcome: subprocess.CompletedProcess[str] = run(["docker", "run", "--rm", *arguments], cwd)
+    outcome: subprocess.CompletedProcess[str] = scorer_lib.docker_run(arguments, cwd)
     if outcome.returncode in DOCKER_FAILURE_CODES:
         raise RuntimeError(f"docker run {arguments[-3:]} failed: {outcome.stderr.strip()[-ERROR_TAIL_CHARS:]}")
     return outcome

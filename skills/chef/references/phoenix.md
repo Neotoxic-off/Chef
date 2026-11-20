@@ -1,6 +1,6 @@
 # Phoenix
 
-Builds on `elixir.md`. Checked against Phoenix 1.8.16 and LiveView 1.2.13. Current versions: `mix hex.info phoenix` and `mix hex.info phoenix_live_view`; upgrade notes in each package's `CHANGELOG.md` on HexDocs.
+Builds on `elixir.md`. Written for Phoenix 1.8.16 and LiveView 1.2.13, not benchmarked. Current versions: `mix hex.info phoenix` and `mix hex.info phoenix_live_view`; upgrade notes in each package's `CHANGELOG.md` on HexDocs.
 
 ## Structure
 

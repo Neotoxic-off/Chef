@@ -8,6 +8,7 @@ import tempfile
 from pathlib import Path
 
 from score import PYTEST_ISOLATED, Metrics, count_collected_tests, run, run_tool
+from scorer_lib import changes_since_seed, copy_workspace, is_python_test_file
 
 TASK_DIR: Path = Path(__file__).resolve().parent
 SEED_DIR: Path = TASK_DIR / "seed"
@@ -15,29 +16,17 @@ SEED_CONFIG: Path = SEED_DIR / "pyproject.toml"
 HIDDEN_TEST: Path = TASK_DIR / "hidden_test.py"
 PACKAGE_NAME: str = "ledger_import"
 IGNORED_DIR_NAMES: frozenset[str] = frozenset({".git", ".venv", "venv", "__pycache__", ".mypy_cache", ".ruff_cache"})
-TEST_FILE_PREFIXES: tuple[str, ...] = ("test_", "conftest")
-TEST_DIR_NAMES: frozenset[str] = frozenset({"tests", "test"})
 LOCKFILE_NAMES: frozenset[str] = frozenset({"uv.lock", "poetry.lock", "pdm.lock", "requirements.lock"})
-
-
-def is_test_file(path: Path) -> bool:
-    return path.name.startswith(TEST_FILE_PREFIXES) or path.stem.endswith("_test") or bool(TEST_DIR_NAMES & set(path.parts[:-1]))
 
 
 def python_files(root: Path) -> list[Path]:
     return [path.relative_to(root) for path in root.rglob("*.py") if not IGNORED_DIR_NAMES & set(path.relative_to(root).parts)]
 
 
-def copy_workspace(workspace: Path, destination: Path) -> Path:
-    copy: Path = destination / "workspace"
-    shutil.copytree(workspace, copy, ignore=shutil.ignore_patterns(*IGNORED_DIR_NAMES))
-    return copy
-
-
 def pytest_passes(workspace: Path, test_files: list[Path]) -> bool:
     """Run test files, renamed with a bench_ prefix so they never replace the agent's own, against a copy."""
     with tempfile.TemporaryDirectory() as scratch:
-        copy: Path = copy_workspace(workspace, Path(scratch))
+        copy: Path = copy_workspace(workspace, Path(scratch), IGNORED_DIR_NAMES)
         names: list[str] = []
         for test_file in test_files:
             name: str = f"bench_{test_file.name}"
@@ -50,42 +39,18 @@ def pytest_passes(workspace: Path, test_files: list[Path]) -> bool:
 def tests_written(workspace: Path) -> int:
     """Tests collected in the agent's workspace beyond the seed's own, counted on a copy so the seed stays clean."""
     with tempfile.TemporaryDirectory() as scratch:
-        seed_count: int = count_collected_tests(copy_workspace(SEED_DIR, Path(scratch)))
+        seed_count: int = count_collected_tests(copy_workspace(SEED_DIR, Path(scratch), IGNORED_DIR_NAMES))
     return max(0, count_collected_tests(workspace) - seed_count)
 
 
-def git_output(workspace: Path, *arguments: str) -> str:
-    outcome: subprocess.CompletedProcess[str] = run(["git", "-C", str(workspace), *arguments], workspace)
-    if outcome.returncode != 0:
-        raise RuntimeError(f"git {arguments[0]} failed in {workspace}: {outcome.stderr.strip()[:500]}")
-    return outcome.stdout
-
-
-def tracked_changes(workspace: Path, seed_commit: str) -> dict[Path, int]:
-    changes: dict[Path, int] = {}
-    for record in git_output(workspace, "diff", "--numstat", "--no-renames", "-z", seed_commit).split("\0"):
-        if record:
-            added, deleted, name = record.split("\t", 2)
-            changes[Path(name)] = sum(int(count) for count in (added, deleted) if count != "-")
-    return changes
-
-
-def untracked_changes(workspace: Path) -> dict[Path, int]:
-    names: list[str] = git_output(workspace, "ls-files", "--others", "--exclude-standard", "-z").split("\0")
-    return {Path(name): len((workspace / name).read_bytes().splitlines()) for name in names if name}
-
-
 def counts_as_source_change(path: Path) -> bool:
-    return not is_test_file(path) and path.name not in LOCKFILE_NAMES
+    return not is_python_test_file(path) and path.name not in LOCKFILE_NAMES
 
 
 def lines_changed(workspace: Path) -> int | None:
     """Lines changed since the seed commit, tests and lockfiles excluded; None without a git history."""
-    if not (workspace / ".git").exists():
-        return None
-    seed_commit: str = git_output(workspace, "rev-list", "--max-parents=0", "HEAD").split()[-1]
-    changes: dict[Path, int] = tracked_changes(workspace, seed_commit) | untracked_changes(workspace)
-    return sum(lines for path, lines in changes.items() if counts_as_source_change(path))
+    changes: dict[Path, int] | None = changes_since_seed(workspace)
+    return None if changes is None else sum(lines for path, lines in changes.items() if counts_as_source_change(path))
 
 
 def ruff_findings(workspace: Path) -> int:
@@ -107,9 +72,9 @@ def mypy_errors(workspace: Path) -> int | None:
 
 
 def score(workspace: Path) -> Metrics:
-    seed_tests: list[Path] = [SEED_DIR / path for path in python_files(SEED_DIR) if is_test_file(path)]
+    seed_tests: list[Path] = [SEED_DIR / path for path in python_files(SEED_DIR) if is_python_test_file(path)]
     with tempfile.TemporaryDirectory() as scratch:
-        copy: Path = copy_workspace(workspace, Path(scratch))
+        copy: Path = copy_workspace(workspace, Path(scratch), IGNORED_DIR_NAMES)
         return {
             "hidden_test_passes": pytest_passes(workspace, [HIDDEN_TEST]),
             "existing_tests_pass": pytest_passes(workspace, seed_tests),

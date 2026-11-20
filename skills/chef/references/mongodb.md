@@ -1,6 +1,6 @@
 # MongoDB
 
-Verified November 2026: server 9.0.x is current (tags on https://github.com/mongodb/mongo; release notes on https://www.mongodb.com/docs/manual/release-notes/). Prisma 7.0 shipped without MongoDB support (unverified for later 7.x: check the Prisma changelog); otherwise use the official driver.
+Written in November 2026 (not benchmarked): server 9.0.x is current (tags on https://github.com/mongodb/mongo; release notes on https://www.mongodb.com/docs/manual/release-notes/). Prisma 7.0 shipped without MongoDB support (unverified for later 7.x: check the Prisma changelog); otherwise use the official driver.
 
 ## Schema design for access patterns
 

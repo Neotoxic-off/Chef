@@ -1,6 +1,6 @@
 # DataFrames: pandas, Polars, pandera
 
-Builds on `python.md`. Verified November 2026 on PyPI: pandas 3.1, Polars 2.1, pandera 0.36, pandas-stubs 3.1. Check current versions with `uv tree --outdated` or `https://pypi.org/project/<name>/`.
+Builds on `python.md`. Written in November 2026 (not benchmarked) on PyPI: pandas 3.1, Polars 2.1, pandera 0.36, pandas-stubs 3.1. Check current versions with `uv tree --outdated` or `https://pypi.org/project/<name>/`.
 
 ## Pick the library
 

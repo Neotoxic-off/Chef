@@ -2,14 +2,18 @@
 
 Usage: python bench/score.py <out-dir>
        python bench/score.py check <run-dir> ...   (exit 1 if a run gave no answer)
+       python bench/score.py budget <out-dir> <max-usd>   (exit 1 once its runs cost that much)
 Needs pytest, pytest-cov, mypy, ruff and PyYAML in the running interpreter, and Docker for
 hadolint, promtool and the container health check.
 """
 
+import contextlib
 import importlib.machinery
 import importlib.util
 import json
+import os
 import shutil
+import signal
 import statistics
 import subprocess
 import sys
@@ -33,6 +37,8 @@ HEALTH_URL: str = f"http://127.0.0.1:{HOST_PORT}/health"
 HTTP_TIMEOUT_SECONDS: int = 2
 LINT_OK_CODES: frozenset[int] = frozenset({0, 1})
 HEALTH_TIMEOUT_SECONDS: int = 60
+COMMAND_TIMEOUT_SECONDS: int = 600
+BUILD_TIMEOUT_SECONDS: int = 1200
 TEST_FILE_PREFIXES: tuple[str, ...] = ("test_", "conftest")
 TEST_DIR_NAMES: frozenset[str] = frozenset({"tests", "test"})
 EMPTY_CONFIG: Path = BENCH_DIR / "empty.toml"
@@ -63,12 +69,45 @@ USAGE_KEYS: tuple[str, ...] = (
 )
 
 
-def run(command: list[str], cwd: Path, stdin: str | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, cwd=cwd, input=stdin, capture_output=True, text=True, check=False)
+def run(
+    command: list[str], cwd: Path, stdin: str | None = None, timeout: int = COMMAND_TIMEOUT_SECONDS
+) -> subprocess.CompletedProcess[str]:
+    """Raises subprocess.TimeoutExpired past the timeout; score_run records that run as not scored.
+
+    The whole process tree is killed on timeout: a grandchild (npx.cmd's node, say) holding the pipes would
+    otherwise keep communicate() waiting past the timeout.
+    """
+    with subprocess.Popen(
+        command,
+        cwd=cwd,
+        stdin=subprocess.PIPE if stdin is not None else None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
+    ) as process:
+        try:
+            stdout, stderr = process.communicate(stdin, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            kill_tree(process.pid)
+            process.communicate()  # joins the pipe readers once no process holds the pipes
+            raise
+    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+
+
+def kill_tree(pid: int) -> None:
+    if sys.platform == "win32":
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(pid)], capture_output=True, check=False)
+    else:
+        with contextlib.suppress(ProcessLookupError):
+            os.killpg(pid, signal.SIGKILL)
 
 
 def run_tool(command: list[str], cwd: Path, stdin: str | None = None) -> subprocess.CompletedProcess[str]:
     """Run a checker whose exit code is 0 (clean) or 1 (findings); anything else means it did not run."""
+    # `python -m ruff` without ruff exits 1 with no output, which reads as no findings.
+    if command[:2] == [sys.executable, "-m"] and importlib.util.find_spec(command[2]) is None:
+        raise RuntimeError(f"{command[2]} is not installed in {sys.executable}")
     outcome: subprocess.CompletedProcess[str] = run(command, cwd, stdin)
     if outcome.returncode not in LINT_OK_CODES:
         raise RuntimeError(f"{command[:4]} failed in {cwd}: {outcome.stderr.strip()[:500]}")
@@ -283,16 +322,21 @@ def wait_for_health() -> bool:
 
 
 def container_serves_health(workspace: Path, tag: str) -> bool:
-    if run(["docker", "build", "-q", "-t", tag, "."], workspace).returncode != 0:
-        return False
-    started: subprocess.CompletedProcess[str] = run(
-        ["docker", "run", "-d", "--rm", "-p", f"{HOST_PORT}:{SERVICE_PORT}", tag], workspace
-    )
-    if started.returncode != 0:
-        return False
-    healthy: bool = wait_for_health()
-    run(["docker", "rm", "-f", started.stdout.strip()], workspace)
-    return healthy
+    """Build, start and probe the image, then remove the container and the image."""
+    try:
+        if run(["docker", "build", "-q", "-t", tag, "."], workspace, timeout=BUILD_TIMEOUT_SECONDS).returncode != 0:
+            return False
+        started: subprocess.CompletedProcess[str] = run(
+            ["docker", "run", "-d", "--rm", "-p", f"{HOST_PORT}:{SERVICE_PORT}", tag], workspace
+        )
+        if started.returncode != 0:
+            return False
+        try:
+            return wait_for_health()
+        finally:
+            run(["docker", "rm", "-f", started.stdout.strip()], workspace)
+    finally:
+        run(["docker", "rmi", "-f", tag], workspace)
 
 
 def dockerfile_lines(dockerfile: Path) -> list[str]:
@@ -440,7 +484,20 @@ def task_scorer(task: str) -> Callable[[Path], Metrics] | None:
 
 
 def score_run(run_dir: Path, scorer: Callable[[Path], Metrics]) -> Metrics:
-    return {**usage_metrics(run_dir / "stream.jsonl"), **scorer(run_dir / "workspace")}
+    """Usage and scores of one run; a checker that times out leaves the run unscored, never scored low."""
+    usage: Metrics = usage_metrics(run_dir / "stream.jsonl")
+    try:
+        scores: Metrics = scorer(run_dir / "workspace")
+    except subprocess.TimeoutExpired as error:
+        print(f"score: {run_dir} not scored, {error.cmd[:4]} timed out after {error.timeout} s", file=sys.stderr)
+        return usage | {"scored": False}
+    except PermissionError as error:
+        # On Windows a scratch directory can stay locked for a moment after a timed-out tool is killed.
+        if not isinstance(error.__context__, subprocess.TimeoutExpired):
+            raise
+        print(f"score: {run_dir} not scored, a checker timed out and left {error.filename} locked", file=sys.stderr)
+        return usage | {"scored": False}
+    return usage | {"scored": True} | scores
 
 
 def central_value(values: list[float | int | bool]) -> float:
@@ -475,6 +532,18 @@ def check(run_dirs: list[Path]) -> None:
         raise SystemExit("\n".join(failures))
 
 
+def total_cost(out_dir: Path) -> float:
+    costs: list[float | int | bool | None] = [usage_metrics(path)["cost_usd"] for path in out_dir.glob("*/*/*/stream.jsonl")]
+    return sum(float(cost) for cost in costs if isinstance(cost, (int, float)))
+
+
+def budget(out_dir: Path, max_usd: float) -> None:
+    """Exit 1 once the runs of out_dir cost max_usd, so run.sh starts no further batch."""
+    spent: float = total_cost(out_dir)
+    if spent >= max_usd:
+        raise SystemExit(f"score: the runs in {out_dir} cost ${spent:.2f}, the cap is ${max_usd:.2f}")
+
+
 def main(out_dir: Path) -> None:
     refuse_failed_runs(sorted(path.parent for path in out_dir.glob("*/*/*/workspace")), "score")
     require_docker()
@@ -494,5 +563,7 @@ def main(out_dir: Path) -> None:
 if __name__ == "__main__":
     if sys.argv[1] == "check":
         check([Path(argument) for argument in sys.argv[2:]])
+    elif sys.argv[1] == "budget":
+        budget(Path(sys.argv[2]), float(sys.argv[3]))
     else:
         main(Path(sys.argv[1]))

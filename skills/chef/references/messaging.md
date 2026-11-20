@@ -1,6 +1,6 @@
 # Messaging: Kafka and RabbitMQ
 
-Verified November 2026: Apache Kafka 4.4.x, RabbitMQ 4.4.x. Check https://kafka.apache.org/downloads and https://github.com/rabbitmq/rabbitmq-server/releases.
+Written in November 2026 (not benchmarked): Apache Kafka 4.4.x, RabbitMQ 4.4.x. Check https://kafka.apache.org/downloads and https://github.com/rabbitmq/rabbitmq-server/releases.
 
 ## Pick the tool
 

@@ -1,0 +1,79 @@
+rule_files: [../rules/app.yml]
+evaluation_interval: 1m
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'up{job="app",instance="app:8000"}'
+        values: '1 1 1 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: AppDown
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: AppDown
+        exp_alerts:
+          - exp_labels: { severity: page, job: app, instance: "app:8000" }
+            exp_annotations:
+              summary: "App app:8000 is down (scrape failing for 1m)"
+              runbook_url: "https://runbooks.example.com/app/down"
+
+  - interval: 1m
+    input_series:
+      - series: 'http_requests_total{job="app",route="/a",status="500"}'
+        values: '0+10x20'
+      - series: 'http_requests_total{job="app",route="/a",status="200"}'
+        values: '0+10x20'
+      - series: 'http_requests_total{job="app",route="/b",status="200"}'
+        values: '0+100x20'
+    alert_rule_test:
+      # 10 errors of 120 requests per minute: 8.3% > 5%
+      - eval_time: 15m
+        alertname: AppHighErrorRatio
+        exp_alerts:
+          - exp_labels: { severity: page }
+            exp_annotations:
+              summary: "App 5xx ratio above 5% over 5m"
+              runbook_url: "https://runbooks.example.com/app/high-error-ratio"
+
+  - interval: 1m
+    input_series:
+      - series: 'http_requests_total{job="app",route="/a",status="500"}'
+        values: '0+1x20'
+      - series: 'http_requests_total{job="app",route="/a",status="200"}'
+        values: '0+99x20'
+    alert_rule_test:
+      # 1% errors
+      - eval_time: 15m
+        alertname: AppHighErrorRatio
+        exp_alerts: []
+
+  - interval: 1m
+    input_series:
+      # all requests land in the 1 s bucket: p95 is above 500 ms
+      - series: 'http_request_duration_seconds_bucket{job="app",route="/a",le="0.5"}'
+        values: '0+0x20'
+      - series: 'http_request_duration_seconds_bucket{job="app",route="/a",le="1"}'
+        values: '0+10x20'
+      - series: 'http_request_duration_seconds_bucket{job="app",route="/a",le="+Inf"}'
+        values: '0+10x20'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: AppHighLatencyP95
+        exp_alerts:
+          - exp_labels: { severity: page }
+            exp_annotations:
+              summary: "App p95 latency above 500 ms over 5m"
+              runbook_url: "https://runbooks.example.com/app/high-latency"
+
+  - interval: 1m
+    input_series:
+      - series: 'http_request_duration_seconds_bucket{job="app",route="/a",le="0.5"}'
+        values: '0+10x20'
+      - series: 'http_request_duration_seconds_bucket{job="app",route="/a",le="1"}'
+        values: '0+10x20'
+      - series: 'http_request_duration_seconds_bucket{job="app",route="/a",le="+Inf"}'
+        values: '0+10x20'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: AppHighLatencyP95
+        exp_alerts: []

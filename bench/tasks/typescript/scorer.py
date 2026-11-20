@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 from score import Metrics, run
+from scorer_lib import executable
 
 HIDDEN_TEST: Path = Path(__file__).resolve().parent / "hidden_test.ts"
 HIDDEN_TEST_NAME: str = "bench_hidden.test.ts"
@@ -33,13 +34,6 @@ TAP_FAIL_PATTERN: re.Pattern[str] = re.compile(r"^# fail (\d+)$", re.MULTILINE)
 TAP_PASS_PATTERN: re.Pattern[str] = re.compile(r"^# pass (\d+)$", re.MULTILINE)
 
 
-def npx() -> str:
-    path: str | None = shutil.which("npx")
-    if path is None:
-        raise RuntimeError("npx is not on PATH")
-    return path
-
-
 def typescript_files(workspace: Path) -> list[Path]:
     return [
         path.relative_to(workspace)
@@ -64,7 +58,8 @@ def type_checks(workspace: Path, files: list[Path], strict: bool) -> bool:
         return False
     strict_flag: str = "true" if strict else "false"
     outcome: subprocess.CompletedProcess[str] = run(
-        [npx(), "--yes", "-p", TYPESCRIPT_PACKAGE, "tsc", *TSC_OPTIONS, "--strict", strict_flag, *map(str, files)], workspace
+        [executable("npx"), "--yes", "-p", TYPESCRIPT_PACKAGE, "tsc", *TSC_OPTIONS, "--strict", strict_flag, *map(str, files)],
+        workspace,
     )
     if outcome.returncode == 0:
         return True
@@ -76,7 +71,7 @@ def type_checks(workspace: Path, files: list[Path], strict: bool) -> bool:
 def hidden_test_passes(workspace: Path) -> bool:
     shutil.copy(HIDDEN_TEST, workspace / HIDDEN_TEST_NAME)
     outcome: subprocess.CompletedProcess[str] = run(
-        [npx(), "--yes", TSX_PACKAGE, "--test", "--test-reporter=tap", HIDDEN_TEST_NAME], workspace
+        [executable("npx"), "--yes", TSX_PACKAGE, "--test", "--test-reporter=tap", HIDDEN_TEST_NAME], workspace
     )
     failed: re.Match[str] | None = TAP_FAIL_PATTERN.search(outcome.stdout)
     passed: re.Match[str] | None = TAP_PASS_PATTERN.search(outcome.stdout)

@@ -1,6 +1,6 @@
 # GitOps: Argo CD and Flux
 
-Verified Nov 2026: Argo CD 3.x (minor release every 3 months), Flux 2.8.x (v1beta2 Source and Kustomization APIs removed; run `flux migrate` before upgrading). Check current versions with `gh release list -R argoproj/argo-cd -L 1` and `gh release list -R fluxcd/flux2 -L 1`.
+Written in Nov 2026 (not benchmarked): Argo CD 3.x (minor release every 3 months), Flux 2.8.x (v1beta2 Source and Kustomization APIs removed; run `flux migrate` before upgrading). Check current versions with `gh release list -R argoproj/argo-cd -L 1` and `gh release list -R fluxcd/flux2 -L 1`.
 
 ## Lint and validate
 

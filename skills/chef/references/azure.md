@@ -1,6 +1,6 @@
 # Azure
 
-Verified Nov 2026: `azure/login` v3 is the recommended major. Check the current release with `gh release list -R Azure/login -L 1` before you pin. IaC rules: see `bicep.md` or `terraform.md`.
+Written in Nov 2026 (not benchmarked): `azure/login` v3 is the recommended major. Check the current release with `gh release list -R Azure/login -L 1` before you pin. IaC rules: see `bicep.md` or `terraform.md`.
 
 ## Lint and validate
 

@@ -40,6 +40,22 @@
 
 Chef 1.3's first answer costs 133% more than a plain one, because it already does what the reviewer would ask for: tests, strict types and linters, pinned versions, configs checked by their tools. Counting the fixes plain Claude needs afterwards, the gap falls to +51%, for 72% fewer review rounds. In agent time the two end level (73 s and 81 s per task until merged, +11%); the difference is on the reviewer's side: 75% fewer tasks come back for another review.
 
+Across versions, on the Python, Docker and Prometheus tasks every version was run on:
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/history-merge-dark.svg">
+    <img src="assets/bench/history-merge.svg" width="880" alt="Chef across versions, share of first answers a blind reviewer would merge as is: 0.8.1 50%, 0.9.0 44%, 0.10.0 67%, 1.0.0 78%, 1.1.0 78%, 1.2.0 89%, 1.3.0 100%; plain Claude 44%.">
+  </picture>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/history-cost-dark.svg">
+    <img src="assets/bench/history-cost.svg" width="880" alt="Chef across versions, median cost per task: 0.8.1 $0.167, 0.9.0 $0.184, 0.10.0 $0.180, 1.0.0 $0.155, 1.1.0 $0.145, 1.2.0 $0.156, 1.3.0 $0.169; plain Claude $0.059.">
+  </picture>
+</p>
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/time-dark.svg">
@@ -96,14 +112,3 @@ That's it: chef applies to every coding prompt from now on.
 ## Change a rule
 
 Edit [`skills/chef/SKILL.md`](skills/chef/SKILL.md) or a stack file in [`skills/chef/references/`](skills/chef/references/), then run `bash scripts/check.sh`. Changes are listed in the [CHANGELOG](CHANGELOG.md).
-
-## Across versions
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/history-dark.svg">
-    <img src="assets/bench/history.svg" width="880" alt="Chef by version on the Python, Docker and Prometheus tasks. Cost per task: 0.8.1 $0.167, 0.9.0 $0.184, 0.10.0 $0.180, 1.0.0 $0.155, 1.1.0 $0.145, 1.2.0 $0.156, 1.3.0 $0.169; plain Claude $0.059. Share a blind reviewer would merge as is: 50%, 44%, 67%, 78%, 78%, 89%, 100%; plain Claude 44%.">
-  </picture>
-</p>
-
-<sub>The three tasks every version was run on (Python CLI, Dockerfile + compose, Prometheus), same blind reviewer for every version, 6 to 9 reviews each: read it as a trend, not as a ranking of neighbouring versions. One review is 11 points here, so 1.1 → 1.2 → 1.3 (78% → 89% → 100%) is one review per step, and 1.3 changed no code rule. With the newer reviewer, which skips files `.gitignore` excludes, plain Claude, 1.1 and 1.2 all get 67% on these three tasks.</sub>

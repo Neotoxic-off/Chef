@@ -10,7 +10,8 @@ import tempfile
 from pathlib import Path
 from xml.etree import ElementTree
 
-from score import Metrics, run
+from score import Metrics
+from scorer_lib import docker_run
 
 TASK_DIR: Path = Path(__file__).resolve().parent
 HIDDEN_TEST: Path = TASK_DIR / "BenchHiddenTest.java"
@@ -48,7 +49,7 @@ def count_tests_written(workspace: Path) -> int:
 def in_container(copy: Path, command: list[str]) -> subprocess.CompletedProcess[str]:
     """Run in the Maven image; a build error is a result, Docker or the network failing means the tool did not run."""
     mounts: list[str] = ["-v", f"{copy}:/work", "-v", f"{MAVEN_CACHE_VOLUME}:/root/.m2", "-w", "/work"]
-    outcome: subprocess.CompletedProcess[str] = run(["docker", "run", "--rm", *mounts, MAVEN_IMAGE, *command], copy)
+    outcome: subprocess.CompletedProcess[str] = docker_run([*mounts, MAVEN_IMAGE, *command], copy)
     if outcome.returncode in DOCKER_FAILURE_CODES or NETWORK_FAILURE in outcome.stdout:
         raise RuntimeError(f"{command[:3]} did not run in {copy}: {(outcome.stderr or outcome.stdout).strip()[-500:]}")
     return outcome

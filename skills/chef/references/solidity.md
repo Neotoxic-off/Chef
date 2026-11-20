@@ -1,6 +1,6 @@
 # Solidity
 
-Foundry by default; Hardhat 3 if the project uses it (it runs forge-std Solidity tests natively with `npx hardhat test`). Verified Nov 2026: Foundry 1.9, Solhint 6.2, Slither 0.11, Aderyn 0.6, OpenZeppelin Contracts 5.7; check with `forge --version`, `slither --version`, and each project's GitHub releases. Pin the compiler exactly: `pragma solidity 0.8.30;` (use the project's version), never `^`.
+Foundry by default; Hardhat 3 if the project uses it (it runs forge-std Solidity tests natively with `npx hardhat test`). Written in Nov 2026 (not benchmarked): Foundry 1.9, Solhint 6.2, Slither 0.11, Aderyn 0.6, OpenZeppelin Contracts 5.7; check with `forge --version`, `slither --version`, and each project's GitHub releases. Pin the compiler exactly: `pragma solidity 0.8.30;` (use the project's version), never `^`.
 
 ## Lint and format
 

@@ -1,10 +1,15 @@
 import json
+import subprocess
+import sys
+import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 import score
+import scorer_lib
 
 
 def test_summarize_uses_keys_from_every_run() -> None:
@@ -172,3 +177,125 @@ def test_usage_metrics_splits_tokens_and_counts_tool_traffic(tmp_path: Path) -> 
 def test_is_test_file_detects_tests_folder() -> None:
     assert score.is_test_file(Path("tests/check_config.py"))
     assert not score.is_test_file(Path("endpoints.py"))
+
+
+def test_score_run_records_a_checker_timeout_as_not_scored(tmp_path: Path) -> None:
+    run_dir: Path = write_run(tmp_path / "1", FINISHED_RESULT)
+
+    def hanging_scorer(_workspace: Path) -> score.Metrics:
+        raise subprocess.TimeoutExpired(["pytest"], score.COMMAND_TIMEOUT_SECONDS)
+
+    metrics: score.Metrics = score.score_run(run_dir, hanging_scorer)
+
+    assert metrics["scored"] is False
+    assert "hidden_test_passes" not in metrics
+
+
+def test_score_run_records_a_scratch_dir_locked_by_a_timeout_as_not_scored(tmp_path: Path) -> None:
+    run_dir: Path = write_run(tmp_path / "1", FINISHED_RESULT)
+
+    def locked_scorer(_workspace: Path) -> score.Metrics:
+        try:
+            raise subprocess.TimeoutExpired(["npx"], score.COMMAND_TIMEOUT_SECONDS)
+        finally:
+            raise PermissionError(13, "in use", "scratch")
+
+    assert score.score_run(run_dir, locked_scorer)["scored"] is False
+
+
+def test_score_run_raises_a_permission_error_without_a_timeout(tmp_path: Path) -> None:
+    run_dir: Path = write_run(tmp_path / "1", FINISHED_RESULT)
+
+    def denied_scorer(_workspace: Path) -> score.Metrics:
+        raise PermissionError(13, "denied", "workspace")
+
+    with pytest.raises(PermissionError):
+        score.score_run(run_dir, denied_scorer)
+
+
+def test_run_kills_a_grandchild_holding_the_pipes_on_timeout(tmp_path: Path) -> None:
+    sleeper: str = "import time; time.sleep(60)"
+    spawner: str = f"import subprocess, sys; subprocess.run([sys.executable, '-c', {sleeper!r}])"
+    started: float = time.monotonic()
+
+    with pytest.raises(subprocess.TimeoutExpired):
+        score.run([sys.executable, "-c", spawner], tmp_path, timeout=2)
+
+    assert time.monotonic() - started < 30
+
+
+def test_run_tool_refuses_a_missing_python_module(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="bench_no_such_linter is not installed"):
+        score.run_tool([sys.executable, "-m", "bench_no_such_linter", "check", "."], tmp_path)
+
+
+def recording_run(commands: list[list[str]]) -> Callable[..., subprocess.CompletedProcess[str]]:
+    """A stand-in for score.run that records each command; `docker build` times out when asked to."""
+
+    def fake_run(command: list[str], _cwd: Path, _stdin: str | None = None, timeout: int = 0) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        if command[1] == "build" and timeout < 0:
+            raise subprocess.TimeoutExpired(command, timeout)
+        return subprocess.CompletedProcess(command, 0, "container-id\n", "")
+
+    return fake_run
+
+
+def test_container_serves_health_removes_its_container_and_image(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    commands: list[list[str]] = []
+    monkeypatch.setattr(score, "run", recording_run(commands))
+    monkeypatch.setattr(score, "wait_for_health", lambda: True)
+
+    assert score.container_serves_health(tmp_path, "bench-tag")
+    assert commands[-2:] == [["docker", "rm", "-f", "container-id"], ["docker", "rmi", "-f", "bench-tag"]]
+
+
+def test_container_serves_health_removes_its_image_when_the_build_times_out(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commands: list[list[str]] = []
+    monkeypatch.setattr(score, "run", recording_run(commands))
+    monkeypatch.setattr(score, "BUILD_TIMEOUT_SECONDS", -1)
+
+    with pytest.raises(subprocess.TimeoutExpired):
+        score.container_serves_health(tmp_path, "bench-tag")
+    assert commands[-1] == ["docker", "rmi", "-f", "bench-tag"]
+
+
+def write_costed_run(run_dir: Path, cost: float) -> None:
+    write_run(run_dir, json.dumps({"type": "result", "terminal_reason": "completed", "total_cost_usd": cost}))
+
+
+def test_budget_exits_once_the_runs_cost_the_cap(tmp_path: Path) -> None:
+    write_costed_run(tmp_path / "none" / "go" / "1", 0.6)
+    write_costed_run(tmp_path / "chef" / "go" / "1", 0.4)
+
+    with pytest.raises(SystemExit, match=r"cost \$1\.00, the cap is \$1\.00"):
+        score.budget(tmp_path, 1.0)
+
+
+def test_budget_below_the_cap_ignores_runs_without_a_cost(tmp_path: Path) -> None:
+    write_costed_run(tmp_path / "none" / "go" / "1", 0.6)
+    write_run(tmp_path / "none" / "go" / "2", "crash")
+
+    score.budget(tmp_path, 1.0)
+
+
+def test_docker_run_removes_its_named_container_on_timeout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    commands: list[list[str]] = []
+
+    def hanging_docker(
+        command: list[str], _cwd: Path, _stdin: str | None = None, timeout: int = 0
+    ) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        if command[1] == "run":
+            raise subprocess.TimeoutExpired(command, timeout)
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(scorer_lib, "run", hanging_docker)
+
+    with pytest.raises(subprocess.TimeoutExpired):
+        scorer_lib.docker_run(["alpine", "sleep", "999"], tmp_path)
+
+    name: str = commands[0][commands[0].index("--name") + 1]
+    assert commands[1] == ["docker", "rm", "-f", name]

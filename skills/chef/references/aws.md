@@ -1,6 +1,6 @@
 # AWS
 
-Verified Nov 2026: `aws-actions/configure-aws-credentials` v6.x, cfn-lint v1.x. Check the current release with `gh release list -R <owner>/<repo> -L 1` before you pin.
+Written in Nov 2026 (not benchmarked): `aws-actions/configure-aws-credentials` v6.x, cfn-lint v1.x. Check the current release with `gh release list -R <owner>/<repo> -L 1` before you pin.
 
 ## Lint and validate
 

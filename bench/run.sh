@@ -4,6 +4,8 @@
 # Example: bench/run.sh /tmp/bench 2 none= old=/tmp/chef-0.8.1 new=/tmp/chef-new
 # Set TASKS="python bugfix" to run only those tasks. Needs Docker running and PYTHON (default: python)
 # able to import bench/score.py; the batch stops at the first run that gave no answer (usage limit).
+# RESUME=1 reuses an existing out-dir: runs that gave an answer are kept, the others are run again.
+# MAX_TOTAL_USD=20 stops before the next batch once the streams of the out-dir cost that much.
 set -euo pipefail
 shopt -s inherit_errexit nullglob
 
@@ -40,7 +42,14 @@ run_one() {
   local -a plugin_args=()
   local claude_md=""
   local prompt=""
-  [[ ! -e "${run_dir}" ]] || die "${run_dir} exists: use a new out-dir"
+  if [[ -e "${run_dir}" ]]; then
+    [[ "${RESUME:-}" == 1 ]] || die "${run_dir} exists: use a new out-dir"
+    if "${PYTHON}" "${BENCH_DIR}/score.py" check "${run_dir}"; then
+      printf 'bench: %s gave an answer, kept\n' "${run_dir}" >&2
+      return 0
+    fi
+    rm -rf "${run_dir}"
+  fi
   prompt="$(cat "${task_dir}/prompt.md")"
   if [[ "${arm_source}" == *.md ]]; then
     claude_md="${arm_source}"
@@ -64,6 +73,19 @@ run_one() {
   ) || printf 'bench: %s exited with an error, see stderr.log\n' "${run_dir}" >&2
 }
 
+stop_runs() {
+  trap - INT TERM
+  local -a groups=()
+  local pid=""
+  for pid in $(jobs -p); do
+    groups+=("-${pid}")
+  done
+  # set -m gives each background run its own process group, so this reaches claude and its children.
+  ((${#groups[@]} == 0)) || kill -TERM -- "${groups[@]}" 2>/dev/null ||
+    printf 'bench: some runs had already ended\n' >&2
+  die "interrupted: every run was stopped"
+}
+
 main() {
   (($# >= 3)) || die "usage: run.sh <out-dir> <runs> <arm>=<plugin-dir> ..."
   [[ "$2" =~ ^[1-9][0-9]*$ ]] || die "runs must be a positive integer, got '$2'"
@@ -74,14 +96,24 @@ main() {
   for arm in "$@"; do
     [[ "${arm}" == *=* ]] || die "arm '${arm}' must be <name>=<plugin-dir>"
   done
+  [[ -z "${MAX_TOTAL_USD:-}" || "${MAX_TOTAL_USD}" =~ ^[0-9]+([.][0-9]+)?$ ]] ||
+    die "MAX_TOTAL_USD must be a number of dollars, got '${MAX_TOTAL_USD}'"
   local task_dir=""
   local -i run=0
   local -a pids=()
   local -a run_dirs=()
   local -i pid=0
-  [[ ! -e "${out_dir}" ]] || die "${out_dir} exists: use a new out-dir"
+  [[ "${RESUME:-}" == 1 || ! -e "${out_dir}" ]] || die "${out_dir} exists: use a new out-dir, or RESUME=1"
   docker info --format '{{.ServerVersion}}' >/dev/null || die "the Docker daemon is not reachable: start it first"
   "${PYTHON}" "${BENCH_DIR}/score.py" check || die "PYTHON=${PYTHON} cannot run bench/score.py (it needs PyYAML)"
+  local kept=""
+  for arm in "$@"; do
+    # The kept runs of an arm must come from the plugin dir it runs now: versions.txt names the last one.
+    kept="$(awk -v line="arm ${arm%%=*}: " 'index($0, line) == 1 { last = $0 } END { print last }' \
+      "${out_dir}/versions.txt" 2>/dev/null || true)"
+    [[ -z "${kept}" || "${kept}" == "arm ${arm%%=*}: ${arm#*=}" ]] ||
+      die "RESUME=1: ${out_dir} kept runs of '${kept}', not of ${arm}; use a new out-dir"
+  done
   mkdir -p "${out_dir}"
   {
     claude --version
@@ -89,11 +121,15 @@ main() {
     for arm in "$@"; do
       printf 'arm %s: %s\n' "${arm%%=*}" "${arm#*=}"
     done
-  } >"${out_dir}/versions.txt"
+  } >>"${out_dir}/versions.txt"
+  set -m
+  trap stop_runs INT TERM
   for task_dir in "${TASKS_DIR}"/*/; do
     task_dir="${task_dir%/}"
     [[ -z "${TASKS:-}" || " ${TASKS} " == *" $(basename "${task_dir}") "* ]] || continue
     for ((run = 1; run <= runs; run++)); do
+      [[ -z "${MAX_TOTAL_USD:-}" ]] || "${PYTHON}" "${BENCH_DIR}/score.py" budget "${out_dir}" "${MAX_TOTAL_USD}" ||
+        die "stopped: MAX_TOTAL_USD=${MAX_TOTAL_USD} reached; raise it and rerun with RESUME=1"
       pids=()
       run_dirs=()
       for arm in "$@"; do
@@ -105,7 +141,7 @@ main() {
         wait "${pid}" || printf 'bench: a run of %s failed before claude started\n' "${task_dir}" >&2
       done
       "${PYTHON}" "${BENCH_DIR}/score.py" check "${run_dirs[@]}" ||
-        die "stopped: a run gave no answer (usage limit or API error); rerun the batch in a new out-dir"
+        die "stopped: a run gave no answer (usage limit or API error); rerun with RESUME=1 once it is fixed"
     done
   done
 }

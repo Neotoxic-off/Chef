@@ -136,10 +136,11 @@ def test_history_chart_labels_every_version_and_the_baseline() -> None:
         "baseline": {"cost": 0.06, "merge": 45.0},
     }
 
-    svg: str = charts.history_chart(charts.LIGHT, history)
+    cost: str = charts.history_chart(charts.LIGHT, history, "cost")
+    merge: str = charts.history_chart(charts.LIGHT, history, "merge")
 
-    assert "0.9.0 $0.200 per task, 40% merged as is; 1.1.0 $0.150 per task, 90% merged as is" in svg
-    assert "Plain Claude: $0.060, 45%." in svg
+    assert "cost per task (median), on python: 0.9.0 $0.200, 1.1.0 $0.150. Plain Claude: $0.060." in cost
+    assert "merge it as is, on python: 0.9.0 40%, 1.1.0 90%. Plain Claude: 45%." in merge
 
 
 def test_history_chart_hides_plain_claude_merge_line_judged_by_another_reviewer() -> None:
@@ -152,8 +153,10 @@ def test_history_chart_hides_plain_claude_merge_line_judged_by_another_reviewer(
         "baseline": {"cost": 0.06, "merge": 45.0, "reviewer": "old"},
     }
 
-    svg: str = charts.history_chart(charts.LIGHT, history)
+    cost: str = charts.history_chart(charts.LIGHT, history, "cost")
+    merge: str = charts.history_chart(charts.LIGHT, history, "merge")
 
-    assert ">plain Claude $0.060<" in svg
-    assert ">plain Claude 45%<" not in svg
-    assert svg.count("<polyline") == 3
+    assert ">plain Claude $0.060<" in cost
+    assert ">plain Claude 45%<" not in merge
+    assert cost.count("<polyline") == 1
+    assert merge.count("<polyline") == 2

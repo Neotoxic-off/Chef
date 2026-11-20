@@ -1,6 +1,6 @@
 # ORMs: EF Core, Prisma, SQLAlchemy, Hibernate
 
-Builds on `sql.md`. Verified November 2026: EF Core 10.0.x, Prisma 7.10.x, SQLAlchemy 2.1.x, Hibernate ORM 7.4.x (8.0 in CR). Check each project's GitHub releases page before pinning.
+Builds on `sql.md`. Written in November 2026 (not benchmarked): EF Core 10.0.x, Prisma 7.10.x, SQLAlchemy 2.1.x, Hibernate ORM 7.4.x (8.0 in CR). Check each project's GitHub releases page before pinning.
 
 ## Rules for every ORM
 

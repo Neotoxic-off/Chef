@@ -1,6 +1,6 @@
 # Google Cloud
 
-Verified Nov 2026: `google-github-actions/auth` supports Direct Workload Identity Federation (v2+). Check the current release with `gh release list -R google-github-actions/auth -L 1` before you pin.
+Written in Nov 2026 (not benchmarked): `google-github-actions/auth` supports Direct Workload Identity Federation (v2+). Check the current release with `gh release list -R google-github-actions/auth -L 1` before you pin.
 
 ## Lint and validate
 

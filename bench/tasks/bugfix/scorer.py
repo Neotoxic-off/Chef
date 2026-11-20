@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 from score import Metrics, run
+from scorer_lib import changes_since_seed, copy_workspace, executable, is_node_test_file
 
 TASK_DIR: Path = Path(__file__).resolve().parent
 SEED_DIR: Path = TASK_DIR / "seed"
@@ -14,8 +15,6 @@ HIDDEN_TEST: Path = TASK_DIR / "hidden.test.ts"
 TYPESCRIPT_PACKAGE: str = "typescript@6.0.3"
 BENCH_TSCONFIG: str = "bench.tsconfig.json"
 TYPESCRIPT_SUFFIXES: frozenset[str] = frozenset({".ts", ".tsx", ".mts", ".cts"})
-TEST_NAME_MARKERS: tuple[str, ...] = (".test.", ".spec.")
-TEST_DIR_NAMES: frozenset[str] = frozenset({"test", "tests", "__tests__"})
 LOCKFILE_NAMES: frozenset[str] = frozenset(
     {"package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "pnpm-lock.yaml", "bun.lock", "bun.lockb"}
 )
@@ -30,20 +29,8 @@ FORCED_COMPILER_OPTIONS: dict[str, str | bool] = {
 }
 
 
-def executable(name: str) -> str:
-    """Resolve npm and npx to their full path: on Windows they are .cmd files that CreateProcess cannot find by name."""
-    path: str | None = shutil.which(name)
-    if path is None:
-        raise RuntimeError(f"{name} is not on PATH")
-    return path
-
-
-def is_test_file(path: Path) -> bool:
-    return any(marker in path.name for marker in TEST_NAME_MARKERS) or bool(TEST_DIR_NAMES & set(path.parts[:-1]))
-
-
 def counts_as_source_change(path: Path) -> bool:
-    return not is_test_file(path) and path.name not in LOCKFILE_NAMES and not IGNORED_DIR_NAMES & set(path.parts)
+    return not is_node_test_file(path) and path.name not in LOCKFILE_NAMES and not IGNORED_DIR_NAMES & set(path.parts)
 
 
 def files_of(root: Path) -> list[Path]:
@@ -55,13 +42,7 @@ def files_of(root: Path) -> list[Path]:
 
 
 def typescript_sources(root: Path) -> list[Path]:
-    return [path for path in files_of(root) if path.suffix in TYPESCRIPT_SUFFIXES and not is_test_file(path)]
-
-
-def copy_workspace(workspace: Path, destination: Path) -> Path:
-    copy: Path = destination / "workspace"
-    shutil.copytree(workspace, copy, ignore=shutil.ignore_patterns(".git"))
-    return copy
+    return [path for path in files_of(root) if path.suffix in TYPESCRIPT_SUFFIXES and not is_node_test_file(path)]
 
 
 def node_test_passes(copy: Path, test_file: Path) -> bool:
@@ -81,7 +62,7 @@ def passes_with(workspace: Path, test_files: list[Path]) -> bool:
 
 def existing_tests_pass(workspace: Path) -> bool:
     """The seed's tests, unchanged, against the agent's sources."""
-    return passes_with(workspace, [SEED_DIR / path for path in files_of(SEED_DIR) if is_test_file(path)])
+    return passes_with(workspace, [SEED_DIR / path for path in files_of(SEED_DIR) if is_node_test_file(path)])
 
 
 def npm_test_passes(workspace: Path, restore_seed_sources: bool) -> bool:
@@ -101,33 +82,11 @@ def regression_test_added(workspace: Path) -> bool:
     return npm_test_passes(workspace, restore_seed_sources=False) and not npm_test_passes(workspace, restore_seed_sources=True)
 
 
-def git_output(workspace: Path, *arguments: str) -> str:
-    outcome: subprocess.CompletedProcess[str] = run(["git", "-C", str(workspace), *arguments], workspace)
-    if outcome.returncode != 0:
-        raise RuntimeError(f"git {arguments[0]} failed in {workspace}: {outcome.stderr.strip()[:500]}")
-    return outcome.stdout
-
-
-def tracked_changes(workspace: Path, seed_commit: str) -> dict[Path, int]:
-    changes: dict[Path, int] = {}
-    for record in git_output(workspace, "diff", "--numstat", "--no-renames", "-z", seed_commit).split("\0"):
-        if record:
-            added, deleted, name = record.split("\t", 2)
-            changes[Path(name)] = sum(int(count) for count in (added, deleted) if count != "-")
-    return changes
-
-
-def untracked_changes(workspace: Path) -> dict[Path, int]:
-    names: list[str] = git_output(workspace, "ls-files", "--others", "--exclude-standard", "-z").split("\0")
-    return {Path(name): len((workspace / name).read_bytes().splitlines()) for name in names if name}
-
-
 def diff_size(workspace: Path) -> tuple[int, int] | None:
     """Files and lines changed since the seed commit, tests and lockfiles excluded."""
-    if not (workspace / ".git").exists():
+    changes: dict[Path, int] | None = changes_since_seed(workspace)
+    if changes is None:
         return None
-    seed_commit: str = git_output(workspace, "rev-list", "--max-parents=0", "HEAD").split()[-1]
-    changes: dict[Path, int] = tracked_changes(workspace, seed_commit) | untracked_changes(workspace)
     counted: dict[Path, int] = {path: lines for path, lines in changes.items() if counts_as_source_change(path)}
     return len(counted), sum(counted.values())
 

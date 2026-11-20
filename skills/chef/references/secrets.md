@@ -1,6 +1,6 @@
 # Secrets: Vault, cloud secret managers, SOPS, External Secrets
 
-Verified Nov 2026: External Secrets Operator serves only `external-secrets.io/v1` (v1beta1 removed after v0.16.x); OpenBao 2.x (MPL-2.0 fork of Vault; Vault itself is BSL); SOPS 3.x recommends age over PGP. Check current versions with `gh release list -R <owner>/<repo> -L 1` (`external-secrets/external-secrets`, `openbao/openbao`, `getsops/sops`).
+Written in Nov 2026 (not benchmarked): External Secrets Operator serves only `external-secrets.io/v1` (v1beta1 removed after v0.16.x); OpenBao 2.x (MPL-2.0 fork of Vault; Vault itself is BSL); SOPS 3.x recommends age over PGP. Check current versions with `gh release list -R <owner>/<repo> -L 1` (`external-secrets/external-secrets`, `openbao/openbao`, `getsops/sops`).
 
 ## Lint and validate
 

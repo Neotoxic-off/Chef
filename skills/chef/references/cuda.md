@@ -1,6 +1,6 @@
 # CUDA
 
-Read with `cpp.md`; all its rules apply to host and device code. Build with CMake (`project(app LANGUAGES CXX CUDA)`), C++20. Verified Nov 2026: CUDA Toolkit 13.5 is current; check with `nvcc --version` and the CUDA Toolkit release notes.
+Read with `cpp.md`; all its rules apply to host and device code. Build with CMake (`project(app LANGUAGES CXX CUDA)`), C++20. Written in Nov 2026 (not benchmarked): CUDA Toolkit 13.5 is current; check with `nvcc --version` and the CUDA Toolkit release notes.
 
 ## Build, warnings, lint
 

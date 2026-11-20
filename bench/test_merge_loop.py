@@ -1,4 +1,5 @@
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -6,6 +7,7 @@ import pytest
 
 import blind_review
 import merge_loop
+import score
 
 
 def review(merge: bool, severities: tuple[str, ...]) -> dict[str, Any]:
@@ -32,9 +34,11 @@ def test_loop_records_an_error_when_a_fix_gives_no_answer(tmp_path: Path, monkey
     def rejecting_review(_sample: merge_loop.Sample, _review_path: Path) -> dict[str, Any]:
         return review(False, ("major",))
 
-    def usage_limited_fix(_sample: merge_loop.Sample, _changes: list[str], _plugin_dir: str, stream_path: Path) -> float:
+    def usage_limited_fix(
+        _sample: merge_loop.Sample, _changes: list[str], _plugin_dir: str, stream_path: Path
+    ) -> tuple[float, bool]:
         stream_path.write_text(json.dumps({"type": "result", "terminal_reason": "api_error", "api_error": "usage_limit_reached"}))
-        return 0.0
+        return 0.0, False
 
     monkeypatch.setattr(merge_loop, "review", rejecting_review)
     monkeypatch.setattr(merge_loop, "fix", usage_limited_fix)
@@ -44,6 +48,25 @@ def test_loop_records_an_error_when_a_fix_gives_no_answer(tmp_path: Path, monkey
 
     assert record["error"] == "fix 1 gave no answer: API error: usage_limit_reached"
     assert "merged_after_fixes" not in record
+    assert "fix_timed_out" not in record
+
+
+def test_loop_records_a_fix_that_timed_out(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def rejecting_review(_sample: merge_loop.Sample, _review_path: Path) -> dict[str, Any]:
+        return review(False, ("major",))
+
+    def killed_fix(_sample: merge_loop.Sample, _changes: list[str], _plugin_dir: str, stream_path: Path) -> tuple[float, bool]:
+        stream_path.write_text("", encoding="utf-8")
+        return 0.0, True
+
+    monkeypatch.setattr(merge_loop, "review", rejecting_review)
+    monkeypatch.setattr(merge_loop, "fix", killed_fix)
+    sample: merge_loop.Sample = merge_loop.Sample("none", "go", "1", tmp_path, 0.1, 20.0)
+
+    record: dict[str, Any] = merge_loop.loop(sample, "", tmp_path)
+
+    assert record["fix_timed_out"] is True
+    assert record["error"] == "fix 1 gave no answer: no result event"
 
 
 def test_loop_reviews_again_after_a_fix_that_completes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -53,9 +76,9 @@ def test_loop_reviews_again_after_a_fix_that_completes(tmp_path: Path, monkeypat
         review_path.write_text(json.dumps({"duration_ms": 30000, "total_cost_usd": 0.2}))
         return verdicts.pop(0)
 
-    def finished_fix(_sample: merge_loop.Sample, _changes: list[str], _plugin_dir: str, stream_path: Path) -> float:
+    def finished_fix(_sample: merge_loop.Sample, _changes: list[str], _plugin_dir: str, stream_path: Path) -> tuple[float, bool]:
         stream_path.write_text(json.dumps({"type": "result", "terminal_reason": "completed", "duration_ms": 4000}))
-        return 0.05
+        return 0.05, False
 
     monkeypatch.setattr(merge_loop, "review", next_review)
     monkeypatch.setattr(merge_loop, "fix", finished_fix)
@@ -176,3 +199,22 @@ def test_review_cost_of_a_crashed_review_is_zero(tmp_path: Path) -> None:
     (tmp_path / "review-0.json").write_text("", encoding="utf-8")
 
     assert merge_loop.review_cost(tmp_path / "review-0.json") == 0.0
+
+
+def hanging(command: list[str], **options: Any) -> None:
+    raise subprocess.TimeoutExpired(command, options["timeout"])
+
+
+def test_fix_that_times_out_gives_no_answer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(subprocess, "run", hanging)
+    sample: merge_loop.Sample = merge_loop.Sample("none", "go", "1", tmp_path, 0.1, 20.0)
+    stream_path: Path = tmp_path / "fix-1.jsonl"
+
+    assert merge_loop.fix(sample, ["add tests"], "", stream_path) == (0.0, True)
+    assert score.run_failure(stream_path) == "no result event"
+
+
+def test_harness_commit_that_times_out_is_unknown(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(subprocess, "run", hanging)
+
+    assert merge_loop.harness_commit() == "unknown"

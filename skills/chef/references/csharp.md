@@ -1,5 +1,7 @@
 # C# / .NET / WPF / WinUI
 
+Verified against .NET 10 (`net10.0`) and xUnit v3 (Nov 2026).
+
 ## Project settings (`Directory.Build.props` at the repo root)
 
 ```xml

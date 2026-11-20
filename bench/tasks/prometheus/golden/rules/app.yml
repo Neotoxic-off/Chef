@@ -1,0 +1,32 @@
+groups:
+  - name: app.rules
+    rules:
+      - alert: AppDown
+        expr: up{job="app"} == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "App {{ $labels.instance }} is down (scrape failing for 1m)"
+          runbook_url: "https://runbooks.example.com/app/down"
+      - alert: AppHighErrorRatio
+        expr: |
+          sum(rate(http_requests_total{job="app",status=~"5.."}[5m]))
+            / sum(rate(http_requests_total{job="app"}[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "App 5xx ratio above 5% over 5m"
+          runbook_url: "https://runbooks.example.com/app/high-error-ratio"
+      - alert: AppHighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(http_request_duration_seconds_bucket{job="app"}[5m]))
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "App p95 latency above 500 ms over 5m"
+          runbook_url: "https://runbooks.example.com/app/high-latency"

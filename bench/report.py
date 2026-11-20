@@ -37,10 +37,16 @@ def correct(run: dict[str, Any]) -> bool:
     return bool(run.get("config_valid")) and bool(run.get("rules_valid"))
 
 
+def is_scored(run: dict[str, Any]) -> bool:
+    """False for a run whose checker timed out (score.py writes `"scored": false`)."""
+    return bool(run.get("scored", True))
+
+
 def overall(arm_tasks: dict[str, dict[str, Any]]) -> dict[str, float]:
     runs: list[dict[str, Any]] = [run for report in arm_tasks.values() for run in report["runs"]]
     costs: list[float] = [run["cost_usd"] for run in runs if run.get("cost_usd") is not None]
-    passes: list[bool] = [correct(run) for run in runs]
+    # A run whose checker timed out has no answer to judge; it still counts in runs and cost.
+    passes: list[bool] = [correct(run) for run in runs if is_scored(run)]
     return {
         "runs": float(len(runs)),
         "total_cost_usd": round(sum(costs), 2),
@@ -95,7 +101,7 @@ def history_point(
     version: str, arm_tasks: dict[str, dict[str, Any]], records: list[dict[str, Any]], tasks: list[str]
 ) -> dict[str, Any]:
     """One version on the version chart: median cost and time of its first answers, share merged as is."""
-    unscored: list[str] = [task for task in tasks if not arm_tasks.get(task, {}).get("runs")]
+    unscored: list[str] = [task for task in tasks if not any(is_scored(run) for run in arm_tasks.get(task, {}).get("runs", []))]
     if unscored:
         raise SystemExit(f"report: no scored run for the chart tasks {', '.join(unscored)}")
     runs: list[dict[str, Any]] = [run for task in tasks for run in arm_tasks[task]["runs"]]

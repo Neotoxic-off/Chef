@@ -1,0 +1,19 @@
+replicaCount: 2
+
+image:
+  # Image built from the Dockerfile; override with your registry path.
+  repository: app
+  # Pin a version tag (never latest).
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+service:
+  # Port the Service exposes; it forwards to the container port 8000.
+  port: 80
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 128Mi

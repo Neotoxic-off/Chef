@@ -78,6 +78,21 @@ def test_overall_sums_cost_and_pass_rate_over_runs() -> None:
     }
 
 
+def test_overall_leaves_unscored_runs_out_of_the_correct_rate() -> None:
+    runs: list[dict[str, Any]] = [{"cost_usd": 0.1, "hidden_test_passes": True}, {"cost_usd": 0.3, "scored": False}]
+
+    totals: dict[str, float] = report.overall({"go": {"runs": runs}})
+
+    assert (totals["runs"], totals["total_cost_usd"], totals["correct_rate"]) == (2.0, 0.4, 1.0)
+
+
+def test_history_point_counts_a_task_with_only_unscored_runs_as_unscored() -> None:
+    arm_tasks: dict[str, dict[str, Any]] = {"python": {"runs": [{"cost_usd": 0.1, "seconds": 30.0, "scored": False}]}}
+
+    with pytest.raises(SystemExit, match="no scored run for the chart tasks python"):
+        report.history_point("1.3.0", arm_tasks, [chart_record("python", 0)], ["python"])
+
+
 def test_correct_uses_the_task_specific_check() -> None:
     assert report.correct({"container_healthy": True})
     assert report.correct({"config_valid": True, "rules_valid": True})

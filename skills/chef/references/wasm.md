@@ -1,6 +1,6 @@
 # WebAssembly
 
-Read with the source language file (`rust.md`, `c.md`, `cpp.md`); all its rules apply. Verified Nov 2026: wasm-bindgen 0.2.130 and wasm-pack 0.15 (both now under the `wasm-bindgen` GitHub org, after the rustwasm org was archived in 2025), Wasmtime 50, wasi-sdk 34, Binaryen 133. Check with `wasm-bindgen --version`, `wasmtime --version`, and the GitHub releases.
+Read with the source language file (`rust.md`, `c.md`, `cpp.md`); all its rules apply. Written in Nov 2026 (not benchmarked): wasm-bindgen 0.2.130 and wasm-pack 0.15 (both now under the `wasm-bindgen` GitHub org, after the rustwasm org was archived in 2025), Wasmtime 50, wasi-sdk 34, Binaryen 133. Check with `wasm-bindgen --version`, `wasmtime --version`, and the GitHub releases.
 
 ## Targets
 

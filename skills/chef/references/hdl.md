@@ -1,6 +1,6 @@
 # HDL: SystemVerilog, Verilog, VHDL
 
-Verified Nov 2026: Verilator 5.054, Verible v0.0-4302, cocotb 2.1, VSG 3.36; check with `verilator --version`, `verible-verilog-lint --version`, `pip show cocotb`, `vsg --version`. cocotb testbenches are Python: `python.md` applies to them.
+Written in Nov 2026 (not benchmarked): Verilator 5.054, Verible v0.0-4302, cocotb 2.1, VSG 3.36; check with `verilator --version`, `verible-verilog-lint --version`, `pip show cocotb`, `vsg --version`. cocotb testbenches are Python: `python.md` applies to them.
 
 ## Lint and format
 

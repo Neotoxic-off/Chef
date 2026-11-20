@@ -43,6 +43,13 @@ jobs:
           python -m ruff format --check .
           python -m mypy --strict ./*.py
           for scorer in tasks/*/scorer.py; do python -m mypy --strict "${scorer}"; done
-          python -m pytest -q -p no:cacheprovider --ignore=tasks
+          BENCH_DOCKER_FIXTURES=off python -m pytest -q -p no:cacheprovider --ignore=tasks
+      - name: Check references (version lines, links, code blocks)
+        run: |
+          python -m ruff check --config bench/ruff.toml scripts
+          python -m ruff format --check --config bench/ruff.toml scripts
+          python -m mypy --strict scripts/*.py
+          python -m pytest -q -p no:cacheprovider scripts
+          python scripts/check_references.py
       - name: Test shell scripts
         run: npx --yes bats@1.13.0 tests/

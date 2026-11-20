@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 from score import Metrics, run, run_tool
+from scorer_lib import changes_since_seed, copy_workspace, executable
 
 TASK_DIR: Path = Path(__file__).resolve().parent
 SEED_DIR: Path = TASK_DIR / "seed"
@@ -21,25 +22,12 @@ IGNORED_DIR_NAMES: frozenset[str] = frozenset({".git", "vendor"})
 LISTED_TEST_PATTERN: re.Pattern[str] = re.compile(r"^(?:Test|Fuzz|Example)\w*$", re.MULTILINE)
 
 
-def executable(name: str) -> str:
-    path: str | None = shutil.which(name)
-    if path is None:
-        raise RuntimeError(f"{name} is not on PATH")
-    return path
-
-
 def is_test_file(path: Path) -> bool:
     return path.name.endswith(GO_TEST_SUFFIX)
 
 
 def test_files_of(root: Path) -> list[Path]:
     return [path.relative_to(root) for path in root.rglob(f"*{GO_TEST_SUFFIX}") if not IGNORED_DIR_NAMES & set(path.parts)]
-
-
-def copy_workspace(workspace: Path, destination: Path) -> Path:
-    copy: Path = destination / "workspace"
-    shutil.copytree(workspace, copy, ignore=shutil.ignore_patterns(".git"))
-    return copy
 
 
 def go_tests_pass(copy: Path, *arguments: str) -> bool:
@@ -87,38 +75,14 @@ def lint_clean(workspace: Path) -> bool:
         return run_tool([executable("gofmt"), "-l", "."], copy).stdout.strip() == ""
 
 
-def git_output(workspace: Path, *arguments: str) -> str:
-    outcome: subprocess.CompletedProcess[str] = run(["git", "-C", str(workspace), *arguments], workspace)
-    if outcome.returncode != 0:
-        raise RuntimeError(f"git {arguments[0]} failed in {workspace}: {outcome.stderr.strip()[:500]}")
-    return outcome.stdout
-
-
-def tracked_changes(workspace: Path, seed_commit: str) -> dict[Path, int]:
-    changes: dict[Path, int] = {}
-    for record in git_output(workspace, "diff", "--numstat", "--no-renames", "-z", seed_commit).split("\0"):
-        if record:
-            added, deleted, name = record.split("\t", 2)
-            changes[Path(name)] = sum(int(count) for count in (added, deleted) if count != "-")
-    return changes
-
-
-def untracked_changes(workspace: Path) -> dict[Path, int]:
-    names: list[str] = git_output(workspace, "ls-files", "--others", "--exclude-standard", "-z").split("\0")
-    return {Path(name): len((workspace / name).read_bytes().splitlines()) for name in names if name}
-
-
 def counts_as_source_change(path: Path) -> bool:
     return not is_test_file(path) and path.name not in LOCKFILE_NAMES and not IGNORED_DIR_NAMES & set(path.parts)
 
 
 def lines_changed(workspace: Path) -> int | None:
     """Lines changed since the seed commit, tests and go.sum excluded; None without a git history."""
-    if not (workspace / ".git").exists():
-        return None
-    seed_commit: str = git_output(workspace, "rev-list", "--max-parents=0", "HEAD").split()[-1]
-    changes: dict[Path, int] = tracked_changes(workspace, seed_commit) | untracked_changes(workspace)
-    return sum(lines for path, lines in changes.items() if counts_as_source_change(path))
+    changes: dict[Path, int] | None = changes_since_seed(workspace)
+    return None if changes is None else sum(lines for path, lines in changes.items() if counts_as_source_change(path))
 
 
 def score(workspace: Path) -> Metrics:

@@ -1,6 +1,6 @@
 # Jupyter notebooks
 
-Builds on `python.md`. Verified November 2026 on PyPI: nbqa 1.10, nbstripout 0.9, papermill 2.7, Jupytext 1.19. Check current versions on `https://pypi.org/project/<name>/`.
+Builds on `python.md`. Written in November 2026 (not benchmarked) on PyPI: nbqa 1.10, nbstripout 0.9, papermill 2.7, Jupytext 1.19. Check current versions on `https://pypi.org/project/<name>/`.
 
 ## What belongs in a notebook
 

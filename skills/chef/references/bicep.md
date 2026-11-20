@@ -1,6 +1,6 @@
 # Bicep
 
-Check the current Bicep CLI with `az bicep version` (latest: `gh release list -R Azure/bicep -L 1`). Upgrade with `az bicep upgrade`. Azure-wide rules: see `azure.md`.
+Written for the Bicep CLI current in Nov 2026 (no version pinned here), not benchmarked. Check yours with `az bicep version` (latest: `gh release list -R Azure/bicep -L 1`). Upgrade with `az bicep upgrade`. Azure-wide rules: see `azure.md`.
 
 ## Lint and validate
 

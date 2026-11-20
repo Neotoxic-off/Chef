@@ -1,6 +1,6 @@
 # Redis and Valkey
 
-Verified November 2026: Redis Open Source 8.10.x, Valkey 9.1.x. Check current versions on https://github.com/redis/redis/releases and https://github.com/valkey-io/valkey/releases.
+Written in November 2026 (not benchmarked): Redis Open Source 8.10.x, Valkey 9.1.x. Check current versions on https://github.com/redis/redis/releases and https://github.com/valkey-io/valkey/releases.
 
 ## Which one
 

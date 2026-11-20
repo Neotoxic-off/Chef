@@ -32,6 +32,8 @@ NUL_BYTE: bytes = bytes([0])
 WORKER_MODEL: str = "claude-sonnet-5-5"
 WORKER_BUDGET_USD: str = "1"
 REQUIRED: tuple[str, ...] = ("blocker", "major")
+FIX_TIMEOUT_SECONDS: int = 1800
+GIT_TIMEOUT_SECONDS: int = 30
 # Hashed into the reviewer id: change it whenever is_mergeable changes. The 1.2 loop also accepted merge_as_is.
 MERGE_RULE: str = "merged when no " + "/".join(REQUIRED) + " change is listed"
 SEAT: str = (
@@ -74,9 +76,16 @@ def stream_cost(stream_path: Path) -> float:
 
 def harness_commit() -> str:
     """The bench commit that ran the loop, `-dirty` when it had local changes."""
-    described: subprocess.CompletedProcess[str] = subprocess.run(
-        ["git", "-C", str(BENCH_DIR), "describe", "--always", "--dirty"], capture_output=True, text=True, check=False
-    )
+    try:
+        described: subprocess.CompletedProcess[str] = subprocess.run(
+            ["git", "-C", str(BENCH_DIR), "describe", "--always", "--dirty"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=GIT_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return "unknown"
     return described.stdout.strip() if described.returncode == 0 else "unknown"
 
 
@@ -112,7 +121,8 @@ def lines_to_review(workspace: Path) -> int:
     return total
 
 
-def fix(sample: Sample, changes: list[str], plugin_dir: str, stream_path: Path) -> float:
+def fix(sample: Sample, changes: list[str], plugin_dir: str, stream_path: Path) -> tuple[float, bool]:
+    """The fix's cost and whether it timed out; a killed fix wrote no result event, so its spend reads as 0."""
     prompt: str = FIX_PROMPT.format(changes="\n".join(f"- {change}" for change in changes))
     plugin_args: list[str] = ["--plugin-dir", plugin_dir] if plugin_dir else []
     command: list[str] = [
@@ -127,8 +137,20 @@ def fix(sample: Sample, changes: list[str], plugin_dir: str, stream_path: Path) 
         *plugin_args,
     ]  # fmt: skip
     with stream_path.open("w", encoding="utf-8") as stream_file:
-        subprocess.run(command, cwd=sample.workspace, stdin=subprocess.DEVNULL, stdout=stream_file, check=False)
-    return stream_cost(stream_path)
+        try:
+            subprocess.run(
+                command,
+                cwd=sample.workspace,
+                stdin=subprocess.DEVNULL,
+                stdout=stream_file,
+                check=False,
+                timeout=FIX_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired:
+            # The killed fix wrote no result event, so loop records it as a fix that gave no answer.
+            print(f"merge_loop: the fix in {sample.workspace} timed out after {FIX_TIMEOUT_SECONDS} s", file=sys.stderr)
+            return stream_cost(stream_path), True
+    return stream_cost(stream_path), False
 
 
 def new_record(sample: Sample) -> dict[str, Any]:
@@ -166,7 +188,10 @@ def loop(sample: Sample, plugin_dir: str, record_dir: Path) -> dict[str, Any]:
         if round_index == ROUND_LIMIT:
             break
         fix_stream: Path = record_dir / f"fix-{round_index + 1}.jsonl"
-        fix_costs.append(fix(sample, required_changes(verdict), plugin_dir, fix_stream))
+        fix_cost, timed_out = fix(sample, required_changes(verdict), plugin_dir, fix_stream)
+        fix_costs.append(fix_cost)
+        if timed_out:
+            record["fix_timed_out"] = True
         record["fix_seconds"].append(stream_number(fix_stream, "seconds"))
         failure: str | None = run_failure(fix_stream)
         if failure is not None:

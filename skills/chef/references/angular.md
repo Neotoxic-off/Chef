@@ -7,10 +7,12 @@ Builds on `typescript.md`. Written for Angular 22.3, angular-eslint 22.8 (Nov 20
 - New projects: `ng new` (standalone components, zoneless change detection and Vitest are the defaults). Add lint with `ng add angular-eslint --tseslint-preset=strictTypeChecked`.
 - `tsconfig.json`: keep the strict compiler options and set them explicitly:
   ```json
-  "angularCompilerOptions": {
-    "strictTemplates": true,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true
+  {
+    "angularCompilerOptions": {
+      "strictTemplates": true,
+      "strictInjectionParameters": true,
+      "strictInputAccessModifiers": true
+    }
   }
   ```
 - Keep `angular.configs.templateRecommended` and `templateAccessibility` on `**/*.html`.

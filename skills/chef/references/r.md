@@ -1,6 +1,6 @@
 # R
 
-Packages follow the standard layout (`DESCRIPTION`, `R/`, `tests/testthat/`). Pin dependencies with `renv` (`renv.lock` committed). Verified Nov 2026: lintr 3.4.0, Air 0.13.0; check current ones with `packageVersion("lintr")` and `air --version`.
+Packages follow the standard layout (`DESCRIPTION`, `R/`, `tests/testthat/`). Pin dependencies with `renv` (`renv.lock` committed). Written in Nov 2026 (not benchmarked): lintr 3.4.0, Air 0.13.0; check current ones with `packageVersion("lintr")` and `air --version`.
 
 ## Lint and format: lintr, Air
 

@@ -235,6 +235,7 @@ HISTORY_PANEL_WIDTH: float = 330.0
 HISTORY_PANEL_HEIGHT: float = 150.0
 HISTORY_PANEL_GAP: float = 120.0
 HISTORY_TOP: float = 70.0
+HISTORY_WIDE_WIDTH: float = 760.0
 
 
 @dataclass(frozen=True)
@@ -244,10 +245,11 @@ class Panel:
     key: str
     top: float
     unit: str
+    width: float = HISTORY_PANEL_WIDTH
 
 
 def history_point(panel: Panel, index: int, count: int, value: float) -> tuple[float, float]:
-    step: float = HISTORY_PANEL_WIDTH / max(count - 1, 1)
+    step: float = panel.width / max(count - 1, 1)
     return panel.x + index * step, HISTORY_TOP + HISTORY_PANEL_HEIGHT * (1 - value / panel.top)
 
 
@@ -275,13 +277,13 @@ def baseline_marks(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[
         return []
     base_y: float = history_point(panel, 0, len(history["versions"]), baseline[panel.key])[1]
     baseline_line: str = (
-        f'<line x1="{panel.x}" y1="{base_y:.1f}" x2="{panel.x + HISTORY_PANEL_WIDTH}" y2="{base_y:.1f}" '
+        f'<line x1="{panel.x}" y1="{base_y:.1f}" x2="{panel.x + panel.width}" y2="{base_y:.1f}" '
         f'stroke="{theme.without}" stroke-width="2" stroke-dasharray="6 4"/>'
     )
     return [
         baseline_line,
         text(
-            panel.x + HISTORY_PANEL_WIDTH,
+            panel.x + panel.width,
             base_y - 6,
             "plain Claude " + HISTORY_SHOWN[panel.unit].format(baseline[panel.key]),
             theme.muted,
@@ -314,25 +316,26 @@ def history_panel(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[s
     return body
 
 
-def history_chart(theme: Theme, history: dict[str, Any]) -> str:
-    """Cost and blind-review quality of chef by version, on the tasks every version ran."""
-    cost_top: float = 1.2 * max(max(entry["cost"] for entry in history["versions"]), history["baseline"]["cost"])
-    panels: tuple[Panel, Panel] = (
-        Panel(40.0, "Cost per task (median)", "cost", cost_top, "$"),
-        Panel(40.0 + HISTORY_PANEL_WIDTH + HISTORY_PANEL_GAP, "A blind reviewer would merge it as is", "merge", 100.0, "%"),
-    )
-    body: list[str] = [text(0, 26, "Chef across versions", theme.ink, 18, 600)]
-    for panel in panels:
-        body += history_panel(theme, panel, history)
+HISTORY_METRICS: dict[str, tuple[str, str]] = {
+    "cost": ("Chef across versions: cost per task (median)", "$"),
+    "merge": ("Chef across versions: a blind reviewer would merge it as is", "%"),
+}
+
+
+def history_chart(theme: Theme, history: dict[str, Any], key: str) -> str:
+    """One metric of chef by version, cost or blind-review quality, on the tasks every version ran."""
+    title, unit = HISTORY_METRICS[key]
+    values: list[float] = [entry[key] for entry in history["versions"]] + [history["baseline"][key]]
+    top: float = 100.0 if unit == "%" else 1.2 * max(values)
+    body: list[str] = [text(0, 26, title, theme.ink, 18, 600)]
+    body += history_panel(theme, Panel(40.0, "", key, top, unit, HISTORY_WIDE_WIDTH), history)
+    shown: str = HISTORY_SHOWN[unit]
     label: str = (
-        "Chef by version, on "
+        f"{title}, on "
         + ", ".join(history["tasks"])
         + ": "
-        + "; ".join(
-            f"{entry['version']} ${entry['cost']:.3f} per task, {entry['merge']:.0f}% merged as is"
-            for entry in history["versions"]
-        )
-        + f". Plain Claude: ${history['baseline']['cost']:.3f}, {history['baseline']['merge']:.0f}%."
+        + ", ".join(f"{entry['version']} {shown.format(entry[key])}" for entry in history["versions"])
+        + f". Plain Claude: {shown.format(history['baseline'][key])}."
     )
     return svg(int(HISTORY_TOP + HISTORY_PANEL_HEIGHT + 40), label, body)
 
@@ -524,7 +527,8 @@ def main() -> None:
         (OUT / f"cost-split{theme.suffix}.svg").write_text(split_chart(theme), encoding="utf-8")
         if HISTORY.is_file():
             history: dict[str, Any] = json.loads(HISTORY.read_text(encoding="utf-8"))
-            (OUT / f"history{theme.suffix}.svg").write_text(history_chart(theme, history), encoding="utf-8")
+            for key in HISTORY_METRICS:
+                (OUT / f"history-{key}{theme.suffix}.svg").write_text(history_chart(theme, history, key), encoding="utf-8")
             (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, merge, history), encoding="utf-8")
 
 

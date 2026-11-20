@@ -49,7 +49,7 @@ Builds on `typescript.md` and `react.md`. Written for Expo SDK 58, React Native 
 - Query by role and label (`getByRole("button", { name: "Save" })`), interact through `userEvent`. Routes: `renderRouter` from `expo-router/testing-library`.
 - Coverage gate in the Jest config:
   ```json
-  "jest": { "preset": "jest-expo", "coverageThreshold": { "global": { "lines": 90, "branches": 90, "functions": 90, "statements": 90 } } }
+  { "jest": { "preset": "jest-expo", "coverageThreshold": { "global": { "lines": 90, "branches": 90, "functions": 90, "statements": 90 } } } }
   ```
 - End-to-end on a device or emulator: Maestro flows (Expo's EAS Workflows run them). Not verified here: pick it only after checking the project's CI.
 

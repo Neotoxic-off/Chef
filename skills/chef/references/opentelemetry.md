@@ -35,8 +35,8 @@ OTEL_TRACES_SAMPLER_ARG=0.1
 receivers:
   otlp:
     protocols:
-      grpc: { endpoint: ${env:POD_IP}:4317 }
-      http: { endpoint: ${env:POD_IP}:4318 }
+      grpc: { endpoint: "${env:POD_IP}:4317" }
+      http: { endpoint: "${env:POD_IP}:4318" }
 processors:
   memory_limiter: { check_interval: 1s, limit_percentage: 80, spike_limit_percentage: 20 }
 exporters:

@@ -1,6 +1,6 @@
 # AWS CDK and CloudFormation
 
-Verified Nov 2026: CDK v2 (`aws-cdk-lib`) with `cdk-nag` ^2, cfn-lint v1.x. Check current versions with `npm view aws-cdk-lib version` and `npm view cdk-nag version`. AWS-wide rules: see `aws.md`.
+Written in Nov 2026 (not benchmarked): CDK v2 (`aws-cdk-lib`) with `cdk-nag` ^2, cfn-lint v1.x. Check current versions with `npm view aws-cdk-lib version` and `npm view cdk-nag version`. AWS-wide rules: see `aws.md`.
 
 ## Lint and validate
 

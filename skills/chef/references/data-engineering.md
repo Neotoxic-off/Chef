@@ -1,6 +1,6 @@
 # Data engineering: Airflow, Dagster, dbt, Spark
 
-Builds on `python.md`, `sql.md` and `dataframes.md`. Verified November 2026 on PyPI: Airflow 3.4, Dagster 1.13, dbt-core 1.12, PySpark 4.3. Check current versions on `https://pypi.org/project/<name>/`.
+Builds on `python.md`, `sql.md` and `dataframes.md`. Written in November 2026 (not benchmarked) on PyPI: Airflow 3.4, Dagster 1.13, dbt-core 1.12, PySpark 4.3. Check current versions on `https://pypi.org/project/<name>/`.
 
 ## Idempotent jobs
 

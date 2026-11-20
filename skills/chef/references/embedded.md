@@ -1,6 +1,6 @@
 # Embedded C/C++
 
-Read with `c.md` or `cpp.md`; their rules apply. Verified Nov 2026: PlatformIO Core 6.2, Cppcheck 2.22, MISRA C:2025 and MISRA C++:2023 are the current MISRA editions; check with `pio --version`, `cppcheck --version`, and misra.org.uk.
+Read with `c.md` or `cpp.md`; their rules apply. Written in Nov 2026 (not benchmarked): PlatformIO Core 6.2, Cppcheck 2.22, MISRA C:2025 and MISRA C++:2023 are the current MISRA editions; check with `pio --version`, `cppcheck --version`, and misra.org.uk.
 
 ## Build and warnings
 

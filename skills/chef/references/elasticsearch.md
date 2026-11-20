@@ -1,6 +1,6 @@
 # Elasticsearch and OpenSearch
 
-Verified November 2026: Elasticsearch 9.5.x, OpenSearch 3.10.x. Check https://github.com/elastic/elasticsearch/releases and https://github.com/opensearch-project/OpenSearch/releases.
+Written in November 2026 (not benchmarked): Elasticsearch 9.5.x, OpenSearch 3.10.x. Check https://github.com/elastic/elasticsearch/releases and https://github.com/opensearch-project/OpenSearch/releases.
 
 ## License and choice
 

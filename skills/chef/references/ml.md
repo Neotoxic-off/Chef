@@ -1,6 +1,6 @@
 # Machine learning: PyTorch, scikit-learn, tracking, evaluation
 
-Builds on `python.md` and `dataframes.md`. Verified November 2026 on PyPI: PyTorch 2.15, scikit-learn 1.9, MLflow 3.18, DVC 3.67, skops 0.16. Check current versions on `https://pypi.org/project/<name>/`.
+Builds on `python.md` and `dataframes.md`. Written in November 2026 (not benchmarked) on PyPI: PyTorch 2.15, scikit-learn 1.9, MLflow 3.18, DVC 3.67, skops 0.16. Check current versions on `https://pypi.org/project/<name>/`.
 
 ## Reproducibility
 

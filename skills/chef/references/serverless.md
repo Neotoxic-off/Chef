@@ -1,6 +1,6 @@
 # Serverless: Lambda, Azure Functions, Cloud Run
 
-Verified Nov 2026: Lambda SnapStart supports Java 11+, Python 3.12+ and .NET 8+ (also container images). Azure Functions .NET in-process model support ended 10 Nov 2026. Flex Consumption is the recommended plan for new function apps (Linux only). Check current runtimes in each provider's "supported runtimes" doc.
+Written in Nov 2026 (not benchmarked): Lambda SnapStart supports Java 11+, Python 3.12+ and .NET 8+ (also container images). Azure Functions .NET in-process model support ended 10 Nov 2026. Flex Consumption is the recommended plan for new function apps (Linux only). Check current runtimes in each provider's "supported runtimes" doc.
 
 ## Lint and validate
 

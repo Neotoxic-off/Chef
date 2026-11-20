@@ -7,18 +7,12 @@ import tempfile
 from pathlib import Path
 
 from score import Metrics, run, run_tool
+from scorer_lib import executable
 
 HIDDEN_TEST: Path = Path(__file__).resolve().parent / "hidden_test.go"
 HIDDEN_TEST_NAME: str = "bench_hidden_test.go"
 HIDDEN_TEST_FILTER: str = "^TestBenchHidden"
 LISTED_TEST_PATTERN: re.Pattern[str] = re.compile(r"^(?:Test|Fuzz|Example)\w*$", re.MULTILINE)
-
-
-def executable(name: str) -> str:
-    path: str | None = shutil.which(name)
-    if path is None:
-        raise RuntimeError(f"{name} is not on PATH")
-    return path
 
 
 def compiles(workspace: Path) -> bool:

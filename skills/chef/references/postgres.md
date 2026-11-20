@@ -1,6 +1,6 @@
 # PostgreSQL
 
-Builds on `sql.md` (lint, naming, parameterized queries, Testcontainers). Verified November 2026 against PostgreSQL 18.x (current major; check https://www.postgresql.org/versions.json) and PgBouncer 1.26.x (check https://www.pgbouncer.org/changelog.html).
+Builds on `sql.md` (lint, naming, parameterized queries, Testcontainers). Written in November 2026 (not benchmarked) against PostgreSQL 18.x (current major; check https://www.postgresql.org/versions.json) and PgBouncer 1.26.x (check https://www.pgbouncer.org/changelog.html).
 
 ## Schema
 

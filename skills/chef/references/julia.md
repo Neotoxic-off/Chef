@@ -1,6 +1,6 @@
 # Julia
 
-One package per project (`Project.toml`, `Manifest.toml` committed for applications). Verified Nov 2026: Runic.jl 1.13, JET.jl 0.13, Aqua.jl 0.8; check current ones with `Pkg.status()` or the package's GitHub releases. JET supports a narrow range of Julia versions: match it to yours.
+One package per project (`Project.toml`, `Manifest.toml` committed for applications). Written in Nov 2026 (not benchmarked): Runic.jl 1.13, JET.jl 0.13, Aqua.jl 0.8; check current ones with `Pkg.status()` or the package's GitHub releases. JET supports a narrow range of Julia versions: match it to yours.
 
 ## Lint and format: Runic, JET, Aqua
 

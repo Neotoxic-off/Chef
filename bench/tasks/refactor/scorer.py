@@ -8,17 +8,12 @@ import tempfile
 from pathlib import Path
 
 from score import PYTEST_ISOLATED, Metrics, count_collected_tests, count_mypy_strict_errors, count_ruff_findings, run
+from scorer_lib import copy_workspace, is_python_test_file
 
 TASK_DIR: Path = Path(__file__).resolve().parent
 SEED_DIR: Path = TASK_DIR / "seed"
 HIDDEN_TEST: Path = TASK_DIR / "hidden_test.py"
 IGNORED_DIR_NAMES: frozenset[str] = frozenset({".git", ".venv", "venv", "__pycache__"})
-TEST_FILE_PREFIXES: tuple[str, ...] = ("test_", "conftest")
-TEST_DIR_NAMES: frozenset[str] = frozenset({"tests", "test"})
-
-
-def is_test_file(path: Path) -> bool:
-    return path.name.startswith(TEST_FILE_PREFIXES) or path.stem.endswith("_test") or bool(TEST_DIR_NAMES & set(path.parts))
 
 
 def python_files(root: Path) -> list[Path]:
@@ -26,19 +21,13 @@ def python_files(root: Path) -> list[Path]:
 
 
 def python_sources(root: Path) -> list[Path]:
-    return [path for path in python_files(root) if not is_test_file(path)]
-
-
-def copy_workspace(workspace: Path, destination: Path) -> Path:
-    copy: Path = destination / "workspace"
-    shutil.copytree(workspace, copy, ignore=shutil.ignore_patterns(*IGNORED_DIR_NAMES))
-    return copy
+    return [path for path in python_files(root) if not is_python_test_file(path)]
 
 
 def pytest_passes(workspace: Path, test_files: list[Path]) -> bool:
     """Run test files, renamed with a bench_ prefix so they never replace the agent's own, against a copy."""
     with tempfile.TemporaryDirectory() as scratch:
-        copy: Path = copy_workspace(workspace, Path(scratch))
+        copy: Path = copy_workspace(workspace, Path(scratch), IGNORED_DIR_NAMES)
         names: list[str] = []
         for test_file in test_files:
             name: str = f"bench_{test_file.name}"
@@ -69,9 +58,9 @@ def max_function_lines(workspace: Path, sources: list[Path]) -> int | None:
 
 
 def score(workspace: Path) -> Metrics:
-    seed_tests: list[Path] = [SEED_DIR / path for path in python_files(SEED_DIR) if is_test_file(path)]
+    seed_tests: list[Path] = [SEED_DIR / path for path in python_files(SEED_DIR) if is_python_test_file(path)]
     with tempfile.TemporaryDirectory() as scratch:
-        copy: Path = copy_workspace(workspace, Path(scratch))
+        copy: Path = copy_workspace(workspace, Path(scratch), IGNORED_DIR_NAMES)
         sources: list[Path] = python_sources(copy)
         return {
             "hidden_test_passes": pytest_passes(workspace, [HIDDEN_TEST]),

@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 from score import Metrics, run
+from scorer_lib import executable
 
 HIDDEN_TEST: Path = Path(__file__).resolve().parent / "hidden_test.rs"
 HIDDEN_TEST_TARGET: str = "bench_hidden"
@@ -14,20 +15,13 @@ CLIPPY_MISSING_MARKER: str = "no such command"
 LISTED_TEST_PATTERN: re.Pattern[str] = re.compile(r": test$", re.MULTILINE)
 
 
-def cargo() -> str:
-    path: str | None = shutil.which("cargo")
-    if path is None:
-        raise RuntimeError("cargo is not on PATH")
-    return path
-
-
 def compiles(workspace: Path) -> bool:
-    return run([cargo(), "build", "--quiet"], workspace).returncode == 0
+    return run([executable("cargo"), "build", "--quiet"], workspace).returncode == 0
 
 
 def lint_clean(workspace: Path) -> bool:
     linted: subprocess.CompletedProcess[str] = run(
-        [cargo(), "clippy", "--quiet", "--all-targets", "--", "-D", "warnings"], workspace
+        [executable("cargo"), "clippy", "--quiet", "--all-targets", "--", "-D", "warnings"], workspace
     )
     if CLIPPY_MISSING_MARKER in linted.stderr:
         raise RuntimeError(f"cargo clippy is not installed: {linted.stderr.strip()[:500]}")
@@ -35,7 +29,7 @@ def lint_clean(workspace: Path) -> bool:
 
 
 def count_written_tests(workspace: Path) -> int:
-    listed: subprocess.CompletedProcess[str] = run([cargo(), "test", "--quiet", "--", "--list"], workspace)
+    listed: subprocess.CompletedProcess[str] = run([executable("cargo"), "test", "--quiet", "--", "--list"], workspace)
     return len(LISTED_TEST_PATTERN.findall(listed.stdout))
 
 
@@ -43,7 +37,7 @@ def hidden_test_passes(workspace: Path) -> bool:
     tests_dir: Path = workspace / "tests"
     tests_dir.mkdir(exist_ok=True)
     shutil.copy(HIDDEN_TEST, tests_dir / f"{HIDDEN_TEST_TARGET}.rs")
-    return run([cargo(), "test", "--quiet", "--test", HIDDEN_TEST_TARGET], workspace).returncode == 0
+    return run([executable("cargo"), "test", "--quiet", "--test", HIDDEN_TEST_TARGET], workspace).returncode == 0
 
 
 def score(workspace: Path) -> Metrics:
