@@ -3,7 +3,11 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 import blind_review
+
+FINISHED_RESULT: str = json.dumps({"type": "result", "subtype": "success", "terminal_reason": "completed"})
 
 
 def test_review_metrics_counts_changes_by_severity() -> None:
@@ -45,12 +49,20 @@ def test_anonymize_hides_history_caches_and_scoring_files(tmp_path: Path) -> Non
     for name in (".git/HEAD", ".venv/x", ".bench-coverage.json", ".chef.md", "CLAUDE.md", "endpoints.py"):
         (workspace / name).parent.mkdir(parents=True, exist_ok=True)
         (workspace / name).write_text("x", encoding="utf-8")
+    (workspace.parent / "stream.jsonl").write_text(FINISHED_RESULT, encoding="utf-8")
 
     key: dict[str, dict[str, str]] = blind_review.anonymize(tmp_path / "out", ["none"])
 
     origin: dict[str, str] = next(iter(key.values()))
     assert sorted(path.name for path in Path(origin["submission"]).iterdir()) == ["endpoints.py"]
     assert (origin["arm"], origin["task"], origin["run"]) == ("none", "python", "1")
+
+
+def test_anonymize_refuses_a_run_that_gave_no_answer(tmp_path: Path) -> None:
+    (tmp_path / "out" / "none" / "python" / "1" / "workspace").mkdir(parents=True)
+
+    with pytest.raises(SystemExit, match="blind_review: these runs gave no answer"):
+        blind_review.anonymize(tmp_path / "out", ["none"])
 
 
 def test_judge_prompt_names_the_seat_and_the_task_only() -> None:

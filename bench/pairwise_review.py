@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from blind_review import BENCH_DIR, JUDGE_BUDGET_USD, JUDGE_MODEL, PARALLEL_JUDGES, copy_submission
+from score import refuse_failed_runs
 
 ORDERS: tuple[str, str] = ("ab", "ba")
 WINNERS: tuple[str, ...] = ("first", "second", "tie")
@@ -61,6 +62,9 @@ def find_pairs(out_dir: Path, arm_a: str, arm_b: str) -> list[Pair]:
         workspace_b: Path = out_dir / arm_b / task / run / "workspace"
         if workspace_b.is_dir():
             pairs.append(Pair(task, run, workspace_a, workspace_b))
+    refuse_failed_runs(
+        [workspace.parent for pair in pairs for workspace in (pair.workspace_a, pair.workspace_b)], "pairwise_review"
+    )
     return pairs
 
 

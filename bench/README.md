@@ -105,7 +105,7 @@ python bench/report.py scores.json <out-dir>/versions.txt chef-vs-none.json chef
 python bench/charts.py
 ```
 
-`TASKS="python go"` runs a subset. The scorers need pytest, pytest-cov, mypy, Ruff, PyYAML, zizmor and Docker; numbers and charts come from [`results/summary.json`](results/summary.json).
+`TASKS="python go"` runs a subset. Since 1.3 a review counts as merged only when it lists no `blocker` or `major` change, even if the reviewer also answered "merge as is"; the published 1.2 loop used either signal. That changes 2 of 188 reviews: chef 1.1 `refactor/3` (first answer accepted 85% → 82%) and plain Claude `refactor/2` (one more fix round); chef 1.2 is unchanged. `run.sh` checks Docker and Python before the first run and stops at the first run that gave no answer (no result event, or an API error such as the usage limit); `score.py`, `merge_loop.py run` and `merge_loop.py summarize` refuse such runs and unfinished records. The scorers need pytest, pytest-cov, mypy, Ruff, PyYAML, zizmor and Docker; numbers and charts come from [`results/summary.json`](results/summary.json).
 
 <details>
 <summary><strong>Weak spots and limits</strong></summary>

@@ -5,8 +5,8 @@ Usage:
   python bench/merge_loop.py summarize <loop-dir>
 
 For every run of every listed arm, the workspace is copied into the loop dir. A blind reviewer
-(a fresh `claude -p --restricted` session that sees an anonymized copy) decides whether it would
-merge it and lists the changes it requires. If it would not, the same setup that wrote the code
+(a fresh `claude -p --restricted` session that sees an anonymized copy) lists the changes it
+requires; a run is merged when none is a blocker or major. Otherwise the same setup that wrote the code
 (plain Claude, the control's CLAUDE.md, or chef via --plugin-dir) gets those changes as a new
 prompt in that workspace, then a fresh reviewer looks again, up to ROUND_LIMIT fix rounds.
 The total cost of a run is the first answer plus every fix; reviewer costs are reported apart.
@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from blind_review import PARALLEL_JUDGES, copy_submission, read_review, run_judge, submission_files
-from score import usage_metrics
+from score import refuse_failed_runs, run_failure, usage_metrics
 
 ROUND_LIMIT: int = 2
 NUL_BYTE: bytes = bytes([0])
@@ -55,7 +55,8 @@ def required_changes(review: dict[str, Any]) -> list[str]:
 
 
 def is_mergeable(review: dict[str, Any]) -> bool:
-    return bool(review["merge_as_is"]) or not required_changes(review)
+    """The required changes decide, even when the reviewer also ticked merge_as_is."""
+    return not required_changes(review)
 
 
 def stream_cost(stream_path: Path) -> float:
@@ -127,7 +128,12 @@ def loop(sample: Sample, plugin_dir: str, record_dir: Path) -> dict[str, Any]:
             break
         if round_index == ROUND_LIMIT:
             break
-        fix_costs.append(fix(sample, required_changes(verdict), plugin_dir, record_dir / f"fix-{round_index + 1}.jsonl"))
+        fix_stream: Path = record_dir / f"fix-{round_index + 1}.jsonl"
+        fix_costs.append(fix(sample, required_changes(verdict), plugin_dir, fix_stream))
+        failure: str | None = run_failure(fix_stream)
+        if failure is not None:
+            record["error"] = f"fix {round_index + 1} gave no answer: {failure}"
+            break
     record["fix_costs"] = fix_costs
     record["reviewer_cost"] = round(sum(reviewer_costs), 4)
     record["total_cost"] = round(sample.first_cost + sum(fix_costs), 4)
@@ -135,9 +141,13 @@ def loop(sample: Sample, plugin_dir: str, record_dir: Path) -> dict[str, Any]:
     return record
 
 
+def run_dirs_of(out_dir: Path, arm: str) -> list[Path]:
+    return sorted(path for path in out_dir.glob(f"{arm}/*/*") if (path / "workspace").is_dir())
+
+
 def collect_samples(out_dir: Path, loop_dir: Path, arm: str) -> list[Sample]:
     samples: list[Sample] = []
-    for run_dir in sorted(path for path in out_dir.glob(f"{arm}/*/*") if (path / "workspace").is_dir()):
+    for run_dir in run_dirs_of(out_dir, arm):
         task: str = run_dir.parent.name
         copy: Path = loop_dir / arm / task / run_dir.name / "workspace"
         shutil.copytree(run_dir / "workspace", copy)
@@ -148,6 +158,7 @@ def collect_samples(out_dir: Path, loop_dir: Path, arm: str) -> list[Sample]:
 def run_all(out_dir: Path, loop_dir: Path, arm_sources: dict[str, str]) -> None:
     if loop_dir.exists():
         raise SystemExit(f"merge_loop: {loop_dir} exists, use a new loop dir")
+    refuse_failed_runs([run_dir for arm in arm_sources for run_dir in run_dirs_of(out_dir, arm)], "merge_loop")
     jobs: list[tuple[Sample, str]] = [
         (sample, source) for arm, source in arm_sources.items() for sample in collect_samples(out_dir, loop_dir, arm)
     ]
@@ -184,6 +195,14 @@ def summarize(loop_dir: Path) -> dict[str, dict[str, float]]:
         by_arm.setdefault(record["arm"], []).append(record)
     if not by_arm:
         raise SystemExit(f"merge_loop: no record in {loop_dir}")
+    unfinished: list[str] = [
+        f"{record['arm']}/{record['task']}/{record['run']}: {record['error']}"
+        for records in by_arm.values()
+        for record in records
+        if "error" in record
+    ]
+    if unfinished:
+        raise SystemExit("merge_loop: unfinished records, run the loop again in a new loop dir:\n" + "\n".join(unfinished))
     return {arm: arm_summary(records) for arm, records in sorted(by_arm.items())}
 
 

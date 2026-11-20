@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 import score
 
 
@@ -70,6 +72,65 @@ def test_usage_metrics_without_result_event_marks_run_incomplete(tmp_path: Path)
 
     assert metrics["completed"] is False
     assert metrics["cost_usd"] is None
+
+
+USAGE_LIMIT_RESULT: str = json.dumps(
+    {"type": "result", "subtype": "success", "is_error": True, "terminal_reason": "api_error", "api_error": "usage_limit_reached"}
+)
+FINISHED_RESULT: str = json.dumps({"type": "result", "subtype": "success", "is_error": False, "terminal_reason": "completed"})
+
+
+def write_run(run_dir: Path, last_line: str) -> Path:
+    run_dir.mkdir(parents=True)
+    (run_dir / "stream.jsonl").write_text('{"type": "system"}\n' + last_line + "\n", encoding="utf-8")
+    return run_dir
+
+
+def test_run_failure_of_a_usage_limited_run_names_the_api_error(tmp_path: Path) -> None:
+    run_dir: Path = write_run(tmp_path / "1", USAGE_LIMIT_RESULT)
+
+    assert score.run_failure(run_dir / "stream.jsonl") == "API error: usage_limit_reached"
+
+
+def test_run_failure_without_result_event_says_so(tmp_path: Path) -> None:
+    run_dir: Path = write_run(tmp_path / "1", "crash")
+
+    assert score.run_failure(run_dir / "stream.jsonl") == "no result event"
+
+
+def test_run_failure_without_stream_file_says_no_result_event(tmp_path: Path) -> None:
+    assert score.run_failure(tmp_path / "stream.jsonl") == "no result event"
+
+
+def test_run_failure_of_an_error_that_is_not_an_api_error_is_none(tmp_path: Path) -> None:
+    capped: str = json.dumps({"type": "result", "subtype": "error_max_budget_usd", "is_error": True})
+    run_dir: Path = write_run(tmp_path / "1", capped)
+
+    assert score.run_failure(run_dir / "stream.jsonl") is None
+
+
+def test_run_failure_of_a_finished_run_is_none(tmp_path: Path) -> None:
+    run_dir: Path = write_run(tmp_path / "1", FINISHED_RESULT)
+
+    assert score.run_failure(run_dir / "stream.jsonl") is None
+
+
+def test_check_exits_and_lists_only_the_failed_runs(tmp_path: Path) -> None:
+    finished: Path = write_run(tmp_path / "ok", FINISHED_RESULT)
+    limited: Path = write_run(tmp_path / "limited", USAGE_LIMIT_RESULT)
+
+    with pytest.raises(SystemExit) as stopped:
+        score.check([finished, limited])
+
+    assert str(stopped.value) == f"{limited}: API error: usage_limit_reached"
+
+
+def test_main_refuses_to_score_an_out_dir_with_a_failed_run(tmp_path: Path) -> None:
+    run_dir: Path = write_run(tmp_path / "chef" / "go" / "1", USAGE_LIMIT_RESULT)
+    (run_dir / "workspace").mkdir()
+
+    with pytest.raises(SystemExit, match="score: these runs gave no answer"):
+        score.main(tmp_path)
 
 
 def test_usage_metrics_splits_tokens_and_counts_tool_traffic(tmp_path: Path) -> None:

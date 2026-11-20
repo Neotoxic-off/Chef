@@ -2,7 +2,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 import pairwise_review
+
+FINISHED_RESULT: str = json.dumps({"type": "result", "subtype": "success", "terminal_reason": "completed"})
 
 
 def verdict(winner: str, first_merge: bool = False, second_merge: bool = False) -> dict[str, Any]:
@@ -65,10 +69,20 @@ def test_summarize_reports_task_level_wins(tmp_path: Path) -> None:
 def test_find_pairs_keeps_runs_present_in_both_arms(tmp_path: Path) -> None:
     for arm, run in (("none", "1"), ("chef", "1"), ("none", "2")):
         (tmp_path / arm / "go" / run / "workspace").mkdir(parents=True)
+        (tmp_path / arm / "go" / run / "stream.jsonl").write_text(FINISHED_RESULT, encoding="utf-8")
 
     pairs: list[pairwise_review.Pair] = pairwise_review.find_pairs(tmp_path, "none", "chef")
 
     assert [(pair.task, pair.run) for pair in pairs] == [("go", "1")]
+
+
+def test_find_pairs_refuses_a_run_that_gave_no_answer(tmp_path: Path) -> None:
+    for arm in ("none", "chef"):
+        (tmp_path / arm / "go" / "1" / "workspace").mkdir(parents=True)
+    (tmp_path / "none" / "go" / "1" / "stream.jsonl").write_text(FINISHED_RESULT, encoding="utf-8")
+
+    with pytest.raises(SystemExit, match="pairwise_review: these runs gave no answer"):
+        pairwise_review.find_pairs(tmp_path, "none", "chef")
 
 
 def test_read_verdict_skips_an_empty_file_left_by_a_crashed_judge(tmp_path: Path) -> None:

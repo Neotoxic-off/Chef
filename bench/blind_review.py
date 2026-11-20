@@ -20,6 +20,8 @@ from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
+from score import refuse_failed_runs
+
 BENCH_DIR: Path = Path(__file__).resolve().parent
 JUDGE_MODEL: str = "claude-opus-5-5"
 JUDGE_BUDGET_USD: str = "2"
@@ -91,6 +93,9 @@ def copy_submission(workspace: Path, target: Path) -> None:
 
 
 def anonymize(out_dir: Path, arms: list[str]) -> dict[str, dict[str, str]]:
+    refuse_failed_runs(
+        [workspace.parent for arm in arms for workspace in sorted(out_dir.glob(f"{arm}/*/*/workspace"))], "blind_review"
+    )
     key: dict[str, dict[str, str]] = {}
     for arm in arms:
         for workspace in sorted(out_dir.glob(f"{arm}/*/*/workspace")):

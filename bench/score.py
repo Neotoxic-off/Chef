@@ -1,6 +1,7 @@
 """Score the runs written by bench/run.sh and print one JSON summary per arm and task.
 
 Usage: python bench/score.py <out-dir>
+       python bench/score.py check <run-dir> ...   (exit 1 if a run gave no answer)
 Needs pytest, pytest-cov, mypy, ruff and PyYAML in the running interpreter, and Docker for
 hadolint, promtool and the container health check.
 """
@@ -114,9 +115,36 @@ def tool_traffic(events: list[dict[str, Any]]) -> tuple[int, int]:
     return calls, result_chars
 
 
+def result_event(events: list[dict[str, Any]]) -> dict[str, Any] | None:
+    return next((event for event in reversed(events) if event.get("type") == "result"), None)
+
+
+def run_failure(stream_path: Path) -> str | None:
+    """Why a run gave no answer to score: no result event, or the API refused it (usage limit).
+
+    A run stopped by its budget cap is a real answer, so only these two count.
+    """
+    result: dict[str, Any] | None = result_event(stream_events(stream_path))
+    if result is None:
+        return "no result event"
+    if result.get("terminal_reason") == "api_error":
+        return f"API error: {result.get('api_error', 'unknown')}"
+    return None
+
+
+def failed_runs(run_dirs: list[Path]) -> list[str]:
+    return [f"{run_dir}: {reason}" for run_dir in run_dirs if (reason := run_failure(run_dir / "stream.jsonl")) is not None]
+
+
+def refuse_failed_runs(run_dirs: list[Path], tool: str) -> None:
+    failures: list[str] = failed_runs(run_dirs)
+    if failures:
+        raise SystemExit(f"{tool}: these runs gave no answer, rerun them first:\n" + "\n".join(failures))
+
+
 def usage_metrics(stream_path: Path) -> Metrics:
     events: list[dict[str, Any]] = stream_events(stream_path)
-    result: dict[str, Any] | None = next((event for event in reversed(events) if event.get("type") == "result"), None)
+    result: dict[str, Any] | None = result_event(events)
     if result is None:
         return dict.fromkeys(USAGE_KEYS) | {"completed": False}
     models: list[dict[str, int]] = list(result.get("modelUsage", {}).values())
@@ -440,7 +468,15 @@ def require_docker() -> None:
         raise RuntimeError("Docker daemon is not reachable: start it before scoring")
 
 
+def check(run_dirs: list[Path]) -> None:
+    """Exit 1 and list the runs that gave no answer, so run.sh stops before spending more."""
+    failures: list[str] = failed_runs(run_dirs)
+    if failures:
+        raise SystemExit("\n".join(failures))
+
+
 def main(out_dir: Path) -> None:
+    refuse_failed_runs(sorted(path.parent for path in out_dir.glob("*/*/*/workspace")), "score")
     require_docker()
     report: dict[str, dict[str, dict[str, Any]]] = {}
     for arm_dir in sorted(path for path in out_dir.iterdir() if path.is_dir()):
@@ -456,4 +492,7 @@ def main(out_dir: Path) -> None:
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]))
+    if sys.argv[1] == "check":
+        check([Path(argument) for argument in sys.argv[2:]])
+    else:
+        main(Path(sys.argv[1]))

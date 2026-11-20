@@ -2,14 +2,17 @@
 # Runs every task in bench/tasks once per arm and per run, in a fresh git folder each time.
 # Usage: bench/run.sh <out-dir> <runs> <arm>=<plugin-dir, a .md file used as CLAUDE.md, or empty> ...
 # Example: bench/run.sh /tmp/bench 2 none= old=/tmp/chef-0.8.1 new=/tmp/chef-new
-# Set TASKS="python bugfix" to run only those tasks.
+# Set TASKS="python bugfix" to run only those tasks. Needs Docker running and PYTHON (default: python)
+# able to import bench/score.py; the batch stops at the first run that gave no answer (usage limit).
 set -euo pipefail
 shopt -s inherit_errexit nullglob
 
 readonly MODEL="claude-sonnet-5-5"
 readonly MAX_BUDGET_USD="1"
-TASKS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/tasks"
-readonly TASKS_DIR
+BENCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly BENCH_DIR
+readonly TASKS_DIR="${BENCH_DIR}/tasks"
+readonly PYTHON="${PYTHON:-python}"
 
 die() {
   printf 'bench: %s\n' "$*" >&2
@@ -74,8 +77,11 @@ main() {
   local task_dir=""
   local -i run=0
   local -a pids=()
+  local -a run_dirs=()
   local -i pid=0
   [[ ! -e "${out_dir}" ]] || die "${out_dir} exists: use a new out-dir"
+  docker info --format '{{.ServerVersion}}' >/dev/null || die "the Docker daemon is not reachable: start it first"
+  "${PYTHON}" "${BENCH_DIR}/score.py" check || die "PYTHON=${PYTHON} cannot run bench/score.py (it needs PyYAML)"
   mkdir -p "${out_dir}"
   {
     claude --version
@@ -89,13 +95,17 @@ main() {
     [[ -z "${TASKS:-}" || " ${TASKS} " == *" $(basename "${task_dir}") "* ]] || continue
     for ((run = 1; run <= runs; run++)); do
       pids=()
+      run_dirs=()
       for arm in "$@"; do
-        run_one "${task_dir}" "${out_dir}/${arm%%=*}/$(basename "${task_dir}")/${run}" "${arm#*=}" &
+        run_dirs+=("${out_dir}/${arm%%=*}/$(basename "${task_dir}")/${run}")
+        run_one "${task_dir}" "${run_dirs[-1]}" "${arm#*=}" &
         pids+=("$!")
       done
       for pid in "${pids[@]}"; do
         wait "${pid}" || printf 'bench: a run of %s failed before claude started\n' "${task_dir}" >&2
       done
+      "${PYTHON}" "${BENCH_DIR}/score.py" check "${run_dirs[@]}" ||
+        die "stopped: a run gave no answer (usage limit or API error); rerun the batch in a new out-dir"
     done
   done
 }
