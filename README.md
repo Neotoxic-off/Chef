@@ -5,7 +5,7 @@
 <h1 align="center">Chef</h1>
 
 <p align="center">
-  <em>Your kitchen, your rules. Claude cooks the way you do.</em>
+  <em>Your AI-powered coding chef crafting clean, secure, and maintainable code with precision</em>
 </p>
 
 <p align="center">
@@ -14,10 +14,6 @@
   <img src="https://img.shields.io/badge/languages-34-D97757?style=flat-square" alt="34 languages">
   <img src="https://img.shields.io/badge/references-127-D97757?style=flat-square" alt="127 references">
 </p>
-
-**Chef makes Claude write code a reviewer accepts the first time.** It costs more tokens, and saves most of the review round-trips.
-
-**Who gains:** teams where someone reviews the code before it merges. Chef trades a slower, costlier first answer for fewer review rounds, with more lines to read in each. If you merge your own changes, you pay the extra time and cost and keep only the cleaner first answer.
 
 <p align="center">
   <picture>
