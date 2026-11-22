@@ -1,4 +1,6 @@
-"""Static checks over skills/chef/references: version line, links to other references, fenced blocks that parse."""
+"""Static checks over skills/chef/references: version line, links to other references, fenced blocks that parse,
+and `docker run` lines: Git Bash path conversion off for `$PWD` mounts, every image listed in container-images.txt
+(the weekly images workflow checks that each listed image still exists)."""
 
 import ast
 import json
@@ -22,6 +24,11 @@ VERSION_LINE: re.Pattern[str] = re.compile(
 REFERENCE_MENTION: re.Pattern[str] = re.compile(r"\b([a-z0-9][a-z0-9-]*\.md)\b")
 FENCE: re.Pattern[str] = re.compile(r"^\s*```(\S*)")
 NOT_REFERENCES: frozenset[str] = frozenset({"SKILL.md", "README.md", "CHANGELOG.md", "AGENTS.md", "CLAUDE.md", "TRANSFORM.md"})
+IMAGES_FILE: Path = Path(__file__).resolve().parent / "container-images.txt"
+# A tagged image name; `<tag>` placeholders, `$PWD:/w` mounts and port mappings (`8080:8080`) do not match.
+IMAGE: re.Pattern[str] = re.compile(r"(?<![\w$/.:-])((?:[a-z0-9.-]+/)*[a-z0-9._-]*[a-z][a-z0-9._-]*:[A-Za-z0-9][A-Za-z0-9._-]*)")
+PWD_MOUNT: str = '-v "$PWD'
+NO_PATH_CONVERSION: str = "MSYS_NO_PATHCONV=1"
 
 
 class _AnyTagLoader(yaml.SafeLoader):
@@ -63,6 +70,7 @@ class Report:
     links: int = 0
     parsed: Counter[str] = field(default_factory=Counter)
     skipped: Counter[str] = field(default_factory=Counter)
+    images: set[str] = field(default_factory=set)
     errors: list[str] = field(default_factory=list)
 
 
@@ -88,6 +96,23 @@ def code_blocks(text: str) -> list[tuple[int, str, str]]:
     return blocks
 
 
+def check_docker_line(name: str, number: int, line: str, report: Report) -> None:
+    if PWD_MOUNT in line and NO_PATH_CONVERSION not in line:
+        report.errors.append(f"{name}:{number}: mounts $PWD without {NO_PATH_CONVERSION}, which Git Bash on Windows needs")
+    report.images.update(IMAGE.findall(line))
+
+
+def check_images(report: Report, listed: set[str]) -> None:
+    for image in sorted(report.images - listed):
+        report.errors.append(f"image {image} is run by a reference but not listed in {IMAGES_FILE.name}")
+    for image in sorted(listed - report.images):
+        report.errors.append(f"image {image} is listed in {IMAGES_FILE.name} but no reference runs it")
+
+
+def read_images(path: Path) -> set[str]:
+    return {line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()}
+
+
 def check_file(path: Path, names: set[str], report: Report) -> None:
     text: str = path.read_text(encoding="utf-8")
     report.files += 1
@@ -104,6 +129,9 @@ def check_file(path: Path, names: set[str], report: Report) -> None:
         report.links += 1
         if mention not in names:
             report.errors.append(f"{path.name}: mentions {mention}, which is not a reference")
+    for number, source_line in enumerate(lines, start=1):
+        if "docker run" in source_line:
+            check_docker_line(path.name, number, source_line, report)
     for line, language, body in code_blocks(text):
         parser: Callable[[str], object] | None = PARSERS.get(language)
         if parser is None:
@@ -128,7 +156,9 @@ def check_references(references_dir: Path) -> Report:
 
 def main() -> int:
     report: Report = check_references(REFERENCES_DIR)
+    check_images(report, read_images(IMAGES_FILE))
     print(f"references: {report.version_lines} files have a version line on line 3")
+    print(f"references: {len(report.images)} container images, all listed in {IMAGES_FILE.name}")
     print(f"references: {report.links} mentions of another reference in {report.files} files (with {INDEX_NAME}) resolve")
     print(f"references: {sum(report.parsed.values())} blocks parsed: {dict(sorted(report.parsed.items()))}")
     print(

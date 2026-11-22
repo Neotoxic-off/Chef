@@ -62,3 +62,5 @@ Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host require
 - No maintained mutation testing tool exists for PowerShell.
 
 Order before done: `Invoke-Formatter` then `Invoke-ScriptAnalyzer` then `Invoke-Pester`.
+
+No `pwsh` 7 (Windows PowerShell 5.1 is not it) or no modules: run in `mcr.microsoft.com/dotnet/sdk:10.0`, which ships PowerShell 7.6 (1.3 GB; the PowerShell team's own images are deprecated). The modules install on each run (about 10 s, needs network); the settings file enables the formatting rules, so the analyzer also reports formatting: `MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/w" -w /w mcr.microsoft.com/dotnet/sdk:10.0 pwsh -NoProfile -Command 'Install-Module Pester -RequiredVersion 6.2.0 -Scope CurrentUser -Force; Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force; $lint = Invoke-ScriptAnalyzer -Path . -Recurse -Settings ./PSScriptAnalyzerSettings.psd1; $lint; $c = New-PesterConfiguration; $c.Run.PassThru = $true; $tests = Invoke-Pester -Configuration $c; if ($lint -or $tests.Result -ne "Passed") { exit 1 }'`.

@@ -8,6 +8,7 @@ Verified against Kubernetes 1.37, Helm 4.3, kubeconform 0.8, kube-linter 0.8 (No
 - Lint for best practice with kube-linter (`kube-linter lint .`) or Polaris (`polaris audit --audit-path . --set-exit-code-on-danger`). Pick one; run it in CI.
 - Helm: `helm lint --strict charts/<chart>`, then render and validate: `helm template charts/<chart> | kubeconform -strict -`.
 - Chart repos: `ct lint` (chart-testing) also checks that the chart version was bumped.
+- Tools not installed: one call from their images (kubeconform downloads schemas, so it needs network): `export MSYS_NO_PATHCONV=1; set -o pipefail; rc=0; run() { docker run --rm -i -v "$PWD:/w" -w /w "$@"; }; run alpine/helm:4.3 lint --strict charts/<chart> || rc=1; run alpine/helm:4.3 template charts/<chart> | run ghcr.io/yannh/kubeconform:v0.8.0 -strict -summary -kubernetes-version 1.37.0 - || rc=1; run stackrox/kube-linter:v0.8.3 lint . || rc=1; [ "$rc" -eq 0 ]`.
 - Server-side check before apply: `kubectl apply --dry-run=server -f ...` and `kubectl diff`.
 
 `.kube-linter.yaml`:

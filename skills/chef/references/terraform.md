@@ -8,6 +8,7 @@ Commands below use `terraform`; `tofu` takes the same ones. Verified against Ter
 - `terraform init -backend=false && terraform validate` in every root module and module.
 - tflint with the provider ruleset, fail on warnings: `tflint --init && tflint --recursive`.
 - Security and misconfig scan: `trivy config .` (tfsec is now part of Trivy) or `checkov -d .`. Fail CI on HIGH/CRITICAL.
+- Terraform or TFLint not installed: one call from their images (`init` downloads the providers, so it needs network): `export MSYS_NO_PATHCONV=1; rc=0; tf() { docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/w" -w /w hashicorp/terraform:1.17 "$@"; }; tf fmt -check -recursive || rc=1; { tf init -backend=false -input=false >/dev/null && tf validate && tf test; } || rc=1; docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/w" -w /w --entrypoint sh ghcr.io/terraform-linters/tflint:v0.66.0 -c 'tflint --init && tflint --recursive' || rc=1; [ "$rc" -eq 0 ]`.
 
 `.tflint.hcl`:
 

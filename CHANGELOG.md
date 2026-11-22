@@ -5,6 +5,8 @@
 - Skill, from a council review of the 1.4 traces: `.chef.md` is read with a command that succeeds when the file is absent (the old probe was a third of chef's failed tool calls); pinned versions must support each other (plugin and compiler, peer dependencies); tests cover a value exactly at each threshold and are named for the behavior they assert; the reply lists only the checks the task needs that did not run.
 - Kotlin: detekt 2.0.0-alpha.6 (`dev.detekt`, `failOnSeverity`), the detekt line built for Kotlin 2.4; 1.23.8 supports Kotlin 2.0 only.
 - README: a badge with the latest release.
+- Checks run even when a tool is missing: the bash, C, C++, PowerShell, PHP, Terraform and Kubernetes references give a one-call check from pinned images (shellcheck, shfmt, bats, clang 22, PowerShell 7.6 with Pester and PSScriptAnalyzer, Composer, Terraform, TFLint, Helm, kubeconform, kube-linter), each tried on a chef 1.4 bench project under Git Bash on Windows. In 1.4, 17 of 66 runs ended without running their checks. With no Docker, chef says which checks did not run.
+- `scripts/check_references.py`: every image a reference runs is listed in `scripts/container-images.txt`, and every `$PWD` mount sets `MSYS_NO_PATHCONV=1` (prometheus.md lacked it); a weekly `images` workflow fails when a listed image leaves its registry.
 
 ## 1.4.0 (2026-11-20)
 

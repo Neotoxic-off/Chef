@@ -7,7 +7,7 @@ Verified against Prometheus 3.16.0, Alertmanager 0.35.0 (Nov 2026). Look up the 
 - `promtool check config prometheus.yml` and `promtool check rules rules/*.yml` in CI. Both fail the build on error.
 - `amtool check-config alertmanager.yml` for Alertmanager.
 - Unit-test every alerting and recording rule with `promtool test rules tests/*.yml`.
-- Check in one call, promtool from the image when it is not installed: `docker run --rm -v "$PWD:/w" -w /w --entrypoint sh prom/prometheus:<tag> -c 'rc=0; promtool check config --syntax-only prometheus.yml || rc=1; promtool check rules rules/*.yml || rc=1; promtool test rules tests/*.yml || rc=1; exit $rc'`. `--syntax-only` because `rule_files` usually name the path inside the container.
+- Check in one call, promtool from the image when it is not installed: `MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/w" -w /w --entrypoint sh prom/prometheus:<tag> -c 'rc=0; promtool check config --syntax-only prometheus.yml || rc=1; promtool check rules rules/*.yml || rc=1; promtool test rules tests/*.yml || rc=1; exit $rc'`. `--syntax-only` because `rule_files` usually name the path inside the container.
 
 ## Metric types and naming
 

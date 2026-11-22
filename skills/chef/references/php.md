@@ -69,3 +69,5 @@ parameters:
 - Mutation testing: Infection on critical logic, with `minMsi` and `minCoveredMsi` in `infection.json5` (or `--min-msi=80 --min-covered-msi=90`).
 
 Order before done: `php-cs-fixer fix` then `phpstan analyse` then `phpunit` (or `pest`).
+
+No PHP or Composer installed: run in `composer:2.9`, which ships PHP with few extensions; add the ones `composer.json` requires with `docker-php-ext-install` first (here `bcmath`, about a minute): `MSYS_NO_PATHCONV=1 docker run --rm -e COMPOSER_HOME=/tmp -v "$PWD:/app" -w /app composer:2.9 sh -c 'docker-php-ext-install bcmath >/dev/null || exit 1; composer install --no-interaction --no-progress -q || exit 1; rc=0; vendor/bin/php-cs-fixer check -q || rc=1; vendor/bin/phpstan analyse --no-progress -q || rc=1; vendor/bin/phpunit --no-progress || rc=1; exit $rc'`.

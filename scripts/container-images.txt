@@ -1,0 +1,12 @@
+golangci/golangci-lint:v2.15.0
+mvdan/shfmt:v3.14.1
+koalaman/shellcheck:v0.11.0
+bats/bats:1.14.0
+silkeh/clang:22
+mcr.microsoft.com/dotnet/sdk:10.0
+hashicorp/terraform:1.17
+ghcr.io/terraform-linters/tflint:v0.66.0
+alpine/helm:4.3
+ghcr.io/yannh/kubeconform:v0.8.0
+stackrox/kube-linter:v0.8.3
+composer:2.9

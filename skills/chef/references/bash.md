@@ -73,3 +73,5 @@ CI: `shfmt --diff .` (fails on any diff). Locally: `shfmt --write .`.
 - No mutation testing tool exists for shell.
 
 Order before done: `shfmt --write .` then `shellcheck` then `bats test/`.
+
+Tools not installed: run them from their images in one call (`MSYS_NO_PATHCONV=1` stops Git Bash on Windows from rewriting `/w`): `export MSYS_NO_PATHCONV=1; rc=0; mapfile -t scripts < <(git ls-files '*.sh'); docker run --rm -v "$PWD:/w" -w /w mvdan/shfmt:v3.14.1 --diff . || rc=1; docker run --rm -v "$PWD:/w" -w /w koalaman/shellcheck:v0.11.0 "${scripts[@]}" || rc=1; docker run --rm -v "$PWD:/code" bats/bats:1.14.0 test/ || rc=1; [ "$rc" -eq 0 ]`. The bats image has no `bats-support` or `bats-assert`: keep them in the repo as submodules.

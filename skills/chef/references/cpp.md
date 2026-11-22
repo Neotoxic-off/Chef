@@ -60,3 +60,5 @@ CheckOptions:
 - Fuzz parsers with libFuzzer (`-fsanitize=fuzzer,address`).
 
 Order before done: `clang-format` then `clang-tidy` then build (`dev` preset) then `ctest` on `asan` and `coverage` presets.
+
+No compiler or LLVM tools installed: there is no official clang image; `silkeh/clang:22` has clang, clang-format and clang-tidy 22 with CMake 3.31 (1.8 GB). One call, `--user` so the build is not owned by root: `MSYS_NO_PATHCONV=1 docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/w" -w /w silkeh/clang:22 sh -c 'rc=0; f=$(find src include tests -name "*.[ch]pp"); clang-format --dry-run --Werror $f || rc=1; { cmake --preset asan && cmake --build --preset asan && ctest --preset asan; } || rc=1; clang-tidy -p build/asan --quiet $f || rc=1; exit $rc'`. Its LLVM is 22, not 23: CI must use the same major, or clang-format output differs.
