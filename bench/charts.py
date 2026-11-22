@@ -5,6 +5,7 @@ is from one traced run (see the README). Run `python bench/charts.py`.
 """
 
 import json
+import statistics
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -136,33 +137,36 @@ def rows_chart(theme: Theme, chart: Chart, rows: list[tuple[str, dict[str, float
     return svg(int(y), chart.label, body)
 
 
-QUALITY_ARMS: tuple[tuple[str, str], ...] = (
-    ("none", "Plain Claude"),
-    ("chef13", "Chef 1.3"),
-    ("chef14", "Chef 1.4"),
-    ("chef15", "Chef 1.5"),
-)
+QUALITY_ARMS: tuple[tuple[str, str], ...] = (("none", "Without chef"), ("chef15", "With chef 1.5"))
+QUALITY_NAMES: dict[str, str] = {
+    "aspnetcore": "ASP.NET Core", "bash": "Bash", "c": "C", "ci": "GitHub Actions", "cpp": "C++", "csharp": "C#",
+    "django": "Django", "docker": "Docker", "fastapi": "FastAPI", "go": "Go", "java": "Java", "kotlin": "Kotlin",
+    "kubernetes": "Kubernetes", "laravel": "Laravel", "mongodb": "MongoDB", "nextjs": "Next.js", "php": "PHP",
+    "postgres": "PostgreSQL", "powershell": "PowerShell", "python": "Python", "rails": "Rails", "react": "React",
+    "redis": "Redis", "ruby": "Ruby", "rust": "Rust", "spring-boot": "Spring Boot", "sql": "SQL", "swift": "Swift",
+    "terraform": "Terraform", "typescript": "TypeScript", "vue": "Vue", "angular": "Angular",
+}  # fmt: skip
 
 
 def quality_chart(theme: Theme, quality: dict[str, Any]) -> str:
-    """Each criterion's mean over every reference, then the mean of the criteria per reference."""
-    colors: dict[str, str] = {"none": theme.without, "chef13": theme.older, "chef14": theme.old, "chef15": theme.chef}
-    series: list[Series] = [Series(key, name, colors[key]) for key, name in QUALITY_ARMS if key in quality["arms"]]
-    criteria: list[tuple[str, dict[str, float]]] = [
-        (criterion.capitalize(), {arm: values[criterion] for arm, values in quality["arms"].items()})
-        for criterion in quality["criteria"]
-    ]
-    # Rows name the reference file, not the main bench's task label of the same name.
-    references: list[tuple[str, dict[str, float]]] = [(f"{task}.md", scores) for task, scores in quality["tasks"].items()]
-    count: int = len(quality["tasks"])
+    """Without chef against chef 1.5 per language: the mean of the reviewer's four scores, biggest gain first."""
+    colors: dict[str, str] = {"none": theme.without, "chef15": theme.chef}
+    series: list[Series] = [Series(key, name, colors[key]) for key, name in QUALITY_ARMS]
+    criteria: list[str] = quality["criteria"]
+    overall: dict[str, float] = {arm: statistics.fmean(quality["arms"][arm][name] for name in criteria) for arm in colors}
+    tasks: list[tuple[str, dict[str, float]]] = sorted(
+        quality["tasks"].items(), key=lambda item: item[1].get("chef15", 0.0) - item[1].get("none", 0.0), reverse=True
+    )
+    rows: list[tuple[str, dict[str, float]]] = [(f"All {len(tasks)}", overall)]
+    rows += [(QUALITY_NAMES.get(task, task), scores) for task, scores in tasks]
     chart: Chart = Chart(
-        f"Blind reviewer, 0 to 10, {count} most-used references: each criterion, then each reference",
-        f"Scores from 0 to 10 given by a blind reviewer for {', '.join(quality['criteria'])}, "
-        f"averaged over {count} tasks, then the mean of those scores per reference",
+        "Code quality per language, 0 to 10, blind reviewer",
+        f"Mean of the blind reviewer's scores for {', '.join(criteria)}, 0 to 10, without chef and with chef 1.5: "
+        + "; ".join(f"{name} {values['none']:.1f} and {values['chef15']:.1f}" for name, values in rows),
         10.0,
         "/10",
     )
-    return rows_chart(theme, chart, [*criteria, *references], series)
+    return rows_chart(theme, chart, rows, series)
 
 
 def cost_chart(theme: Theme, summary: dict[str, Any]) -> str:
@@ -214,9 +218,11 @@ OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
     ("Cost per task, fixes included", "cost"),
 )
 # The newest chef arm is the one the break-even chart and the README headline compare with plain Claude.
-LATEST_CHEF: tuple[str, str] = ("chef14", "Chef 1.4")
-PREVIOUS_CHEF: tuple[str, str] = ("chef13", "Chef 1.3")
-OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", PREVIOUS_CHEF[0]: PREVIOUS_CHEF[1], LATEST_CHEF[0]: LATEST_CHEF[1]}
+# The break-even and time charts compare these two on the latest bench (results/merge-15.json).
+LATEST_CHEF: tuple[str, str] = ("chef15", "Chef 1.5")
+PREVIOUS_CHEF: tuple[str, str] = ("chef14", "Chef 1.4")
+# The 13-task bench (results/merge.json) ran up to 1.4.
+OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef13": "Chef 1.3", "chef14": "Chef 1.4"}
 PANEL_WIDTH: float = 150.0
 PANEL_STEP: float = 230.0
 
@@ -241,7 +247,7 @@ def overview_cell(theme: Theme, x: float, y: float, value: float, scale: tuple[f
 
 
 OVERVIEW_TITLE: str = "Same 13 tasks, same model, a blind reviewer asks for fixes until it merges"
-STACKS_ARMS: dict[str, str] = {"none": "Plain Claude", LATEST_CHEF[0]: LATEST_CHEF[1]}
+STACKS_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4"}
 STACKS_TITLE: str = "Most-used stacks, 9 tasks: Node, React, Bash, SQL, PHP, PowerShell, C, C++, Kotlin"
 RELEASE_15_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef15": "Chef 1.5"}
 RELEASE_15_TITLE: str = "Chef 1.5 bench: 11 tasks, 3 of them held out, 95 runs per arm"
@@ -583,13 +589,16 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for theme in (LIGHT, DARK):
         merge: dict[str, dict[str, float]] = json.loads(MERGE.read_text(encoding="utf-8"))["arms"]
+        latest: dict[str, dict[str, float]] = (
+            json.loads(MERGE_15.read_text(encoding="utf-8"))["arms"] if MERGE_15.is_file() else merge
+        )
         (OUT / f"overview{theme.suffix}.svg").write_text(overview_chart(theme, merge), encoding="utf-8")
         if STACKS.is_file():
             stacks: dict[str, dict[str, float]] = json.loads(STACKS.read_text(encoding="utf-8"))["arms"]
             (OUT / f"stacks{theme.suffix}.svg").write_text(
                 overview_chart(theme, stacks, STACKS_TITLE, STACKS_ARMS), encoding="utf-8"
             )
-        (OUT / f"break-even{theme.suffix}.svg").write_text(break_even_chart(theme, merge), encoding="utf-8")
+        (OUT / f"break-even{theme.suffix}.svg").write_text(break_even_chart(theme, latest), encoding="utf-8")
         (OUT / f"cost{theme.suffix}.svg").write_text(cost_chart(theme, summary), encoding="utf-8")
         (OUT / f"pairwise{theme.suffix}.svg").write_text(pairwise_chart(theme, summary), encoding="utf-8")
         (OUT / f"cost-split{theme.suffix}.svg").write_text(split_chart(theme), encoding="utf-8")
@@ -605,7 +614,7 @@ def main() -> None:
             history: dict[str, Any] = json.loads(HISTORY.read_text(encoding="utf-8"))
             for key in HISTORY_METRICS:
                 (OUT / f"history-{key}{theme.suffix}.svg").write_text(history_chart(theme, history, key), encoding="utf-8")
-            (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, merge, history), encoding="utf-8")
+            (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, latest, history), encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -11,21 +11,28 @@ SUMMARY: dict[str, Any] = {
 }
 
 
-def test_quality_chart_shows_each_criterion_then_each_reference_with_one_bar_per_arm() -> None:
+def test_quality_chart_compares_without_and_with_chef_per_language_biggest_gain_first() -> None:
     scores: dict[str, float] = {"quality": 5.5, "clarity": 6.0, "maintainability": 4.5, "functionality": 7.0}
     quality: dict[str, Any] = {
         "criteria": ["quality", "clarity", "maintainability", "functionality"],
-        "arms": {"none": scores, "chef15": {name: value + 3 for name, value in scores.items()}},
-        "tasks": {"go": {"none": 5.0, "chef15": 8.25}, "python": {"none": 6.0, "chef15": 8.5}},
+        "arms": {
+            "none": scores,
+            "chef14": scores,
+            "chef15": {name: value + 3 for name, value in scores.items()},
+        },
+        "tasks": {
+            "go": {"none": 5.0, "chef15": 8.25},
+            "python": {"none": 6.0, "chef15": 8.5},
+            "cpp": {"none": 7.0, "chef15": 7.0},
+        },
     }
 
     svg: str = charts.quality_chart(charts.LIGHT, quality)
 
-    assert "2 most-used references" in svg
-    labels: list[str] = [">Quality<", ">Clarity<", ">Maintainability<", ">Functionality<", ">go.md<", ">python.md<"]
+    labels: list[str] = [">All 3<", ">Go<", ">Python<", ">C++<"]
     assert [svg.index(label) for label in labels] == sorted(svg.index(label) for label in labels)
-    assert "Plain Claude" in svg and "Chef 1.5" in svg and "Chef 1.4" not in svg
-    assert ">7.5<" in svg and ">8.2<" in svg
+    assert "Without chef" in svg and "With chef 1.5" in svg and "1.4" not in svg
+    assert ">5.8<" in svg and ">8.8<" in svg
     assert charts.LIGHT.chef in svg
 
 
@@ -121,26 +128,26 @@ def test_break_even_is_the_extra_machine_cost_over_the_rounds_saved() -> None:
 def test_break_even_chart_labels_the_threshold_and_the_example_round() -> None:
     merge: dict[str, dict[str, float]] = {
         "none": {"runs": 10.0, "total_cost": 1.0, "fix_rounds_per_run": 0.5},
-        "chef14": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
+        "chef15": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
     }
 
     svg: str = charts.break_even_chart(charts.LIGHT, merge)
 
     assert "costs less once a round costs more than $0.25" in svg
-    assert "plain Claude $15.10 and chef 1.4 $11.20 per task, 26% less" in svg
-    assert "Chef 1.3" not in svg
+    assert "plain Claude $15.10 and chef 1.5 $11.20 per task, 26% less" in svg
+    assert "Chef 1.4" not in svg
 
 
-def test_break_even_chart_draws_chef_13_beside_the_latest_chef() -> None:
+def test_break_even_chart_draws_chef_14_beside_the_latest_chef() -> None:
     merge: dict[str, dict[str, float]] = {
         "none": {"runs": 10.0, "total_cost": 1.0, "fix_rounds_per_run": 0.5},
-        "chef13": {"runs": 10.0, "total_cost": 2.5, "fix_rounds_per_run": 0.2},
-        "chef14": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
+        "chef14": {"runs": 10.0, "total_cost": 2.5, "fix_rounds_per_run": 0.2},
+        "chef15": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
     }
 
     svg: str = charts.break_even_chart(charts.LIGHT, merge)
 
-    assert "Chef 1.3: 1.20 reviews per task" in svg
+    assert "Chef 1.4: 1.20 reviews per task" in svg
     assert charts.LIGHT.old in svg
 
 
@@ -225,7 +232,7 @@ def test_time_chart_grows_to_fit_the_legend_under_five_arms() -> None:
         "first_review_seconds": 10,
         "back_and_forth_seconds": 10,
     }
-    merge: dict[str, dict[str, float]] = dict.fromkeys(("none", "chef11", "chef12", "chef13", "chef14"), steps)
+    merge: dict[str, dict[str, float]] = dict.fromkeys(("none", "chef11", "chef12", "chef14", "chef15"), steps)
     history: dict[str, Any] = {"versions": [{"version": "1.4.0", "seconds": 40.0}], "baseline": {"seconds": 15.0}}
     legend_bottom: int = int(charts.HISTORY_TOP + 5 * charts.TIME_ROW_STEP + 24)
 
