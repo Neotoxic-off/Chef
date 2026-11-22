@@ -1,6 +1,6 @@
 # Kotlin
 
-Written for Kotlin 2.4.21, Spotless 8.11.0, detekt 1.23.8 (2.0.0-alpha.6 next), Kover 0.9.11, Kotest 6.2.7, MockK 1.14.12 (Nov 2026), not benchmarked.
+Written for Kotlin 2.4.21, Spotless 8.11.0, detekt 2.0.0-alpha.6, Kover 0.9.11, Kotest 6.2.7, MockK 1.14.12 (Nov 2026), not benchmarked.
 
 Build with Gradle (Kotlin DSL), version catalog in `gradle/libs.versions.toml`, wrapper committed.
 
@@ -9,7 +9,7 @@ Build with Gradle (Kotlin DSL), version catalog in `gradle/libs.versions.toml`, 
 ```kotlin
 plugins {
     id("com.diffplug.spotless") version "8.11.0"
-    id("io.gitlab.arturbosch.detekt") version "1.23.8"  // 2.x moves to id("dev.detekt")
+    id("dev.detekt") version "2.0.0-alpha.6"
     id("org.jetbrains.kotlinx.kover") version "0.9.11"
 }
 
@@ -31,7 +31,7 @@ kotlin {
 
 - Keep `.editorconfig` as the single source of style for ktlint and the IDE.
 - detekt fails on any finding by default (`maxIssues: 0`); do not raise it and never `@Suppress`: fix the cause, or ask the user.
-- detekt 1.23.8 is built against Kotlin 2.0.21; on newer Kotlin expect some false positives. Upgrade to detekt 2.x (`dev.detekt`, built against Kotlin 2.4) once it is stable; it is alpha as of Nov 2026.
+- detekt must match the project's Kotlin: 1.23.x supports only Kotlin 2.0, so Kotlin 2.4 needs 2.0.0-alpha.6 (a prerelease, the only line built for 2.4). Check the compatibility table at detekt.dev before changing either version.
 
 ## Code
 

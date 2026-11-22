@@ -19,8 +19,8 @@ Follow these house habits on every task, without being reminded.
 - Every change ships with tests: unit tests for each behavior, branch and error path, integration tests at each boundary (database, HTTP, filesystem, queues). Deterministic: inject clock, random and network. Fix a bug by first writing a test that reproduces it.
 - Every project has a formatter, a linter and a type checker (strict in a new project), configured in the repo and run in CI when the project has one. Declare every tool you configure as a dev dependency. Warnings are errors: fix the cause. Never hide one (no suppression comments, no `|| true`, no skipped tests, no lowered thresholds).
 - Type every function signature and public field. Inside functions follow the language's idiom (`:=` in Go, `var` in C#/Java and `let` in Rust when the type is obvious on the right side). No `any` or untyped escape hatches.
-- Pin what you depend on: lockfiles, image digests, action SHAs. No new dependency without asking; the lint, format, test and coverage tools are pre-approved.
-- Before saying done, the code builds and the formatter, linter, type checker and tests pass, run in one call. Say plainly what you did not run.
+- Pin what you depend on: lockfiles, image digests, action SHAs, versions that support each other (plugin and compiler, peer dependencies). No new dependency without asking; the lint, format, test and coverage tools are pre-approved.
+- Before saying done, the code builds and the formatter, linter, type checker and tests pass, run in one call. Say plainly which check this task needs that you did not run.
 
 ## Stack references
 
@@ -48,7 +48,7 @@ Default `full`. Set with `/chef:level`.
 | `full` | Agents and council as in `team.md`, `reviewer` on changes. |
 | `max` | Council on every non-trivial change, `reviewer` on every change. |
 
-`.chef.md` at the project root holds `key: value` lines, then a `## Decisions` list: `level: lite|full|max`, `strict: on|off` (strict typing in an existing project), `coverage: <number>` (CI gate, default 90), `council: auto|off|always`. Read it at the start of a task; it overrides this skill and is never asked again. Append to `## Decisions` any answer that will come back. Ask once before creating the file. Never store secrets in it.
+`.chef.md` at the project root holds `key: value` lines, then a `## Decisions` list: `level: lite|full|max`, `strict: on|off` (strict typing in an existing project), `coverage: <number>` (CI gate, default 90), `council: auto|off|always`. Read it at the start of a task with a command that succeeds when it is absent (`if [ -f .chef.md ]; then cat .chef.md; fi`); it overrides this skill and is never asked again. Append to `## Decisions` any answer that will come back. Ask once before creating the file. Never store secrets in it.
 
 ## Agents and council
 
@@ -63,7 +63,7 @@ A trivial change (typo, one-line fix, rename in one file) you do yourself. Other
 - Errors: around a file, network call or other shared resource, the `try` wraps the operation itself, not a check before it (CWE-367), in the smallest block.
 - Types: no `object`, `Object`, `interface{}` or `dynamic` unless the value truly is untyped (raw JSON), then narrow at once. Where syntax cannot hold a type, annotate the nearest place. Type everything you add or touch; leave untouched code alone unless the user asks.
 - Strict mode (`"strict": true`, `mypy --strict`) in an existing project: ask first, it can flood the code with errors.
-- Tests: cover edge cases (empty, null, zero, max, invalid input); integration tests use real dependencies in containers (Testcontainers) over mocks where possible. Names state the behavior in the language's convention (`Withdraw_WithInsufficientFunds_Throws...`, `test_withdraw_with_insufficient_funds_raises`, `withdraw with insufficient funds throws`). Arrange/Act/Assert, one behavior per test, no `if`, loops or sleep in tests. Mock only what you own, at boundaries, never the class under test.
+- Tests: cover edge cases (empty, null, zero, max, invalid input, a value exactly at each threshold), and each test's name says what it asserts; integration tests use real dependencies in containers (Testcontainers) over mocks where possible. Names state the behavior in the language's convention (`Withdraw_WithInsufficientFunds_Throws...`, `test_withdraw_with_insufficient_funds_raises`, `withdraw with insufficient funds throws`). Arrange/Act/Assert, one behavior per test, no `if`, loops or sleep in tests. Mock only what you own, at boundaries, never the class under test.
 - Scale the setup to the task: a small library or script gets tests and its formatter, linter and type checker in the project's main config file; CI files, coverage gates, mutation testing and extra tool configs come when the project already has them or the user asks. Fix every failure of a check before rerunning it, so each check runs once or twice.
 - Tests assert the exact contract: the exact exception type (`Assert.Throws<T>`, `pytest.raises(T)`), message or exit code the task names, never a looser "any exception".
 - A refactor keeps behavior exactly (fallbacks, defaults, error types, supported runtimes) and adds no tool a caller must install. Prove it first with characterization tests in the repo (exact outputs, exception types and messages, malformed input), run before and after.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 (unreleased)
+
+- Skill, from a council review of the 1.4 traces: `.chef.md` is read with a command that succeeds when the file is absent (the old probe was a third of chef's failed tool calls); pinned versions must support each other (plugin and compiler, peer dependencies); tests cover a value exactly at each threshold and are named for what they assert; the reply lists only the checks the task needs that did not run.
+- Kotlin: detekt 2.0.0-alpha.6 (`dev.detekt`), the only detekt line built for Kotlin 2.4; 1.23.8 supports Kotlin 2.0 only.
+
 ## 1.4.0 (2026-11-20)
 
 Lean rules, and a benchmark that covers the most-used stacks.
