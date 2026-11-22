@@ -2,7 +2,15 @@
 
 How chef was measured, task by task. The short version is in the [main README](../README.md).
 
-## Held-out tasks and failed calls (1.5, not run yet)
+## Chef 1.5 bench
+
+11 tasks: the 8 most-used stacks of 1.4 kept at 10 runs per arm (Bash, C, C++, PowerShell, React, and the three held-out tasks below), plus Rust, Python and Node at 5 runs; Kotlin, Node at 10, PHP and SQL were dropped to fit the time. Plain Claude, chef 1.4 (`v1.4.0`) and chef 1.5 all ran on Claude Code 2.1.330, reviewed with the merge loop (reviewer `6459c25c02d6`, the same as the 1.4 stacks run). First answer accepted: 58%, 75%, 87% of 95 runs; fix rounds per task 0.53, 0.33, 0.15; cost per task with fixes $0.145, $0.278, $0.294; median first answer 21 s, 65 s, 94 s. Chef 1.5 against 1.4: Fisher exact test p = 0.041; against plain Claude p < 0.0001. Results: [`results/merge-15.json`](results/merge-15.json).
+
+## Quality bench (1.5)
+
+One task per reference for the 32 most-used references (`quality/<reference>/prompt.md`), one run per arm: plain Claude, chef 1.3, 1.4 and 1.5. Each first answer is reviewed once, blind, with [`judge_quality.md`](judge_quality.md): quality, clarity, maintainability and functionality from 0 to 10, no fix rounds ([`quality_review.py`](quality_review.py)). Means over the 32 references, plain then 1.3, 1.4, 1.5: quality 7.09, 7.75, 7.62, 7.59; clarity 8.19, 8.72, 8.59, 8.72; maintainability 5.47, 7.38, 7.47, 7.53; functionality 7.75, 7.75, 7.69, 7.69. One run per reference: read the means, not one reference. Results: [`results/quality.json`](results/quality.json).
+
+## Held-out tasks and failed calls (1.5)
 
 Chef 1.5's `## Pitfalls` lines come from what reviewers rejected in chef 1.4's answers to the PowerShell, C++, React and SQL tasks, so a gain on those tasks would partly be teaching to the test. Three held-out tasks measure them instead: `held-powershell` (a byte-size parser module), `held-cpp` (a token-bucket rate limiter) and `held-react` (a tag input). Each was written by an agent that read neither the references nor the pitfalls, with a hidden test, a golden solution and a one-line slip that `test_fixtures.py` checks like every other task. Every score now also counts `failed_tool_calls` (tool results with `is_error`; in 1.4, a third of chef's came from its own `.chef.md` probe), and `run.sh` pulls every image in [`scripts/container-images.txt`](../scripts/container-images.txt) before the first run, so no arm pays for a first pull.
 

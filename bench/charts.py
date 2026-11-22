@@ -15,6 +15,7 @@ HISTORY: Path = Path(__file__).resolve().parent / "results" / "history.json"
 STACKS: Path = Path(__file__).resolve().parent / "results" / "merge-stacks.json"
 MERGE: Path = Path(__file__).resolve().parent / "results" / "merge.json"
 QUALITY: Path = Path(__file__).resolve().parent / "results" / "quality.json"
+MERGE_15: Path = Path(__file__).resolve().parent / "results" / "merge-15.json"
 FONT: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 WIDTH: int = 880
 
@@ -241,6 +242,17 @@ def overview_cell(theme: Theme, x: float, y: float, value: float, scale: tuple[f
 OVERVIEW_TITLE: str = "Same 13 tasks, same model, a blind reviewer asks for fixes until it merges"
 STACKS_ARMS: dict[str, str] = {"none": "Plain Claude", LATEST_CHEF[0]: LATEST_CHEF[1]}
 STACKS_TITLE: str = "Most-used stacks, 9 tasks: Node, React, Bash, SQL, PHP, PowerShell, C, C++, Kotlin"
+RELEASE_15_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef15": "Chef 1.5"}
+RELEASE_15_TITLE: str = "Chef 1.5 bench: 11 tasks, 3 of them held out, 95 runs per arm"
+
+
+def arm_shades(theme: Theme, arms: list[str]) -> dict[str, str]:
+    """Plain Claude in grey; the newest chef in the chef color, the one before it lighter, older ones lighter still."""
+    chefs: list[str] = [arm for arm in arms if arm != "none"]
+    shades: list[str] = [theme.chef, theme.old]
+    return {"none": theme.without} | {
+        arm: shades[age] if age < len(shades) else theme.older for age, arm in enumerate(reversed(chefs))
+    }
 
 
 def overview_chart(
@@ -257,7 +269,7 @@ def overview_chart(
     body: list[str] = [text(0, 26, title, theme.ink, 18, 600)]
     for index, (panel_title, _) in enumerate(OVERVIEW_PANELS):
         body += [text(LABEL_WIDTH + index * PANEL_STEP, 62, panel_title, theme.muted, 13, 600)]
-    colors: dict[str, str] = {"none": theme.without, PREVIOUS_CHEF[0]: theme.old, LATEST_CHEF[0]: theme.chef}
+    colors: dict[str, str] = arm_shades(theme, arms)
     y: float = 80.0
     for arm in arms:
         body += [text(0, y + 13, names[arm], theme.ink, 15, 600)]
@@ -580,6 +592,11 @@ def main() -> None:
         (OUT / f"cost{theme.suffix}.svg").write_text(cost_chart(theme, summary), encoding="utf-8")
         (OUT / f"pairwise{theme.suffix}.svg").write_text(pairwise_chart(theme, summary), encoding="utf-8")
         (OUT / f"cost-split{theme.suffix}.svg").write_text(split_chart(theme), encoding="utf-8")
+        if MERGE_15.is_file():
+            release: dict[str, dict[str, float]] = json.loads(MERGE_15.read_text(encoding="utf-8"))["arms"]
+            (OUT / f"overview-15{theme.suffix}.svg").write_text(
+                overview_chart(theme, release, RELEASE_15_TITLE, RELEASE_15_ARMS), encoding="utf-8"
+            )
         if QUALITY.is_file():
             quality: dict[str, Any] = json.loads(QUALITY.read_text(encoding="utf-8"))
             (OUT / f"quality{theme.suffix}.svg").write_text(quality_chart(theme, quality), encoding="utf-8")

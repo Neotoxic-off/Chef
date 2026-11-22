@@ -28,6 +28,17 @@ def test_quality_chart_shows_each_criterion_then_each_reference_with_one_bar_per
     assert charts.LIGHT.chef in svg
 
 
+def test_arm_shades_give_the_newest_chef_the_chef_color_and_older_ones_lighter_shades() -> None:
+    shades: dict[str, str] = charts.arm_shades(charts.LIGHT, ["none", "chef13", "chef14", "chef15"])
+
+    assert shades == {
+        "none": charts.LIGHT.without,
+        "chef15": charts.LIGHT.chef,
+        "chef14": charts.LIGHT.old,
+        "chef13": charts.LIGHT.older,
+    }
+
+
 def test_cost_chart_is_an_svg_with_an_accessible_label() -> None:
     svg: str = charts.cost_chart(charts.LIGHT, SUMMARY)
 

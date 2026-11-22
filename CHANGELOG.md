@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Results, 11 tasks (3 held out), 95 runs per arm, same reviewer as the 1.4 stacks run: chef 1.5's first answer is accepted 87% of the time (1.4: 75%, plain Claude: 58%; 1.5 against 1.4 p = 0.041), 0.15 fix rounds per task (0.33, 0.53), $0.294 per task with fixes ($0.278, $0.145), median first answer 94 s (65 s, 21 s).
+- Quality bench: 32 most-used references, one task each, scored blind for quality, clarity, maintainability and functionality; chef lifts maintainability from 5.5 to 7.5 out of 10, and 1.3 to 1.5 score alike on a single answer.
+- README: shorter, the 1.5 and quality charts first.
+
 - Skill, from a council review of the 1.4 traces: `.chef.md` is read with a command that succeeds when the file is absent (the old probe was a third of chef's failed tool calls); pinned versions must support each other (plugin and compiler, peer dependencies); tests cover a value exactly at each threshold and are named for the behavior they assert; the reply lists only the checks the task needs that did not run.
 - Kotlin: detekt 2.0.0-alpha.6 (`dev.detekt`, `failOnSeverity`), the detekt line built for Kotlin 2.4; 1.23.8 supports Kotlin 2.0 only.
 - README: a badge with the latest release.

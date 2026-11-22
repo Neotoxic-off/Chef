@@ -42,6 +42,35 @@ A blind reviewer that never knows chef exists asks for fixes until it would merg
 
 <p align="center">
   <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-15-dark.svg">
+    <img src="assets/bench/overview-15.svg" width="880" alt="Chef 1.5 bench, 11 tasks, 3 of them held out, 95 runs per arm. Plain Claude: first answer accepted 58%, 53 review rounds per 100 tasks, $0.145 per task with fixes. Chef 1.4: 75%, 33 review rounds per 100 tasks, $0.278. Chef 1.5: 87%, 15 review rounds per 100 tasks, $0.293.">
+  </picture>
+</p>
+
+| | Without chef | Chef 1.4 | Chef 1.5 |
+|---|---|---|---|
+| First answer accepted | 58% | 75% | **87%** |
+| Review rounds per task | 0.53 | 0.33 | **0.15** |
+| Cost per task, fixes included | $0.145 | $0.278 | $0.294 |
+| Median time, first answer | 21 s | 65 s | 94 s |
+
+Chef 1.5 against 1.4: +13 points (p = 0.04), with half the review rounds. Its first answer is slower: it now runs every check, from a container when a tool is missing.
+
+Code quality on the 32 most-used references, one task each, scored 0 to 10 by a blind reviewer:
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/quality-dark.svg">
+    <img src="assets/bench/quality.svg" width="880" alt="Blind reviewer scores from 0 to 10 over 32 most-used references. Quality: plain Claude 7.1, chef 1.3 7.8, chef 1.4 7.6, chef 1.5 7.6. Clarity: 8.2, 8.7, 8.6, 8.7. Maintainability: 5.5, 7.4, 7.5, 7.5. Functionality: 7.8, 7.8, 7.7, 7.7. Then the mean of the four scores per reference.">
+  </picture>
+</p>
+
+Chef raises maintainability from 5.5 to 7.5; versions 1.3 to 1.5 score alike on a single answer.
+
+### Earlier benches
+
+<p align="center">
+  <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-dark.svg">
     <img src="assets/bench/overview.svg" width="880" alt="Same 13 tasks, same model, a blind reviewer asks for fixes until it merges. Plain Claude: first answer accepted 59%, 46 review rounds per 100 tasks, $0.120 per task with fixes. Chef 1.3: 90%, 13 review rounds per 100 tasks, $0.181. Chef 1.4: 92%, 10 review rounds per 100 tasks, $0.185.">
   </picture>
