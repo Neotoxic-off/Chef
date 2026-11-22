@@ -10,18 +10,21 @@ SUMMARY: dict[str, Any] = {
 }
 
 
-def test_quality_chart_shows_the_mean_then_each_reference_with_one_bar_per_arm() -> None:
+def test_quality_chart_shows_each_criterion_then_each_reference_with_one_bar_per_arm() -> None:
+    scores: dict[str, float] = {"quality": 5.5, "clarity": 6.0, "maintainability": 4.5, "functionality": 7.0}
     quality: dict[str, Any] = {
-        "arms": {"none": {"quality": 5.5}, "chef15": {"quality": 8.25}},
-        "tasks": {"go": {"none": 5.0, "chef15": 8.0}, "python": {"none": 6.0, "chef15": 8.5}},
+        "criteria": ["quality", "clarity", "maintainability", "functionality"],
+        "arms": {"none": scores, "chef15": {name: value + 3 for name, value in scores.items()}},
+        "tasks": {"go": {"none": 5.0, "chef15": 8.25}, "python": {"none": 6.0, "chef15": 8.5}},
     }
 
     svg: str = charts.quality_chart(charts.LIGHT, quality)
 
     assert "2 most-used references" in svg
-    assert svg.index(">Mean<") < svg.index(">go.md<") < svg.index(">python.md<")
+    labels: list[str] = [">Quality<", ">Clarity<", ">Maintainability<", ">Functionality<", ">go.md<", ">python.md<"]
+    assert [svg.index(label) for label in labels] == sorted(svg.index(label) for label in labels)
     assert "Plain Claude" in svg and "Chef 1.5" in svg and "Chef 1.4" not in svg
-    assert ">8.2<" in svg
+    assert ">7.5<" in svg and ">8.2<" in svg
     assert charts.LIGHT.chef in svg
 
 

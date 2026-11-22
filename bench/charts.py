@@ -140,25 +140,27 @@ QUALITY_ARMS: tuple[tuple[str, str], ...] = (
     ("chef14", "Chef 1.4"),
     ("chef15", "Chef 1.5"),
 )
-QUALITY_MEAN_ROW: str = "Mean"
 
 
 def quality_chart(theme: Theme, quality: dict[str, Any]) -> str:
-    """The blind reviewer's quality score per reference, with the mean over all of them first."""
+    """Each criterion's mean over every reference, then the mean of the criteria per reference."""
     colors: dict[str, str] = {"none": theme.without, "chef13": theme.older, "chef14": theme.old, "chef15": theme.chef}
     series: list[Series] = [Series(key, name, colors[key]) for key, name in QUALITY_ARMS if key in quality["arms"]]
-    mean: dict[str, float] = {arm: values["quality"] for arm, values in quality["arms"].items()}
+    criteria: list[tuple[str, dict[str, float]]] = [
+        (criterion.capitalize(), {arm: values[criterion] for arm, values in quality["arms"].items()})
+        for criterion in quality["criteria"]
+    ]
     # Rows name the reference file, not the main bench's task label of the same name.
     references: list[tuple[str, dict[str, float]]] = [(f"{task}.md", scores) for task, scores in quality["tasks"].items()]
-    rows: list[tuple[str, dict[str, float]]] = [(QUALITY_MEAN_ROW, mean), *references]
     count: int = len(quality["tasks"])
     chart: Chart = Chart(
-        f"Code quality, 0 to 10, by a blind reviewer: {count} most-used references, one task each",
-        f"Code quality score from 0 to 10 given by a blind reviewer, per reference and on average, for {count} tasks",
+        f"Blind reviewer, 0 to 10, {count} most-used references: each criterion, then each reference",
+        f"Scores from 0 to 10 given by a blind reviewer for {', '.join(quality['criteria'])}, "
+        f"averaged over {count} tasks, then the mean of those scores per reference",
         10.0,
         "/10",
     )
-    return rows_chart(theme, chart, rows, series)
+    return rows_chart(theme, chart, [*criteria, *references], series)
 
 
 def cost_chart(theme: Theme, summary: dict[str, Any]) -> str:
