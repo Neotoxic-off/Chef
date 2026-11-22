@@ -183,6 +183,12 @@ def test_usage_metrics_splits_tokens_and_counts_tool_traffic(tmp_path: Path) -> 
     }
 
 
+def test_tool_traffic_skips_events_whose_message_is_text() -> None:
+    denied: dict[str, Any] = {"type": "system", "subtype": "permission_denied", "message": "blocked by a safety check"}
+
+    assert score.tool_traffic([denied]) == (0, 0, 0)
+
+
 def test_is_test_file_detects_tests_folder() -> None:
     assert score.is_test_file(Path("tests/check_config.py"))
     assert not score.is_test_file(Path("endpoints.py"))
@@ -275,12 +281,15 @@ def write_costed_run(run_dir: Path, cost: float) -> None:
     write_run(run_dir, json.dumps({"type": "result", "terminal_reason": "completed", "total_cost_usd": cost}))
 
 
-def test_budget_exits_once_the_runs_cost_the_cap(tmp_path: Path) -> None:
+def test_budget_exits_with_the_cap_code_once_the_runs_cost_the_cap(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     write_costed_run(tmp_path / "none" / "go" / "1", 0.6)
     write_costed_run(tmp_path / "chef" / "go" / "1", 0.4)
 
-    with pytest.raises(SystemExit, match=r"cost \$1\.00, the cap is \$1\.00"):
+    with pytest.raises(SystemExit) as stopped:
         score.budget(tmp_path, 1.0)
+
+    assert stopped.value.code == score.BUDGET_REACHED_EXIT_CODE
+    assert "cost $1.00, the cap is $1.00" in capsys.readouterr().err
 
 
 def test_budget_below_the_cap_ignores_runs_without_a_cost(tmp_path: Path) -> None:

@@ -78,6 +78,19 @@ teardown() {
   [ ! -e "${STUB_LOG}" ]
 }
 
+@test "a crashing budget check is not reported as the cap" {
+  cat > "${stub_dir}/python-stub" <<'EOF'
+#!/usr/bin/env bash
+[[ "$2" != "budget" ]] || exit 1
+exec python "$@"
+EOF
+  chmod +x "${stub_dir}/python-stub"
+  MAX_TOTAL_USD=100 PYTHON="${stub_dir}/python-stub" run bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"score.py budget failed (exit 1)"* ]]
+  [[ "${output}" != *"reached"* ]]
+}
+
 @test "refuses an existing out-dir without RESUME" {
   mkdir -p "${out_dir}"
   run bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=

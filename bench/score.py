@@ -56,6 +56,8 @@ DOCKER_KEYS: tuple[str, ...] = (
 COMPOSE_FILE_NAMES: tuple[str, ...] = ("docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml")
 
 Metrics = dict[str, float | int | bool | None]
+# `score.py budget` exits with it when the cap is reached, so run.sh tells the cap from a crash (exit 1).
+BUDGET_REACHED_EXIT_CODE: int = 3
 USAGE_KEYS: tuple[str, ...] = (
     "cost_usd",
     "seconds",
@@ -144,7 +146,9 @@ def tool_traffic(events: list[dict[str, Any]]) -> tuple[int, int, int]:
     result_chars: int = 0
     failed: int = 0
     for event in events:
-        content: Any = event.get("message", {}).get("content")
+        # A system event such as permission_denied carries its message as text.
+        message: Any = event.get("message")
+        content: Any = message.get("content") if isinstance(message, dict) else None
         if not isinstance(content, list):
             continue
         if event.get("type") == "assistant":
@@ -544,7 +548,8 @@ def budget(out_dir: Path, max_usd: float) -> None:
     """Exit 1 once the runs of out_dir cost max_usd, so run.sh starts no further batch."""
     spent: float = total_cost(out_dir)
     if spent >= max_usd:
-        raise SystemExit(f"score: the runs in {out_dir} cost ${spent:.2f}, the cap is ${max_usd:.2f}")
+        print(f"score: the runs in {out_dir} cost ${spent:.2f}, the cap is ${max_usd:.2f}", file=sys.stderr)
+        raise SystemExit(BUDGET_REACHED_EXIT_CODE)
 
 
 def main(out_dir: Path) -> None:

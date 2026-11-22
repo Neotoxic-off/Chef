@@ -15,10 +15,21 @@ BENCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly BENCH_DIR
 readonly TASKS_DIR="${BENCH_DIR}/tasks"
 readonly PYTHON="${PYTHON:-python}"
+# Exit code of `score.py budget` when the cap is reached; any other failure is a crash.
+readonly BUDGET_REACHED=3
 
 die() {
   printf 'bench: %s\n' "$*" >&2
   exit 1
+}
+
+check_budget() {
+  local -r out_dir="$1"
+  local -i status=0
+  [[ -n "${MAX_TOTAL_USD:-}" ]] || return 0
+  "${PYTHON}" "${BENCH_DIR}/score.py" budget "${out_dir}" "${MAX_TOTAL_USD}" || status=$?
+  ((status != BUDGET_REACHED)) || die "stopped: MAX_TOTAL_USD=${MAX_TOTAL_USD} reached; raise it and rerun with RESUME=1"
+  ((status == 0)) || die "stopped: score.py budget failed (exit ${status}) on ${out_dir}"
 }
 
 # Pull the images the references run before any arm starts, so no arm pays for a first pull and the
@@ -140,8 +151,7 @@ main() {
     task_dir="${task_dir%/}"
     [[ -z "${TASKS:-}" || " ${TASKS} " == *" $(basename "${task_dir}") "* ]] || continue
     for ((run = 1; run <= runs; run++)); do
-      [[ -z "${MAX_TOTAL_USD:-}" ]] || "${PYTHON}" "${BENCH_DIR}/score.py" budget "${out_dir}" "${MAX_TOTAL_USD}" ||
-        die "stopped: MAX_TOTAL_USD=${MAX_TOTAL_USD} reached; raise it and rerun with RESUME=1"
+      check_budget "${out_dir}"
       pids=()
       run_dirs=()
       for arm in "$@"; do
