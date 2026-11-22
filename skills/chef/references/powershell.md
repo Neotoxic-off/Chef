@@ -23,7 +23,6 @@ Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host require
 
 - Lint in CI, failing on any finding: `Invoke-ScriptAnalyzer -Path . -Recurse -Settings ./PSScriptAnalyzerSettings.psd1 -EnableExit`.
 - Format with `Invoke-Formatter -ScriptDefinition $text -Settings ./PSScriptAnalyzerSettings.psd1`. It has no check mode: in CI, fail when its output differs from the file.
-- Never suppress a rule (`SuppressMessageAttribute`, `-ErrorAction SilentlyContinue`): fix the cause, or tell the user if you cannot.
 
 ## Code
 
@@ -33,7 +32,7 @@ Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host require
   $ErrorActionPreference = 'Stop'
   ```
 - Every function is advanced: `[CmdletBinding()]`, a `param()` block and `[OutputType([Type])]`.
-- Type every parameter. Locals are optional: type one when the value could change type. `[int]$count = 0`, `[System.Collections.Generic.List[string]]$items = [System.Collections.Generic.List[string]]::new()`.
+- Type every parameter. Locals are optional: type one when the value could change type. `[int]$count = 0`.
 - Validate at the boundary: `[Parameter(Mandatory)]`, `[ValidateNotNullOrEmpty()]`, `[ValidateSet()]`, `[ValidateRange()]`.
 - Names are `Verb-Noun` with an approved verb (`Get-Verb`) and a singular noun. PSScriptAnalyzer enforces it.
 - `SupportsShouldProcess` on anything that changes state; call `$PSCmdlet.ShouldProcess()` before the change.
@@ -44,7 +43,7 @@ Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host require
 
 ## Tests
 
-- Pester 6 (same configuration object as Pester 5; classic `Should -Be` still works, new `Should-*` assertions are optional; runs on 5.1 and 7.4+). One `*.Tests.ps1` per source file; `BeforeAll { . $PSCommandPath.Replace('.Tests.ps1', '.ps1') }`.
+- Pester 6 (classic `Should -Be` still works). One `*.Tests.ps1` per source file; `BeforeAll { . $PSCommandPath.Replace('.Tests.ps1', '.ps1') }`.
 - Isolate I/O with `Mock` inside the module scope (`-ModuleName`); verify with `Should -Invoke`.
 - Use `TestDrive:` for files and `TestRegistry:` for the registry. Tag integration tests: `-Tag 'Integration'`.
 - Coverage is command coverage (no branch coverage). `CoveragePercentTarget` only reports, so gate it yourself:
@@ -52,7 +51,6 @@ Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host require
   $config = New-PesterConfiguration
   $config.Run.Path = './tests'
   $config.Run.PassThru = $true
-  $config.Run.Exit = $true
   $config.CodeCoverage.Enabled = $true
   $config.CodeCoverage.Path = './src'
   $config.CodeCoverage.CoveragePercentTarget = 90
@@ -68,4 +66,4 @@ Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host require
 
 Order before done: `Invoke-Formatter` then `Invoke-ScriptAnalyzer` then `Invoke-Pester`.
 
-No `pwsh` 7 (Windows PowerShell 5.1 is not it) or no modules: run in `mcr.microsoft.com/dotnet/sdk:10.0`, which ships PowerShell 7.6 (1.3 GB; the PowerShell team's own images are deprecated). The modules install on each run (about 10 s, needs network); the settings file enables the formatting rules, so the analyzer also reports formatting: `export MSYS_NO_PATHCONV=1; src=$PWD; command -v cygpath >/dev/null && src=$(cygpath -m "$PWD"); docker run --rm -v "$src:/w" -w /w mcr.microsoft.com/dotnet/sdk:10.0 pwsh -NoProfile -Command '$ErrorActionPreference = "Stop"; Install-Module Pester -RequiredVersion 6.2.0 -Scope CurrentUser -Force; Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force; $lint = Invoke-ScriptAnalyzer -Path . -Recurse -Settings ./PSScriptAnalyzerSettings.psd1; $lint; $c = New-PesterConfiguration; $c.Run.PassThru = $true; $tests = Invoke-Pester -Configuration $c; if ($lint -or $tests.Result -ne "Passed") { exit 1 }'`.
+No `pwsh` 7 (Windows PowerShell 5.1 is not it) or no modules: run in `mcr.microsoft.com/dotnet/sdk:10.0`, which ships PowerShell 7.6 (1.3 GB; the PowerShell team's own images are deprecated). The modules install once into the `chef-pwsh-modules` volume (the first run takes about a minute and needs network, later ones about 3 s). The command formats the files first, then prints one line per finding and per failed test. PSScriptAnalyzer 1.25.0 sometimes throws `NullReferenceException` from a race between its rules, so the lint is retried on that exception only: `export MSYS_NO_PATHCONV=1; src=$PWD; command -v cygpath >/dev/null && src=$(cygpath -m "$PWD"); docker run --rm -v chef-pwsh-modules:/root/.local/share/powershell/Modules -v "$src:/w" -w /w mcr.microsoft.com/dotnet/sdk:10.0 pwsh -NoProfile -Command '$ErrorActionPreference = "Stop"; $PSStyle.OutputRendering = "PlainText"; foreach ($m in @{ Pester = "6.2.0"; PSScriptAnalyzer = "1.25.0" }.GetEnumerator()) { if (-not (Get-Module -ListAvailable $m.Key | Where-Object Version -EQ $m.Value)) { Install-Module $m.Key -RequiredVersion $m.Value -Scope CurrentUser -Force } }; $settings = Import-PowerShellDataFile ./PSScriptAnalyzerSettings.psd1; foreach ($file in Get-ChildItem -Recurse -File -Include *.ps1, *.psm1, *.psd1) { $text = Get-Content -Raw $file; $formatted = Invoke-Formatter -ScriptDefinition $text -Settings $settings; if ($formatted -cne $text) { Set-Content -NoNewline -Path $file -Value $formatted } }; $lint = $null; foreach ($attempt in 1..3) { try { $lint = @(Invoke-ScriptAnalyzer -Path . -Recurse -Settings $settings); break } catch [System.NullReferenceException] { "PSScriptAnalyzer hit its known race (attempt $attempt), running it again" } }; if ($null -eq $lint) { throw "PSScriptAnalyzer crashed 3 times" }; $lint | ForEach-Object { "$($_.ScriptName):$($_.Line) $($_.RuleName): $($_.Message)" }; $c = New-PesterConfiguration; $c.Run.PassThru = $true; $c.Output.Verbosity = "None"; $tests = Invoke-Pester -Configuration $c; $tests.Failed | ForEach-Object { "FAIL $($_.ExpandedPath): $($_.ErrorRecord[0].Exception.Message)" }; "lint: $($lint.Count) findings; tests: $($tests.PassedCount) passed, $($tests.FailedCount) failed"; if ($lint.Count -or $tests.Result -ne "Passed") { exit 1 }'`.

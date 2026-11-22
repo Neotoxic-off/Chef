@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Cheaper container checks, from the 1.5 traces, where they made chef 1.5 cost more than 1.4 on the C, C++, Bash and PowerShell tasks:
+  - PowerShell: modules install once into the `chef-pwsh-modules` volume instead of on every check (about 3 s per check instead of about 15 s); files are formatted first; one line per finding and failed test (about 350 characters instead of about 3,300); the lint is retried on PSScriptAnalyzer 1.25.0's `NullReferenceException` race, which failed checks at random.
+  - Bash, C, C++: `shfmt -w` and `clang-format -i` fix the files instead of printing diffs; ShellCheck prints one line per finding.
+- Docker: hardening (`cap_drop`, `read_only`, `no-new-privileges`) only on the images you build, not on Redis or PostgreSQL; a Dockerfile copies a lockfile only once it exists. Python: dependencies are added with `uv add`, which refuses a name that does not exist (chef 1.5 typed `httpx2`).
+
 ## 1.5.0 (2026-11-22)
 
 Verified everywhere: every check runs, even when its tool is missing, and the benchmark has held-out tasks.

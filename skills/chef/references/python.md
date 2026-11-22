@@ -2,7 +2,7 @@
 
 Verified against uv 0.13, Ruff 0.17, mypy 2.4, pytest 9.2, pytest-cov 7.1, Hypothesis 6.170, mutmut 3.8 (Nov 2026).
 
-All tool configuration lives in `pyproject.toml`. Use `uv` for environments and dependencies (`uv.lock` committed); run tools with `uv run`.
+All tool configuration lives in `pyproject.toml`. Use `uv` for environments and dependencies (`uv.lock` committed); run tools with `uv run`. Add a dependency with `uv add <name>` (`uv add --dev` for tools), never by typing it into `pyproject.toml`: it fails on a name that does not exist on PyPI and updates `uv.lock`.
 
 ## Lint and format: Ruff
 

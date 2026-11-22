@@ -53,7 +53,8 @@ ENTRYPOINT ["/app"]
 - Scan every image in CI and fail on fixable HIGH/CRITICAL: `trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed <image>` or `grype <image> --fail-on high`.
 - Pin the scanner itself (action by SHA, binary by version and checksum): scanners are supply-chain targets too.
 - Generate an SBOM (`docker buildx build --sbom=true` or `syft`) and sign release images (`cosign`).
-- Compose and runtime: `read_only: true`, `cap_drop: [ALL]`, `security_opt: ["no-new-privileges:true"]` where the app allows it.
+- Compose and runtime, for the images you build: `read_only: true`, `cap_drop: [ALL]`, `security_opt: ["no-new-privileges:true"]`. Third-party images (Redis, PostgreSQL) get only what their docs support: their entrypoint often starts as root to `chown` its data folder, and fails without those capabilities.
+- A `COPY` of a lockfile needs that file in the repo: generate it (`uv lock`, `npm install`) before writing the Dockerfile that copies it.
 - An app that does not handle SIGTERM (most Python and Node servers) must not run as PID 1: `init: true` in Compose, or `tini` as `ENTRYPOINT`, so `docker stop` stops it cleanly instead of killing it after the timeout.
 - Set memory and CPU limits, and log rotation (`logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}`).
 - A digest you could not look up is worse than a tag: pin only digests read from the registry in this session, and say so.
