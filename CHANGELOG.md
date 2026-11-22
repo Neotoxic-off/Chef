@@ -6,7 +6,8 @@
 - Kotlin: detekt 2.0.0-alpha.6 (`dev.detekt`, `failOnSeverity`), the detekt line built for Kotlin 2.4; 1.23.8 supports Kotlin 2.0 only.
 - README: a badge with the latest release.
 - Checks run even when a tool is missing: the bash, C, C++, PowerShell, PHP, Terraform and Kubernetes references give a one-call check from pinned images (shellcheck, shfmt, bats, clang 22, PowerShell 7.6 with Pester and PSScriptAnalyzer, Composer, Terraform, TFLint, Helm, kubeconform, kube-linter), each tried on a chef 1.4 bench project under Git Bash on Windows. In 1.4, 17 of 66 runs ended without running their checks. With no Docker, chef says which checks did not run.
-- `scripts/check_references.py`: every image a reference runs is listed in `scripts/container-images.txt`, and every `$PWD` mount sets `MSYS_NO_PATHCONV=1` (prometheus.md lacked it); a weekly `images` workflow fails when a listed image leaves its registry.
+- Container mounts use `src=$(cygpath -m "$PWD")` where `cygpath` exists, with `MSYS_NO_PATHCONV=1`: Git Bash shows `%TEMP%` as `/tmp`, so a plain `$PWD` mount there was an empty folder (go.md and prometheus.md had it too).
+- `scripts/check_references.py` reads every `docker run` in the references: the image after the options must have a tag and be listed in `scripts/container-images.txt`, and the working folder is mounted as `$src`, never `$PWD`; a weekly `images` workflow fails when a listed image leaves its registry.
 
 ## 1.4.0 (2026-11-20)
 

@@ -34,25 +34,49 @@ def test_valid_blocks_and_links_pass_and_unknown_languages_are_counted(tmp_path:
     assert report.skipped == {"rust": 1, "(none)": 1}
 
 
-def test_docker_run_lines_yield_tagged_images_but_not_placeholders_mounts_or_ports(tmp_path: Path) -> None:
+def test_docker_run_yields_the_image_after_its_options_only(tmp_path: Path) -> None:
     body = (
-        'Lint: `MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/w" --user "$(id -u):$(id -g)" ghcr.io/org/tool:v1.2.3 .`\n'
-        "Build: `docker run --rm -p 8080:8080 -i hadolint/hadolint:<tag> - < Dockerfile && docker run gcc:15 make`\n"
+        'Lint, like python:3.13: `MSYS_NO_PATHCONV=1; src=$(cygpath -m "$PWD"); docker run --rm -v "$src:/w" --user "$(id -u):$(id -g)" '
+        'ghcr.io/org/tool:v1.2.3 sh -c "npm run lint:fix"`\n'
+        "Build: `docker run --rm -p 8080:8080 -i hadolint/hadolint:<tag> - < Dockerfile && docker run --init gcc:15 make`\n"
+        "Pinned: `docker run --platform=linux/amd64 localhost:5000/tool:1 && docker run tool@sha256:ab12`\n"
     )
     write_reference(tmp_path, "tools.md", body)
 
     report = check_references.check_references(tmp_path)
 
     assert report.errors == []
-    assert report.images == {"ghcr.io/org/tool:v1.2.3", "gcc:15"}
+    assert report.images == {"ghcr.io/org/tool:v1.2.3", "gcc:15", "localhost:5000/tool:1", "tool@sha256:ab12"}
 
 
-def test_a_pwd_mount_without_path_conversion_off_fails(tmp_path: Path) -> None:
-    write_reference(tmp_path, "tools.md", 'Run `docker run --rm -v "$PWD:/w" tool/tool:1 .`\n')
+def test_a_braced_pwd_mount_fails(tmp_path: Path) -> None:
+    write_reference(tmp_path, "tools.md", 'Run `MSYS_NO_PATHCONV=1 docker run --rm -v "${PWD}:/w" tool/tool:1 .`\n')
 
     errors = check_references.check_references(tmp_path).errors
 
-    assert errors == ["tools.md:5: mounts $PWD without MSYS_NO_PATHCONV=1, which Git Bash on Windows needs"]
+    assert errors == ["tools.md:5: mounts $PWD, which Git Bash can map to an empty folder; mount $src"]
+
+
+def test_a_src_mount_without_cygpath_or_path_conversion_off_fails(tmp_path: Path) -> None:
+    write_reference(tmp_path, "tools.md", 'Run `src=$PWD; docker run --rm --mount "type=bind,src=$src,dst=/w" tool/tool:1 .`\n')
+
+    errors = check_references.check_references(tmp_path).errors
+
+    assert errors == [
+        "tools.md:5: mounts $src without MSYS_NO_PATHCONV=1",
+        'tools.md:5: mounts $src without src=$(cygpath -m "$PWD")',
+    ]
+
+
+def test_an_untagged_image_and_an_unbalanced_quote_fail(tmp_path: Path) -> None:
+    write_reference(tmp_path, "tools.md", "Run `docker run --rm tool/tool .` or `docker run -e 'A=1 tool:1`\n")
+
+    errors = check_references.check_references(tmp_path).errors
+
+    assert errors == [
+        "tools.md:5: runs image tool/tool without a tag",
+        "tools.md:5: cannot split the docker run command: No closing quotation",
+    ]
 
 
 def test_unlisted_and_unused_images_fail() -> None:

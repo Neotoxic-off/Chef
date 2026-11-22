@@ -36,7 +36,7 @@ formatters:
 
 Upgrade an old v1 config with `golangci-lint migrate`.
 
-golangci-lint not installed: run the pinned official image (`MSYS_NO_PATHCONV=1` stops Git Bash on Windows from rewriting `/app`): `MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/app" -w /app golangci/golangci-lint:v2.15.0 golangci-lint run`. No Docker either: fall back to `go vet` plus gofmt, and tell the user golangci-lint did not run: `rc=0; go vet ./... || rc=1; files=$(gofmt -l .) || rc=1; [ -z "$files" ] || { printf '%s\n' "$files"; rc=1; }; [ "$rc" -eq 0 ]`.
+golangci-lint not installed: run the pinned official image (`MSYS_NO_PATHCONV=1` and `cygpath -m` stop Git Bash on Windows from rewriting the paths): `export MSYS_NO_PATHCONV=1; src=$PWD; command -v cygpath >/dev/null && src=$(cygpath -m "$PWD"); docker run --rm -v "$src:/app" -w /app golangci/golangci-lint:v2.15.0 golangci-lint run`. No Docker either: fall back to `go vet` plus gofmt, and tell the user golangci-lint did not run: `rc=0; go vet ./... || rc=1; files=$(gofmt -l .) || rc=1; [ -z "$files" ] || { printf '%s\n' "$files"; rc=1; }; [ "$rc" -eq 0 ]`.
 
 ## Code
 

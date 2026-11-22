@@ -5,6 +5,7 @@ and `docker run` lines: Git Bash path conversion off for `$PWD` mounts, every im
 import ast
 import json
 import re
+import shlex
 import sys
 import tomllib
 from collections import Counter
@@ -25,9 +26,21 @@ REFERENCE_MENTION: re.Pattern[str] = re.compile(r"\b([a-z0-9][a-z0-9-]*\.md)\b")
 FENCE: re.Pattern[str] = re.compile(r"^\s*```(\S*)")
 NOT_REFERENCES: frozenset[str] = frozenset({"SKILL.md", "README.md", "CHANGELOG.md", "AGENTS.md", "CLAUDE.md", "TRANSFORM.md"})
 IMAGES_FILE: Path = Path(__file__).resolve().parent / "container-images.txt"
-# A tagged image name; `<tag>` placeholders, `$PWD:/w` mounts and port mappings (`8080:8080`) do not match.
-IMAGE: re.Pattern[str] = re.compile(r"(?<![\w$/.:-])((?:[a-z0-9.-]+/)*[a-z0-9._-]*[a-z][a-z0-9._-]*:[A-Za-z0-9][A-Za-z0-9._-]*)")
-PWD_MOUNT: str = '-v "$PWD'
+DOCKER_RUN: str = "docker run"
+CODE_SPAN: re.Pattern[str] = re.compile(r"`([^`]*)`")
+# `docker run` options whose value is the next word; the image is the first word that is neither.
+VALUE_OPTIONS: frozenset[str] = frozenset(
+    {"-v", "--volume", "--mount", "-w", "--workdir", "-e", "--env", "-u", "--user", "-p", "--publish"}
+    | {"--entrypoint", "--name", "--network", "--platform"}
+)
+MOUNT_OPTIONS: frozenset[str] = frozenset({"-v", "--volume", "--mount"})
+# A tag or digest after the last path part: `gcc:15`, `localhost:5000/tool:1`, `tool@sha256:...`.
+TAGGED: re.Pattern[str] = re.compile(r"(:[^/]+|@sha256:[0-9a-f]+)$")
+PLACEHOLDER: str = "<"
+# Git Bash shows some Windows folders under other names (%TEMP% as /tmp), so a `$PWD` mount can be empty.
+# References mount `$src`, set from `cygpath -m` where it exists, with path conversion off.
+WORKING_DIR_MOUNT: str = "$src"
+WINDOWS_PATH: str = 'src=$(cygpath -m "$PWD")'
 NO_PATH_CONVERSION: str = "MSYS_NO_PATHCONV=1"
 
 
@@ -96,10 +109,56 @@ def code_blocks(text: str) -> list[tuple[int, str, str]]:
     return blocks
 
 
+def docker_spans(line: str) -> list[str]:
+    """The code spans of a line that run a container, or the whole line inside a fenced block."""
+    return [span for span in CODE_SPAN.findall(line) if DOCKER_RUN in span] or [line]
+
+
+def image_and_mounts(arguments: list[str]) -> tuple[str, list[str]]:
+    """Split the words after `docker run` into the image and the values of its mount options."""
+    mounts: list[str] = []
+    index: int = 0
+    while index < len(arguments) and arguments[index].startswith("-"):
+        option, separator, value = arguments[index].partition("=")
+        if option in VALUE_OPTIONS and not separator:
+            index += 1
+            value = arguments[index] if index < len(arguments) else ""
+        if option in MOUNT_OPTIONS:
+            mounts.append(value)
+        index += 1
+    return (arguments[index] if index < len(arguments) else ""), mounts
+
+
+def check_mounts(where: str, span: str, mounts: list[str], report: Report) -> None:
+    if any("PWD" in mount for mount in mounts):
+        report.errors.append(f"{where}: mounts $PWD, which Git Bash can map to an empty folder; mount {WORKING_DIR_MOUNT}")
+    if not any(WORKING_DIR_MOUNT in mount for mount in mounts):
+        return
+    for required in (NO_PATH_CONVERSION, WINDOWS_PATH):
+        if required not in span:
+            report.errors.append(f"{where}: mounts {WORKING_DIR_MOUNT} without {required}")
+
+
+def check_docker_run(where: str, span: str, command: str, report: Report) -> None:
+    try:
+        arguments: list[str] = shlex.split(command)
+    except ValueError as error:
+        report.errors.append(f"{where}: cannot split the docker run command: {error}")
+        return
+    image, mounts = image_and_mounts(arguments)
+    check_mounts(where, span, mounts, report)
+    if PLACEHOLDER in image:
+        return
+    if not TAGGED.search(image):
+        report.errors.append(f"{where}: runs image {image or '(none)'} without a tag")
+        return
+    report.images.add(image)
+
+
 def check_docker_line(name: str, number: int, line: str, report: Report) -> None:
-    if PWD_MOUNT in line and NO_PATH_CONVERSION not in line:
-        report.errors.append(f"{name}:{number}: mounts $PWD without {NO_PATH_CONVERSION}, which Git Bash on Windows needs")
-    report.images.update(IMAGE.findall(line))
+    for span in docker_spans(line):
+        for command in span.split(DOCKER_RUN)[1:]:
+            check_docker_run(f"{name}:{number}", span, command, report)
 
 
 def check_images(report: Report, listed: set[str]) -> None:

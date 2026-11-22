@@ -21,6 +21,7 @@ jobs:
         run: |
           rc=0
           while read -r image; do
+            [ -n "${image}" ] || continue
             docker buildx imagetools inspect "${image}" > /dev/null || { echo "::error::${image} is no longer in its registry"; rc=1; }
           done < scripts/container-images.txt
           exit "${rc}"
