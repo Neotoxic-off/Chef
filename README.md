@@ -87,21 +87,21 @@ Chef costs more per answer, and saves the reviewer's rounds.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/history-merge-dark.svg">
-    <img src="assets/bench/history-merge.svg" width="880" alt="Chef across versions, share of first answers a blind reviewer would merge as is: 0.8.1 50%, 0.9.0 44%, 0.10.0 67%, 1.0.0 78%, 1.1.0 78%, 1.2.0 89%, 1.3.0 100%, 1.4.0 100%; plain Claude 44%.">
+    <img src="assets/bench/history-merge.svg" width="880" alt="Chef across versions, share of first answers a blind reviewer would merge as is: 0.8.1 50%, 0.9.0 44%, 0.10.0 67%, 1.0.0 78%, 1.1.0 78%, 1.2.0 89%, 1.3.0 100%, 1.4.0 100%, 1.5.0 89%; plain Claude 44%.">
   </picture>
 </p>
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/history-cost-dark.svg">
-    <img src="assets/bench/history-cost.svg" width="880" alt="Chef across versions, median cost per task: 0.8.1 $0.167, 0.9.0 $0.184, 0.10.0 $0.180, 1.0.0 $0.155, 1.1.0 $0.145, 1.2.0 $0.156, 1.3.0 $0.169, 1.4.0 $0.173; plain Claude $0.059.">
+    <img src="assets/bench/history-cost.svg" width="880" alt="Chef across versions, median cost per task: 0.8.1 $0.167, 0.9.0 $0.184, 0.10.0 $0.180, 1.0.0 $0.155, 1.1.0 $0.145, 1.2.0 $0.156, 1.3.0 $0.169, 1.4.0 $0.173, 1.5.0 $0.164; plain Claude $0.059.">
   </picture>
 </p>
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/time-dark.svg">
-    <img src="assets/bench/time.svg" width="880" alt="Agent time per task until merged, mean of 39 runs (13 tasks, 3 runs each). Plain Claude: first answer 21 s, first review 23 s, fixes and new reviews 29 s, 41% sent back. Chef 1.1: 57 s, 24 s, 13 s, 15% sent back. Chef 1.2: 42 s, 26 s, 11 s, 13% sent back. Chef 1.3: 44 s, 30 s, 7 s, 10% sent back. Chef 1.4: 46 s, 25 s, 7 s, 8% sent back. Median time of the first answer by version on the Python, Docker and Prometheus tasks: 0.8.1 45 s, 0.9.0 55 s, 0.10.0 46 s, 1.0.0 45 s, 1.1.0 50 s, 1.2.0 41 s, 1.3.0 41 s, 1.4.0 47 s; plain Claude 15 s.">
+    <img src="assets/bench/time.svg" width="880" alt="Agent time per task until merged, mean of 39 runs (13 tasks, 3 runs each). Plain Claude: first answer 21 s, first review 23 s, fixes and new reviews 29 s, 41% sent back. Chef 1.1: 57 s, 24 s, 13 s, 15% sent back. Chef 1.2: 42 s, 26 s, 11 s, 13% sent back. Chef 1.3: 44 s, 30 s, 7 s, 10% sent back. Chef 1.4: 46 s, 25 s, 7 s, 8% sent back. Median time of the first answer by version on the Python, Docker and Prometheus tasks: 0.8.1 45 s, 0.9.0 55 s, 0.10.0 46 s, 1.0.0 45 s, 1.1.0 50 s, 1.2.0 41 s, 1.3.0 41 s, 1.4.0 47 s, 1.5.0 41 s; plain Claude 15 s.">
   </picture>
 </p>
 

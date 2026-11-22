@@ -1,7 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.5.0 (2026-11-22)
 
+Verified everywhere: every check runs, even when its tool is missing, and the benchmark has held-out tasks.
+
+- Regression guard: the 13 earlier tasks once each with the 1.2 loop, 13 of 13 first answers accepted (1.4: 36 of 39). Version chart: 8 of 9 merged as is on the Python, Docker and Prometheus tasks, $0.164 per task, 41 s median first answer (the current Prometheus seed; 1.3 and 1.4 used the old one).
 - Results, 11 tasks (3 held out), 95 runs per arm, same reviewer as the 1.4 stacks run: chef 1.5's first answer is accepted 87% of the time (1.4: 75%, plain Claude: 58%; 1.5 against 1.4 p = 0.041), 0.15 fix rounds per task (0.33, 0.53), $0.294 per task with fixes ($0.278, $0.145), median first answer 94 s (65 s, 21 s).
 - Quality bench: 32 most-used references, one task each, scored blind for quality, clarity, maintainability and functionality; chef lifts maintainability from 5.5 to 7.5 out of 10, and 1.3 to 1.5 score alike on a single answer.
 - README: shorter, the 1.5 and quality charts first.
