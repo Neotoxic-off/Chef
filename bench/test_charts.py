@@ -11,29 +11,25 @@ SUMMARY: dict[str, Any] = {
 }
 
 
-def test_quality_chart_compares_without_and_with_chef_per_language_biggest_gain_first() -> None:
+def test_quality_chart_draws_a_tile_per_language_with_its_icon_biggest_gain_first() -> None:
     scores: dict[str, float] = {"quality": 5.5, "clarity": 6.0, "maintainability": 4.5, "functionality": 7.0}
     quality: dict[str, Any] = {
         "criteria": ["quality", "clarity", "maintainability", "functionality"],
-        "arms": {
-            "none": scores,
-            "chef14": scores,
-            "chef15": {name: value + 3 for name, value in scores.items()},
-        },
+        "arms": {"none": scores, "chef15": {name: value + 3 for name, value in scores.items()}},
         "tasks": {
-            "go": {"none": 5.0, "chef15": 8.25},
-            "python": {"none": 6.0, "chef15": 8.5},
+            "go": {"none": 5.0, "chef15": 8.2},
+            "csharp": {"none": 6.0, "chef15": 8.5},
             "cpp": {"none": 7.0, "chef15": 7.0},
         },
     }
 
     svg: str = charts.quality_chart(charts.LIGHT, quality)
 
-    labels: list[str] = [">All 3<", ">Go<", ">Python<", ">C++<"]
+    labels: list[str] = [">All 3 languages<", ">Go<", ">C#<", ">C++<"]
     assert [svg.index(label) for label in labels] == sorted(svg.index(label) for label in labels)
-    assert "Without chef" in svg and "With chef 1.5" in svg and "1.4" not in svg
-    assert ">5.8<" in svg and ">8.8<" in svg
-    assert charts.LIGHT.chef in svg
+    assert svg.count("<path ") == 2
+    assert ">+3.2<" in svg and ">+0.0<" in svg and ">5.8<" in svg and ">8.8<" in svg
+    assert "Go 5.0 to 8.2" in svg
 
 
 def test_rows_chart_puts_the_legend_on_its_own_line_under_the_title() -> None:

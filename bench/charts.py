@@ -148,25 +148,60 @@ QUALITY_NAMES: dict[str, str] = {
 }  # fmt: skip
 
 
+ICONS: Path = Path(__file__).resolve().parent / "icons.json"
+# Simple Icons has no C#, PowerShell or plain SQL logo: those tiles show these letters instead.
+MONOGRAMS: dict[str, str] = {"csharp": "C#", "powershell": "PS", "sql": "SQL"}
+TILE_COLUMNS: int = 4
+TILE_WIDTH: float = WIDTH / TILE_COLUMNS
+TILE_HEIGHT: float = 64.0
+TILES_TOP: float = 132.0
+
+
+def icon(theme: Theme, x: float, y: float, task: str, paths: dict[str, str]) -> list[str]:
+    if task in paths:
+        return [f'<path transform="translate({x:.1f} {y:.1f})" d="{paths[task]}" fill="{theme.ink}"/>']
+    return [text(x + 12, y + 17, MONOGRAMS.get(task, task[:3].upper()), theme.ink, 12, 700, "middle")]
+
+
+def quality_tile(theme: Theme, origin: tuple[float, float], name: str, scores: tuple[float, float]) -> list[str]:
+    x, y = origin
+    without, with_chef = scores
+    return [
+        text(x + 34, y + 10, name, theme.ink, 14, 600),
+        text(x + 34, y + 32, f"{without:.1f}", theme.muted, 14),
+        text(x + 66, y + 32, "→", theme.muted, 14),
+        text(x + 86, y + 32, f"{with_chef:.1f}", theme.chef, 15, 700),
+        text(x + 122, y + 32, f"{with_chef - without:+.1f}", theme.chef, 13, 600),
+    ]
+
+
 def quality_chart(theme: Theme, quality: dict[str, Any]) -> str:
-    """Without chef against chef 1.5 per language: the mean of the reviewer's four scores, biggest gain first."""
-    colors: dict[str, str] = {"none": theme.without, "chef15": theme.chef}
-    series: list[Series] = [Series(key, name, colors[key]) for key, name in QUALITY_ARMS]
+    """One tile per language: its icon, the score without chef, then with chef 1.5; biggest gain first."""
+    paths: dict[str, str] = json.loads(ICONS.read_text(encoding="utf-8"))["paths"]
     criteria: list[str] = quality["criteria"]
-    overall: dict[str, float] = {arm: statistics.fmean(quality["arms"][arm][name] for name in criteria) for arm in colors}
+    mean: dict[str, float] = {
+        arm: statistics.fmean(quality["arms"][arm][name] for name in criteria) for arm in ("none", "chef15")
+    }
     tasks: list[tuple[str, dict[str, float]]] = sorted(
-        quality["tasks"].items(), key=lambda item: item[1].get("chef15", 0.0) - item[1].get("none", 0.0), reverse=True
+        quality["tasks"].items(), key=lambda item: item[1]["chef15"] - item[1]["none"], reverse=True
     )
-    rows: list[tuple[str, dict[str, float]]] = [(f"All {len(tasks)}", overall)]
-    rows += [(QUALITY_NAMES.get(task, task), scores) for task, scores in tasks]
-    chart: Chart = Chart(
-        "Code quality per language, 0 to 10, blind reviewer",
-        f"Mean of the blind reviewer's scores for {', '.join(criteria)}, 0 to 10, without chef and with chef 1.5: "
-        + "; ".join(f"{name} {values['none']:.1f} and {values['chef15']:.1f}" for name, values in rows),
-        10.0,
-        "/10",
+    body: list[str] = [
+        text(0, 26, "Code quality per language, without chef → with chef 1.5", theme.ink, 18, 600),
+        text(0, 50, f"0 to 10 from a blind reviewer: the mean of {', '.join(criteria)}", theme.muted, 13),
+        text(0, 92, f"All {len(tasks)} languages", theme.ink, 16, 600),
+        *quality_tile(theme, (150.0, 70.0), "", (mean["none"], mean["chef15"])),
+    ]
+    for index, (task, scores) in enumerate(tasks):
+        x: float = (index % TILE_COLUMNS) * TILE_WIDTH
+        y: float = TILES_TOP + (index // TILE_COLUMNS) * TILE_HEIGHT
+        body += icon(theme, x, y + 2, task, paths)
+        body += quality_tile(theme, (x, y + 8), QUALITY_NAMES.get(task, task), (scores["none"], scores["chef15"]))
+    rows: int = -(-len(tasks) // TILE_COLUMNS)
+    label: str = (
+        f"Code quality per language, 0 to 10, without chef then with chef 1.5. All: {mean['none']:.1f} to {mean['chef15']:.1f}. "
+        + "; ".join(f"{QUALITY_NAMES.get(task, task)} {scores['none']:.1f} to {scores['chef15']:.1f}" for task, scores in tasks)
     )
-    return rows_chart(theme, chart, rows, series)
+    return svg(int(TILES_TOP + rows * TILE_HEIGHT), label, body)
 
 
 def cost_chart(theme: Theme, summary: dict[str, Any]) -> str:
