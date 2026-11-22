@@ -63,8 +63,8 @@ Target PowerShell 7.6+. Only target Windows PowerShell 5.1 when the host require
 
 ## Pitfalls
 
-- Hashtables and `[ordered]@{}` compare keys without case: `a` then `A` is one entry. When case matters, use `[System.Collections.Specialized.OrderedDictionary]::new([StringComparer]::Ordinal)` or a `Dictionary[string, T]` with `Ordinal`.
-- .NET methods (`[System.IO.File]::ReadAllText`) resolve a relative path against the process folder, which `Set-Location` does not change. Resolve it first: `$PSCmdlet.GetUnresolvedProviderPathFromPSPath($Path)`.
+- `@{}` and `[ordered]@{}` literals compare keys without case: `a` then `A` is one entry. When case matters, use `[System.Collections.Specialized.OrderedDictionary]::new([StringComparer]::Ordinal)` or a `Dictionary[string, T]` with `Ordinal`.
+- .NET methods (`[System.IO.File]::ReadAllText`) resolve a relative path against the process's current directory, which `Set-Location` does not change. Resolve it first: `$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)`.
 
 Order before done: `Invoke-Formatter` then `Invoke-ScriptAnalyzer` then `Invoke-Pester`.
 

@@ -34,7 +34,7 @@ CheckOptions:
 }
 ```
 
-- Warnings per target: `-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow` (GCC/Clang), `/W4 /permissive-` (MSVC). Make them errors on your own targets: `set_target_properties(app PROPERTIES COMPILE_WARNING_AS_ERROR ON)` (CMake 3.24+, adds `-Werror` / `/WX`). Not the global `CMAKE_COMPILE_WARNING_AS_ERROR`: it also reaches FetchContent dependencies, whose warnings you cannot fix (GoogleTest 1.17 fails on Clang 22).
+- Warnings per target: `-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow` (GCC/Clang), `/W4 /permissive-` (MSVC). Make them errors on your own targets: `set_target_properties(app PROPERTIES COMPILE_WARNING_AS_ERROR ON)` (CMake 3.24+, adds `-Werror` / `/WX`). Not the global `CMAKE_COMPILE_WARNING_AS_ERROR`: it also reaches FetchContent dependencies, whose warnings you cannot fix (GoogleTest 1.17 does not build with it under Clang 22).
 - Run the test suite under ASan+UBSan in CI; add a TSan job for threaded code.
 
 ## Code
@@ -60,7 +60,7 @@ CheckOptions:
 
 ## Pitfalls
 
-- A class whose members point into each other (a `std::list` plus a map of its iterators, a pointer into its own buffer) breaks the rule of zero: the default copy points into the source. Define copy and move, or `= delete` them, and test a copy.
+- A class whose members point into each other (a `std::list` plus a map of its iterators, a pointer into its own buffer) cannot follow the rule of zero: the default copy points into the source. Define copy and move and test a copy, or `= delete` them.
 - Strong exception guarantee: do every step that can throw (allocation, copying a key) before the first change to the object's state.
 - FetchContent: pin `URL` with `URL_HASH SHA256=...`, or `GIT_TAG` with a commit SHA. Add tests only `if(PROJECT_IS_TOP_LEVEL)` (CMake 3.21+), so a project that consumes the library neither downloads nor builds them.
 

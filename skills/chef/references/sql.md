@@ -55,6 +55,6 @@ extended_capitalisation_policy = lower
 
 ## Pitfalls
 
-- A plain `.sql` migration run by `psql` is not one transaction, and `psql` exits 0 after a failed statement: wrap it in `BEGIN; ... COMMIT;` or run `psql --single-transaction -v ON_ERROR_STOP=1`. A statement that cannot run in a transaction (`CREATE INDEX CONCURRENTLY`) gets its own migration.
+- A plain `.sql` migration run by `psql` is not one transaction, and `psql` exits 0 after a failed statement: wrap it in `BEGIN; ... COMMIT;` or pass `--single-transaction`, and always pass `-v ON_ERROR_STOP=1`. A statement that cannot run in a transaction (`CREATE INDEX CONCURRENTLY`) gets its own migration.
 
 Order before done: `sqlfluff fix` then `sqlfluff lint` then migrations from empty then the database tests.
