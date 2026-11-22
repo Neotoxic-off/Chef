@@ -21,7 +21,7 @@ CheckOptions:
 
 ## Warnings as errors
 
-In `CMakePresets.json`, set `"CMAKE_COMPILE_WARNING_AS_ERROR": "ON"` and `"CMAKE_EXPORT_COMPILE_COMMANDS": "ON"` in the base preset (CMake 3.24+). Per target:
+In `CMakePresets.json`, set `"CMAKE_EXPORT_COMPILE_COMMANDS": "ON"` in the base preset. Per own target, `set_target_properties(app PROPERTIES COMPILE_WARNING_AS_ERROR ON)` (CMake 3.24+; not the global `CMAKE_COMPILE_WARNING_AS_ERROR`, which also reaches FetchContent dependencies) and:
 
 ```cmake
 target_compile_options(app PRIVATE
@@ -52,6 +52,11 @@ Add an `asan` preset with `-fsanitize=address,undefined -fno-omit-frame-pointer`
   ```
 - Mutation testing: Mull (works on LLVM IR, so it handles C; match the Mull build to your Clang major version).
 - Fuzz parsers with libFuzzer (`-fsanitize=fuzzer,address`).
+
+## Pitfalls
+
+- FetchContent: pin `URL` with `URL_HASH SHA256=...`, or `GIT_TAG` with a commit SHA. Add tests only `if(PROJECT_IS_TOP_LEVEL)` (CMake 3.21+), so a project that consumes the library neither downloads nor builds them.
+- A struct that points into itself (a buffer and a cursor into it) is broken by plain assignment: copy it through a function that fixes the pointer, and test the copy.
 
 Order before done: `clang-format` then `clang-tidy` then build then `ctest` on the `asan` and coverage presets.
 

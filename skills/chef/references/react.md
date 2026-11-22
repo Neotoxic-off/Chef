@@ -59,3 +59,7 @@ Builds on `typescript.md`. Written for React 19.3, eslint-plugin-react-hooks 7.1
 - `await user.click(...)` then assert with `findBy*` for async UI. No manual `act()` around RTL helpers.
 - Mock the network at the boundary with MSW, not the hooks or the store.
 - Playwright for flows across pages; add `@axe-core/playwright` checks on key pages.
+
+## Pitfalls
+
+- State that indexes into props (a page, a selected id) can point past them when the props shrink. Clamping it at render hides that until they grow back: reset it with a `key`, or set it during render when the prop changes, and test shrink then grow.
