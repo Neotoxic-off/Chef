@@ -30,8 +30,8 @@ kotlin {
 ```
 
 - Keep `.editorconfig` as the single source of style for ktlint and the IDE.
-- detekt fails on any finding by default (`maxIssues: 0`); do not raise it and never `@Suppress`: fix the cause, or ask the user.
-- detekt must match the project's Kotlin: 1.23.x supports only Kotlin 2.0, so Kotlin 2.4 needs 2.0.0-alpha.6 (a prerelease, the only line built for 2.4). Check the compatibility table at detekt.dev before changing either version.
+- detekt fails on any finding by default (`failOnSeverity = Error`); never lower it, set `ignoreFailures` or `@Suppress`: fix the cause, or ask the user.
+- detekt must match the project's Kotlin: 1.23.8 is built for Kotlin 2.0.21; Kotlin 2.4 needs the 2.0.0 alphas (prereleases; alpha.5 needs Gradle 9.5+ and JDK 25). Check the compatibility table at detekt.dev before changing either version.
 
 ## Code
 
