@@ -118,9 +118,10 @@ ROW_SHOWN: dict[str, str] = {"$": "${value:.3f}", "%": "{value:.0f}%", "/10": "{
 def rows_chart(theme: Theme, chart: Chart, rows: list[tuple[str, dict[str, float]]], series: list[Series]) -> str:
     """One row per task, one thin bar per series; values are printed next to each bar."""
     body: list[str] = [text(0, 26, chart.title, theme.ink, 18, 600)]
-    body += legend(theme, 26, [(entry.color, entry.name) for entry in series])
+    # Under the title, not beside it: a long title would run into the legend.
+    body += legend(theme, 54, [(entry.color, entry.name) for entry in series])
     bar_width: float = WIDTH - LABEL_WIDTH - VALUE_WIDTH
-    y: float = 56.0
+    y: float = 82.0
     for name, values in rows:
         block_height: float = len(series) * (BAR_HEIGHT + BAR_GAP) - BAR_GAP
         body += [text(0, y + block_height / 2 + 5, TASK_NAMES.get(name, name), theme.ink, 14, 600)]

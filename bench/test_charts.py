@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 import charts
@@ -26,6 +27,18 @@ def test_quality_chart_shows_each_criterion_then_each_reference_with_one_bar_per
     assert "Plain Claude" in svg and "Chef 1.5" in svg and "Chef 1.4" not in svg
     assert ">7.5<" in svg and ">8.2<" in svg
     assert charts.LIGHT.chef in svg
+
+
+def test_rows_chart_puts_the_legend_on_its_own_line_under_the_title() -> None:
+    chart: charts.Chart = charts.Chart("A long title " * 6, "label", 10.0, "/10")
+    series: list[charts.Series] = [charts.Series("none", "Plain Claude", "#111111")]
+
+    svg: str = charts.rows_chart(charts.LIGHT, chart, [("go", {"none": 5.0})], series)
+
+    title: re.Match[str] | None = re.search(r'<text x="[^"]*" y="([^"]*)"[^>]*>A long title', svg)
+    legend: re.Match[str] | None = re.search(r'<text x="[^"]*" y="([^"]*)"[^>]*>Plain Claude<', svg)
+    assert title is not None and legend is not None
+    assert float(legend.group(1)) > float(title.group(1))
 
 
 def test_arm_shades_give_the_newest_chef_the_chef_color_and_older_ones_lighter_shades() -> None:
