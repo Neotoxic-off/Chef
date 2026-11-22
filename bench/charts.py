@@ -14,6 +14,7 @@ SUMMARY: Path = Path(__file__).resolve().parent / "results" / "summary.json"
 HISTORY: Path = Path(__file__).resolve().parent / "results" / "history.json"
 STACKS: Path = Path(__file__).resolve().parent / "results" / "merge-stacks.json"
 MERGE: Path = Path(__file__).resolve().parent / "results" / "merge.json"
+QUALITY: Path = Path(__file__).resolve().parent / "results" / "quality.json"
 FONT: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 WIDTH: int = 880
 
@@ -27,10 +28,12 @@ class Theme:
     without: str
     old: str
     chef: str
+    # The chef before the previous one, lighter than `old`.
+    older: str
 
 
-LIGHT: Theme = Theme("", "#1F2328", "#59636E", "#E6E8EB", "#C9CED6", "#EDB59F", "#D97757")
-DARK: Theme = Theme("-dark", "#E6EDF3", "#9198A1", "#30363D", "#4A5059", "#8A4A35", "#D97757")
+LIGHT: Theme = Theme("", "#1F2328", "#59636E", "#E6E8EB", "#C9CED6", "#EDB59F", "#D97757", "#F6D9CD")
+DARK: Theme = Theme("-dark", "#E6EDF3", "#9198A1", "#30363D", "#4A5059", "#8A4A35", "#D97757", "#5C3427")
 
 
 def text(x: float, y: float, value: str, fill: str, size: int = 13, weight: int = 400, anchor: str = "start") -> str:
@@ -108,6 +111,9 @@ class Chart:
     unit: str
 
 
+ROW_SHOWN: dict[str, str] = {"$": "${value:.3f}", "%": "{value:.0f}%", "/10": "{value:.1f}"}
+
+
 def rows_chart(theme: Theme, chart: Chart, rows: list[tuple[str, dict[str, float]]], series: list[Series]) -> str:
     """One row per task, one thin bar per series; values are printed next to each bar."""
     body: list[str] = [text(0, 26, chart.title, theme.ink, 18, 600)]
@@ -120,12 +126,39 @@ def rows_chart(theme: Theme, chart: Chart, rows: list[tuple[str, dict[str, float
         for index, entry in enumerate(series):
             value: float = values.get(entry.key, 0.0)
             bar_y: float = y + index * (BAR_HEIGHT + BAR_GAP)
-            shown: str = f"${value:.3f}" if chart.unit == "$" else f"{value:.0f}%"
+            shown: str = ROW_SHOWN[chart.unit].format(value=value)
             body += [rect(LABEL_WIDTH, bar_y, bar_width, BAR_HEIGHT, theme.track)]
             body += [rect(LABEL_WIDTH, bar_y, max(bar_width * value / chart.top, 1.0), BAR_HEIGHT, entry.color)]
             body += [text(LABEL_WIDTH + bar_width + 8, bar_y + BAR_HEIGHT, shown, theme.muted, 12)]
         y += ROW_HEIGHT + block_height
     return svg(int(y), chart.label, body)
+
+
+QUALITY_ARMS: tuple[tuple[str, str], ...] = (
+    ("none", "Plain Claude"),
+    ("chef13", "Chef 1.3"),
+    ("chef14", "Chef 1.4"),
+    ("chef15", "Chef 1.5"),
+)
+QUALITY_MEAN_ROW: str = "Mean"
+
+
+def quality_chart(theme: Theme, quality: dict[str, Any]) -> str:
+    """The blind reviewer's quality score per reference, with the mean over all of them first."""
+    colors: dict[str, str] = {"none": theme.without, "chef13": theme.older, "chef14": theme.old, "chef15": theme.chef}
+    series: list[Series] = [Series(key, name, colors[key]) for key, name in QUALITY_ARMS if key in quality["arms"]]
+    mean: dict[str, float] = {arm: values["quality"] for arm, values in quality["arms"].items()}
+    # Rows name the reference file, not the main bench's task label of the same name.
+    references: list[tuple[str, dict[str, float]]] = [(f"{task}.md", scores) for task, scores in quality["tasks"].items()]
+    rows: list[tuple[str, dict[str, float]]] = [(QUALITY_MEAN_ROW, mean), *references]
+    count: int = len(quality["tasks"])
+    chart: Chart = Chart(
+        f"Code quality, 0 to 10, by a blind reviewer: {count} most-used references, one task each",
+        f"Code quality score from 0 to 10 given by a blind reviewer, per reference and on average, for {count} tasks",
+        10.0,
+        "/10",
+    )
+    return rows_chart(theme, chart, rows, series)
 
 
 def cost_chart(theme: Theme, summary: dict[str, Any]) -> str:
@@ -545,6 +578,9 @@ def main() -> None:
         (OUT / f"cost{theme.suffix}.svg").write_text(cost_chart(theme, summary), encoding="utf-8")
         (OUT / f"pairwise{theme.suffix}.svg").write_text(pairwise_chart(theme, summary), encoding="utf-8")
         (OUT / f"cost-split{theme.suffix}.svg").write_text(split_chart(theme), encoding="utf-8")
+        if QUALITY.is_file():
+            quality: dict[str, Any] = json.loads(QUALITY.read_text(encoding="utf-8"))
+            (OUT / f"quality{theme.suffix}.svg").write_text(quality_chart(theme, quality), encoding="utf-8")
         if HISTORY.is_file():
             history: dict[str, Any] = json.loads(HISTORY.read_text(encoding="utf-8"))
             for key in HISTORY_METRICS:

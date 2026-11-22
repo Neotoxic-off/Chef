@@ -91,6 +91,15 @@ EOF
   [[ "${output}" != *"reached"* ]]
 }
 
+@test "BENCH_TASKS_DIR runs the tasks of another task set" {
+  local -r tasks_dir="${stub_dir}/quality"
+  mkdir -p "${tasks_dir}/slug"
+  printf 'Write a slug function.\n' >"${tasks_dir}/slug/prompt.md"
+  BENCH_TASKS_DIR="${tasks_dir}" TASKS="slug" run bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=
+  [ "${status}" -eq 0 ]
+  [ -f "${out_dir}/none/slug/1/stream.jsonl" ]
+}
+
 @test "refuses an existing out-dir without RESUME" {
   mkdir -p "${out_dir}"
   run bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=

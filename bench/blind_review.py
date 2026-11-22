@@ -24,6 +24,7 @@ from typing import Any
 from score import refuse_failed_runs
 
 BENCH_DIR: Path = Path(__file__).resolve().parent
+TASKS_DIR: Path = BENCH_DIR / "tasks"
 JUDGE_MODEL: str = "claude-opus-5-5"
 JUDGE_BUDGET_USD: str = "2"
 JUDGE_TOOLS: str = "Read,Glob,Grep"
@@ -136,15 +137,15 @@ def reviewer_id(seat: str, merge_rule: str) -> str:
     return hashlib.sha256("\0".join(parts).encode("utf-8")).hexdigest()[:REVIEWER_ID_LENGTH]
 
 
-def judge_prompt(task: str, seat: str) -> str:
+def judge_prompt(task: str, seat: str, tasks_dir: Path = TASKS_DIR) -> str:
     template: str = (BENCH_DIR / "judge.md").read_text(encoding="utf-8")
-    task_text: str = (BENCH_DIR / "tasks" / task / "prompt.md").read_text(encoding="utf-8").strip()
+    task_text: str = (tasks_dir / task / "prompt.md").read_text(encoding="utf-8").strip()
     return template.replace("{role}", seat).replace("{task}", task_text)
 
 
-def run_judge(submission: Path, task: str, seat: str, review_path: Path) -> None:
+def run_judge(submission: Path, task: str, seat: str, review_path: Path, tasks_dir: Path = TASKS_DIR) -> None:
     command: list[str] = [
-        "claude", "-p", judge_prompt(task, seat),
+        "claude", "-p", judge_prompt(task, seat, tasks_dir),
         "--model", JUDGE_MODEL,
         "--output-format", "json",
         "--json-schema", json.dumps(REVIEW_SCHEMA),

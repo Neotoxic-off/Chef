@@ -2,7 +2,7 @@
 # Runs every task in bench/tasks once per arm and per run, in a fresh git folder each time.
 # Usage: bench/run.sh <out-dir> <runs> <arm>=<plugin-dir, a .md file used as CLAUDE.md, or empty> ...
 # Example: bench/run.sh /tmp/bench 2 none= old=/tmp/chef-0.8.1 new=/tmp/chef-new
-# Set TASKS="python bugfix" to run only those tasks. Needs Docker running and PYTHON (default: python)
+# Set TASKS="python bugfix" to run only those tasks, BENCH_TASKS_DIR=bench/quality for another task set. Needs Docker running and PYTHON (default: python)
 # able to import bench/score.py; the batch stops at the first run that gave no answer (usage limit).
 # RESUME=1 reuses an existing out-dir: runs that gave an answer are kept, the others are run again.
 # MAX_TOTAL_USD=20 stops before the next batch once the streams of the out-dir cost that much.
@@ -13,7 +13,7 @@ readonly MODEL="claude-sonnet-5-5"
 readonly MAX_BUDGET_USD="1"
 BENCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly BENCH_DIR
-readonly TASKS_DIR="${BENCH_DIR}/tasks"
+readonly TASKS_DIR="${BENCH_TASKS_DIR:-${BENCH_DIR}/tasks}"
 readonly PYTHON="${PYTHON:-python}"
 # Exit code of `score.py budget` when the cap is reached; any other failure is a crash.
 readonly BUDGET_REACHED=3

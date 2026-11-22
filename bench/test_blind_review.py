@@ -82,6 +82,15 @@ def test_judge_prompt_names_the_seat_and_the_task_only() -> None:
     assert "chef" not in prompt.lower()
 
 
+def test_judge_prompt_reads_the_task_from_another_task_set(tmp_path: Path) -> None:
+    (tmp_path / "slug").mkdir()
+    (tmp_path / "slug" / "prompt.md").write_text("Write a slug function.\n", encoding="utf-8")
+
+    prompt: str = blind_review.judge_prompt("slug", "a reviewer", tmp_path)
+
+    assert "Write a slug function." in prompt
+
+
 def test_copy_submission_leaves_out_gitignored_build_output(tmp_path: Path) -> None:
     workspace: Path = tmp_path / "workspace"
     for name, text in (

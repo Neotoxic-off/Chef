@@ -10,6 +10,21 @@ SUMMARY: dict[str, Any] = {
 }
 
 
+def test_quality_chart_shows_the_mean_then_each_reference_with_one_bar_per_arm() -> None:
+    quality: dict[str, Any] = {
+        "arms": {"none": {"quality": 5.5}, "chef15": {"quality": 8.25}},
+        "tasks": {"go": {"none": 5.0, "chef15": 8.0}, "python": {"none": 6.0, "chef15": 8.5}},
+    }
+
+    svg: str = charts.quality_chart(charts.LIGHT, quality)
+
+    assert "2 most-used references" in svg
+    assert svg.index(">Mean<") < svg.index(">go.md<") < svg.index(">python.md<")
+    assert "Plain Claude" in svg and "Chef 1.5" in svg and "Chef 1.4" not in svg
+    assert ">8.2<" in svg
+    assert charts.LIGHT.chef in svg
+
+
 def test_cost_chart_is_an_svg_with_an_accessible_label() -> None:
     svg: str = charts.cost_chart(charts.LIGHT, SUMMARY)
 
