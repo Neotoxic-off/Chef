@@ -70,6 +70,20 @@ void test_acquire_above_the_capacity_throws_and_changes_nothing() {
     check(bucket.available(start) == 4);
 }
 
+void test_a_throwing_acquire_neither_refills_nor_moves_the_time() {
+    ratelimit::TokenBucket bucket(4, 1, start);
+    check(bucket.try_acquire(4, start));
+    bool thrown = false;
+    try {
+        static_cast<void>(bucket.try_acquire(5, start + 1s));
+    } catch (const std::invalid_argument&) {
+        thrown = true;
+    }
+    check(thrown);
+    check(bucket.available(start + 500ms) == 0);
+    check(bucket.available(start + 1s) == 1);
+}
+
 void test_acquire_of_zero_tokens_succeeds_on_an_empty_bucket() {
     ratelimit::TokenBucket bucket(2, 1, start);
     check(bucket.try_acquire(2, start));
@@ -113,6 +127,14 @@ void test_an_earlier_time_adds_nothing_and_keeps_the_latest_time() {
     check(bucket.try_acquire(1, start + 11s));
 }
 
+void test_available_at_an_earlier_time_adds_nothing() {
+    ratelimit::TokenBucket bucket(1, 1, start);
+    check(bucket.try_acquire(1, start + 10s));
+    check(bucket.available(start + 5s) == 0);
+    check(bucket.available(start + 10500ms) == 0);
+    check(bucket.available(start + 11s) == 1);
+}
+
 }  // namespace
 
 int main() {
@@ -121,11 +143,13 @@ int main() {
     test_acquire_takes_tokens_or_nothing();
     test_acquire_of_the_whole_capacity_succeeds_when_full();
     test_acquire_above_the_capacity_throws_and_changes_nothing();
+    test_a_throwing_acquire_neither_refills_nor_moves_the_time();
     test_acquire_of_zero_tokens_succeeds_on_an_empty_bucket();
     test_tokens_refill_at_the_rate();
     test_partial_refills_accumulate_between_calls();
     test_refill_stops_at_the_capacity();
     test_refill_at_the_largest_settings_after_a_long_idle_is_exact();
     test_an_earlier_time_adds_nothing_and_keeps_the_latest_time();
+    test_available_at_an_earlier_time_adds_nothing();
     return failures == 0 ? 0 : 1;
 }

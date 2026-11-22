@@ -70,9 +70,11 @@ teardown() {
 }
 
 @test "starts no run when an image cannot be pulled" {
+  local first_image=""
+  first_image="$(grep -m1 -v '^$' "${BATS_TEST_DIRNAME}/../scripts/container-images.txt")"
   STUB_PULL_FAILS=1 run bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=
   [ "${status}" -eq 1 ]
-  [[ "${output}" == *"cannot pull golangci/golangci-lint:v2.15.0"* ]]
+  [[ "${output}" == *"cannot pull ${first_image}"* ]]
   [ ! -e "${STUB_LOG}" ]
 }
 

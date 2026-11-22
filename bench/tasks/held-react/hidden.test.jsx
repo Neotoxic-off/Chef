@@ -20,11 +20,18 @@ function tags() {
 }
 
 function alertText() {
-  return screen.queryByRole("alert")?.textContent.trim() ?? null;
+  // An always-mounted live region with no text counts as no alert.
+  return screen.queryByRole("alert")?.textContent.trim() || null;
+}
+
+// Fires both events, so an answer may listen to onChange or onInput.
+function type(text) {
+  fireEvent.input(input(), { target: { value: text } });
+  fireEvent.change(input(), { target: { value: text } });
 }
 
 function enter(text) {
-  fireEvent.change(input(), { target: { value: text } });
+  type(text);
   return fireEvent.keyDown(input(), { key: "Enter" });
 }
 
@@ -68,12 +75,13 @@ test("the initial tags array is never mutated", () => {
   expect(tags()).toEqual(["hooks"]);
 });
 
-test("a whitespace-only entry is ignored", () => {
+test("a whitespace-only entry is ignored and its Enter is prevented", () => {
   const onChange = vi.fn();
   render(<TagInput onChange={onChange} />);
 
-  enter("   ");
+  const notPrevented = enter("   ");
 
+  expect(notPrevented).toBe(false);
   expect(tags()).toEqual([]);
   expect(alertText()).toBeNull();
   expect(onChange).not.toHaveBeenCalled();
@@ -83,8 +91,9 @@ test("a duplicate in another letter case is rejected and stays in the input", ()
   const onChange = vi.fn();
   render(<TagInput initialTags={["React"]} onChange={onChange} />);
 
-  enter(" react ");
+  const notPrevented = enter(" react ");
 
+  expect(notPrevented).toBe(false);
   expect(alertText()).toBe("Tag already added");
   expect(tags()).toEqual(["React"]);
   expect(input().value).toBe(" react ");
@@ -95,7 +104,7 @@ test("changing the input text hides the alert", () => {
   render(<TagInput initialTags={["react"]} />);
   enter("react");
 
-  fireEvent.change(input(), { target: { value: "reac" } });
+  type("reac");
 
   expect(alertText()).toBeNull();
 });
@@ -107,6 +116,23 @@ test("a tag of exactly 20 characters is accepted", () => {
 
   expect(tags()).toEqual(["a".repeat(20)]);
   expect(alertText()).toBeNull();
+});
+
+test("the length is measured after trimming", () => {
+  render(<TagInput />);
+
+  enter(`  ${"a".repeat(20)}  `);
+
+  expect(tags()).toEqual(["a".repeat(20)]);
+  expect(alertText()).toBeNull();
+});
+
+test("initialTags is read on the first render only", () => {
+  const { rerender } = render(<TagInput initialTags={["react"]} />);
+
+  rerender(<TagInput initialTags={["css", "html"]} />);
+
+  expect(tags()).toEqual(["react"]);
 });
 
 test("a tag of 21 characters is rejected", () => {
@@ -150,7 +176,7 @@ test("Backspace in an empty input removes the last tag", () => {
 
 test("Backspace with text in the input keeps the tags", () => {
   render(<TagInput initialTags={["react", "css"]} />);
-  fireEvent.change(input(), { target: { value: "x" } });
+  type("x");
 
   fireEvent.keyDown(input(), { key: "Backspace" });
 
