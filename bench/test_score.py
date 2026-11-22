@@ -143,7 +143,15 @@ def test_usage_metrics_splits_tokens_and_counts_tool_traffic(tmp_path: Path) -> 
         "type": "assistant",
         "message": {"content": [{"type": "text", "text": "hi"}, {"type": "tool_use", "name": "Read"}]},
     }
-    tool_result: dict[str, Any] = {"type": "user", "message": {"content": [{"type": "tool_result", "content": "abc"}]}}
+    tool_result: dict[str, Any] = {
+        "type": "user",
+        "message": {
+            "content": [
+                {"type": "tool_result", "content": "abc"},
+                {"type": "tool_result", "content": "no", "is_error": True},
+            ]
+        },
+    }
     result: dict[str, Any] = {
         "type": "result",
         "subtype": "success",
@@ -169,7 +177,8 @@ def test_usage_metrics_splits_tokens_and_counts_tool_traffic(tmp_path: Path) -> 
         "cache_read_tokens": 100,
         "output_tokens": 9,
         "tool_calls": 1,
-        "tool_result_chars": len(json.dumps("abc", ensure_ascii=False)),
+        "tool_result_chars": len(json.dumps("abc", ensure_ascii=False)) + len(json.dumps("no", ensure_ascii=False)),
+        "failed_tool_calls": 1,
         "completed": True,
     }
 

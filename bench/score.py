@@ -66,6 +66,7 @@ USAGE_KEYS: tuple[str, ...] = (
     "output_tokens",
     "tool_calls",
     "tool_result_chars",
+    "failed_tool_calls",
 )
 
 
@@ -137,10 +138,11 @@ def stream_events(stream_path: Path) -> list[dict[str, Any]]:
     return events
 
 
-def tool_traffic(events: list[dict[str, Any]]) -> tuple[int, int]:
-    """Count tool calls, and the characters their results put into the context."""
+def tool_traffic(events: list[dict[str, Any]]) -> tuple[int, int, int]:
+    """Count tool calls, the characters their results put into the context, and the calls that failed."""
     calls: int = 0
     result_chars: int = 0
+    failed: int = 0
     for event in events:
         content: Any = event.get("message", {}).get("content")
         if not isinstance(content, list):
@@ -148,10 +150,10 @@ def tool_traffic(events: list[dict[str, Any]]) -> tuple[int, int]:
         if event.get("type") == "assistant":
             calls += sum(1 for block in content if block.get("type") == "tool_use")
             continue
-        result_chars += sum(
-            len(json.dumps(block.get("content"), ensure_ascii=False)) for block in content if block.get("type") == "tool_result"
-        )
-    return calls, result_chars
+        results: list[dict[str, Any]] = [block for block in content if block.get("type") == "tool_result"]
+        result_chars += sum(len(json.dumps(block.get("content"), ensure_ascii=False)) for block in results)
+        failed += sum(1 for block in results if block.get("is_error") is True)
+    return calls, result_chars, failed
 
 
 def result_event(events: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -187,7 +189,7 @@ def usage_metrics(stream_path: Path) -> Metrics:
     if result is None:
         return dict.fromkeys(USAGE_KEYS) | {"completed": False}
     models: list[dict[str, int]] = list(result.get("modelUsage", {}).values())
-    calls, result_chars = tool_traffic(events)
+    calls, result_chars, failed_calls = tool_traffic(events)
     return {
         "cost_usd": result.get("total_cost_usd"),
         "seconds": result["duration_ms"] / 1000 if "duration_ms" in result else None,
@@ -198,6 +200,7 @@ def usage_metrics(stream_path: Path) -> Metrics:
         "output_tokens": sum(usage.get("outputTokens", 0) for usage in models),
         "tool_calls": calls,
         "tool_result_chars": result_chars,
+        "failed_tool_calls": failed_calls,
         "completed": result.get("subtype") == "success" and not result.get("is_error", False),
     }
 

@@ -17,6 +17,11 @@ echo "${STUB_RESULT}"
 EOF
   cat > "${stub_dir}/docker" <<'EOF'
 #!/usr/bin/env bash
+if [[ "$1" == "pull" ]]; then
+  echo "${*: -1}" >>"${STUB_PULLS}"
+  [[ -z "${STUB_PULL_FAILS:-}" ]]
+  exit
+fi
 [[ "${STUB_DOCKER_UP}" == "yes" ]] && echo "29.0.0"
 [[ "${STUB_DOCKER_UP}" == "yes" ]]
 EOF
@@ -26,7 +31,8 @@ EOF
   STUB_RESULT='{"type":"result","subtype":"success","is_error":false,"terminal_reason":"completed","total_cost_usd":0.01}'
   TASKS="python go"
   STUB_LOG="${stub_dir}/claude.log"
-  export PATH STUB_DOCKER_UP STUB_RESULT TASKS STUB_LOG
+  STUB_PULLS="${stub_dir}/pulls.log"
+  export PATH STUB_DOCKER_UP STUB_RESULT TASKS STUB_LOG STUB_PULLS
 }
 
 teardown() {
@@ -55,6 +61,19 @@ teardown() {
   [ "${status}" -eq 1 ]
   [[ "${output}" == *"Docker daemon is not reachable"* ]]
   [ ! -e "${out_dir}" ]
+}
+
+@test "pulls every listed image before the first run" {
+  run bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=
+  [ "${status}" -eq 0 ]
+  diff <(grep -v '^$' "${BATS_TEST_DIRNAME}/../scripts/container-images.txt") "${STUB_PULLS}"
+}
+
+@test "starts no run when an image cannot be pulled" {
+  STUB_PULL_FAILS=1 run bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"cannot pull golangci/golangci-lint:v2.15.0"* ]]
+  [ ! -e "${STUB_LOG}" ]
 }
 
 @test "refuses an existing out-dir without RESUME" {

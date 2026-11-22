@@ -2,6 +2,10 @@
 
 How chef was measured, task by task. The short version is in the [main README](../README.md).
 
+## Held-out tasks and failed calls (1.5, not run yet)
+
+Chef 1.5's `## Pitfalls` lines come from what reviewers rejected in chef 1.4's answers to the PowerShell, C++, React and SQL tasks, so a gain on those tasks would partly be teaching to the test. Three held-out tasks measure them instead: `held-powershell` (a byte-size parser module), `held-cpp` (a token-bucket rate limiter) and `held-react` (a tag input). Each was written by an agent that read neither the references nor the pitfalls, with a hidden test, a golden solution and a one-line slip that `test_fixtures.py` checks like every other task. Every score now also counts `failed_tool_calls` (tool results with `is_error`; in 1.4, a third of chef's came from its own `.chef.md` probe), and `run.sh` pulls every image in [`scripts/container-images.txt`](../scripts/container-images.txt) before the first run, so no arm pays for a first pull.
+
 ## Cost to mergeable (1.2)
 
 The headline numbers in the README. Same 13 tasks as below, 39 runs per arm: plain Claude and chef 1.1 reuse their first answers from the 1.1 run, chef 1.2 is new (Claude Code 2.1.328 and 2.1.329). Chefs 1.3 and 1.4 were run later and reviewed with the 1.2 loop (`a9c043f`, same reviewer `1.2-loop`, the Prometheus seed of the earlier runs), so all five arms stay comparable. Chef 1.4: 92% first answer accepted, 0.10 fix rounds per task, $6.61 for the first answers and $7.22 with the fixes; every first answer passes its hidden test or check. A blind Opus reviewer, the same panel prompt as in [`judge.md`](judge.md), decides whether it would merge each first answer and lists the changes it requires (`blocker` or `major`). If it would not merge, those changes go back as a new prompt to the same setup in that workspace, and a fresh reviewer looks again, up to 2 fix rounds. The reviewer's copy follows `.gitignore`, so every arm was reviewed again with it. Harness: [`merge_loop.py`](merge_loop.py), results: [`results/merge.json`](results/merge.json).

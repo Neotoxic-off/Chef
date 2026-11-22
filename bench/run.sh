@@ -21,6 +21,17 @@ die() {
   exit 1
 }
 
+# Pull the images the references run before any arm starts, so no arm pays for a first pull and the
+# arms that run in parallel compare on a warm cache.
+pull_images() {
+  local -r images_file="${BENCH_DIR}/../scripts/container-images.txt"
+  local image=""
+  while read -r image; do
+    [[ -n "${image}" ]] || continue
+    docker pull --quiet "${image}" >/dev/null || die "cannot pull ${image}, listed in ${images_file}"
+  done <"${images_file}"
+}
+
 prepare_workspace() {
   local -r task_dir="$1"
   local -r workspace="$2"
@@ -105,6 +116,7 @@ main() {
   local -i pid=0
   [[ "${RESUME:-}" == 1 || ! -e "${out_dir}" ]] || die "${out_dir} exists: use a new out-dir, or RESUME=1"
   docker info --format '{{.ServerVersion}}' >/dev/null || die "the Docker daemon is not reachable: start it first"
+  pull_images
   "${PYTHON}" "${BENCH_DIR}/score.py" check || die "PYTHON=${PYTHON} cannot run bench/score.py (it needs PyYAML)"
   local kept=""
   for arm in "$@"; do

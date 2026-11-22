@@ -44,6 +44,9 @@ MAIN_METRIC: dict[str, str] = {
     "c": "hidden_test_passes",
     "cpp": "hidden_test_passes",
     "kotlin": "hidden_test_passes",
+    "held-powershell": "hidden_test_passes",
+    "held-cpp": "hidden_test_passes",
+    "held-react": "hidden_test_passes",
 }
 SEEDED_FIXTURE_TASKS: tuple[str, ...] = (
     "stream-import",
@@ -79,6 +82,9 @@ GOLDEN_SLIPS: dict[str, tuple[str, str, str]] = {
     "kotlin": ("src/main/kotlin/com/example/csv/CsvLine.kt", "index += 2", "index += 1"),
     "c": ("src/ringbuf.c", "length > buffer->capacity - buffer->count", "buffer->count + length > buffer->capacity"),
     "cpp": ("include/lru_cache.hpp", "entries_.size() == capacity_", "entries_.size() > capacity_"),
+    "held-powershell": ("ByteSize.psm1", "[System.MidpointRounding]::AwayFromZero", "[System.MidpointRounding]::ToEven"),
+    "held-cpp": ("src/token_bucket.cpp", "if (tokens > capacity_) {", "if (tokens >= capacity_) {"),
+    "held-react": ("src/TagInput.jsx", "tag.length > MAX_TAG_LENGTH", "tag.length >= MAX_TAG_LENGTH"),
 }
 TOOLS: dict[str, tuple[str, ...]] = {
     "http-retry": ("node", "npx"),
@@ -90,6 +96,7 @@ TOOLS: dict[str, tuple[str, ...]] = {
     "csharp": ("dotnet",),
     "node": ("node", "npm"),
     "react": ("node", "npm"),
+    "held-react": ("node", "npm"),
 }
 DOCKER_TASKS: frozenset[str] = frozenset(
     {
@@ -106,6 +113,8 @@ DOCKER_TASKS: frozenset[str] = frozenset(
         "sql",
         "php",
         "powershell",
+        "held-powershell",
+        "held-cpp",
     }
 )
 # Push CI sets it to "off": image pulls and builds do not fit its time limit; fixtures.yml runs them weekly.

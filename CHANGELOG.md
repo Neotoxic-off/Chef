@@ -9,6 +9,7 @@
 - Container mounts use `src=$(cygpath -m "$PWD")` where `cygpath` exists, with `MSYS_NO_PATHCONV=1`: Git Bash shows `%TEMP%` as `/tmp`, so a plain `$PWD` mount there was an empty folder (go.md and prometheus.md had it too).
 - C and C++: warnings are errors on the project's own targets (`COMPILE_WARNING_AS_ERROR`), no longer through the global `CMAKE_COMPILE_WARNING_AS_ERROR` in the presets, which also reached FetchContent dependencies (GoogleTest 1.17 does not build under Clang 22 with it).
 - `## Pitfalls`, one generic line each, from what blind reviewers rejected in chef 1.4 answers, each checked on the real tool: C++ (rule of zero with members that point into each other, strong exception guarantee, FetchContent pins and tests only when top level), C, PowerShell (case-insensitive hashtables, .NET relative paths), React (state that indexes into props), SQL (`psql` exits 0 after a failed statement).
+- Benchmark: three held-out tasks (`held-powershell`, `held-cpp`, `held-react`), written by agents that read neither the references nor the pitfalls, with golden and slip fixtures; every score counts `failed_tool_calls`; `run.sh` pulls the reference images before the first run.
 - `scripts/check_references.py` reads every `docker run` in the references: the image after the options must have a tag and be listed in `scripts/container-images.txt`, and the working folder is mounted as `$src`, never `$PWD`; a weekly `images` workflow fails when a listed image leaves its registry.
 
 ## 1.4.0 (2026-11-20)
