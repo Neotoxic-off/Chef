@@ -72,6 +72,12 @@ CI: `shfmt --diff .` (fails on any diff). Locally: `shfmt --write .`.
   Run `bashcov -- bats test/`. Shell has no branch coverage tool; cover each branch with a test.
 - No mutation testing tool exists for shell.
 
+## Pitfalls
+
+- Check that an input can be read with `[[ -r "$file" && ! -d "$file" ]]`, not `-f`: process substitution `<(...)`, named pipes and `/dev/stdin` are readable but not regular files.
+- A failed redirection (`exec 0<"$file"`) prints bash's own error before yours: check first so the message is yours, and keep the redirection's own failure fatal.
+- Map a tool's unexpected exit status (awk, jq) to your own documented error and code, not its message.
+
 Order before done: `shfmt --write .` then `shellcheck` then `bats test/`.
 
-Tools not installed: run them from their images in one call (shfmt rewrites the files instead of printing diffs, ShellCheck prints one line per finding) (`MSYS_NO_PATHCONV=1` and `cygpath -m` stop Git Bash on Windows from rewriting the paths): `export MSYS_NO_PATHCONV=1; src=$PWD; command -v cygpath >/dev/null && src=$(cygpath -m "$PWD"); rc=0; docker run --rm -v "$src:/w" -w /w mvdan/shfmt:v3.14.1 -w . || rc=1; git ls-files -co --exclude-standard -z '*.sh' | xargs -0 docker run --rm -v "$src:/w" -w /w koalaman/shellcheck:v0.11.0 -f gcc || rc=1; docker run --rm -v "$src:/code" bats/bats:1.14.0 test/ || rc=1; [ "$rc" -eq 0 ]`. The bats image has no `bats-support` or `bats-assert`: keep them in the repo as submodules.
+Tools not installed: run them from their images in one call (shfmt rewrites the files, ShellCheck prints one line per finding; `MSYS_NO_PATHCONV=1` and `cygpath -m` stop Git Bash on Windows from rewriting the paths): `export MSYS_NO_PATHCONV=1; src=$PWD; command -v cygpath >/dev/null && src=$(cygpath -m "$PWD"); rc=0; docker run --rm -v "$src:/w" -w /w mvdan/shfmt:v3.14.1 -w . || rc=1; git ls-files -co --exclude-standard -z '*.sh' | xargs -0 docker run --rm -v "$src:/w" -w /w koalaman/shellcheck:v0.11.0 -f gcc || rc=1; docker run --rm -v "$src:/code" bats/bats:1.14.0 test/ || rc=1; [ "$rc" -eq 0 ]`. The bats image has no `bats-support` or `bats-assert`: keep them in the repo as submodules.

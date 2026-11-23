@@ -6,6 +6,9 @@
   - PowerShell: modules install once into the `chef-pwsh-modules` volume instead of on every check (about 3 s per check instead of about 15 s); files are formatted first; one line per finding and failed test (about 350 characters instead of about 3,300); the lint is retried on PSScriptAnalyzer 1.25.0's `NullReferenceException` race, which failed checks at random.
   - Bash, C, C++: `shfmt -w` and `clang-format -i` fix the files instead of printing diffs; ShellCheck prints one line per finding.
 - `lean.md`, from ponytail 5 (its agentic bench: 26% cheaper, 53% fewer lines, correctness unchanged): one line when it reads at a glance; no type conversion nobody needs; equal options go to the one correct on edge cases; one parametrized test per behavior; config files hold only what differs from the defaults; targeted reads; after a fix, rerun only the failing check. Not benchmarked on chef yet.
+- Where chef did worse than plain Claude in the 1.5 bench:
+  - PowerShell modules no longer set `$ErrorActionPreference = 'Stop'` at module scope: it turned every `WriteError` into a terminating error and stopped the pipeline at the first bad input (held-powershell, 8 of 10 against 9 of 10 without chef; checked in a container).
+  - Bash pitfalls: test readability with `-r` and `! -d`, not `-f` (process substitution and pipes are not regular files); check before a redirection so the error message is yours; map a tool's unexpected exit status to your own (bash, 7 of 10 against 10 of 10 without chef).
 - Docker: hardening (`cap_drop`, `read_only`, `no-new-privileges`) only on the images you build, not on Redis or PostgreSQL; a Dockerfile copies a lockfile only once it exists. Python: dependencies are added with `uv add`, which refuses a name that does not exist (chef 1.5 typed `httpx2`).
 
 ## 1.5.0 (2026-11-22)
