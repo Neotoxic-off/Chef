@@ -63,6 +63,17 @@
       "first_review_seconds": 24.7,
       "back_and_forth_seconds": 7.0
     },
+    "chef15": {
+      "runs": 39.0,
+      "merged_first_time": 0.923,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.08,
+      "first_answer_cost": 7.53,
+      "total_cost": 7.87,
+      "cost_per_merged_run": 0.202,
+      "reviewer_cost": 3.92,
+      "lines_to_review": 265
+    },
     "none": {
       "runs": 39.0,
       "merged_first_time": 0.59,

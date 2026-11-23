@@ -256,8 +256,8 @@ OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
 # The break-even and time charts compare these two on the latest bench (results/merge-15.json).
 LATEST_CHEF: tuple[str, str] = ("chef15", "Chef 1.5")
 PREVIOUS_CHEF: tuple[str, str] = ("chef14", "Chef 1.4")
-# The 13-task bench (results/merge.json) ran up to 1.4.
-OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef13": "Chef 1.3", "chef14": "Chef 1.4"}
+# The 13-task bench (results/merge.json), every arm reviewed with the 1.2 loop.
+OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef13": "Chef 1.3", "chef14": "Chef 1.4", "chef15": "Chef 1.5"}
 PANEL_WIDTH: float = 150.0
 PANEL_STEP: float = 230.0
 
