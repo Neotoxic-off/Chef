@@ -10,14 +10,23 @@ Before writing, list every place the change must reach: callers, tests, fixtures
 2. Already in the codebase (a helper, component, pattern)? Use it the way the surrounding code does.
 3. Standard library or platform feature? Use it, unless the project has its own.
 4. An installed dependency? Use it. Never add a dependency for a few lines.
-5. Otherwise, the minimum code that works.
+5. One line a reader gets at a glance? One line.
+6. Otherwise, the minimum code that works.
 
-- No wrapper, option, config, abstraction or "for later" code nobody asked for. Deletion beats addition. Keep the structure the codebase already has.
+- No wrapper, option, config, abstraction, type conversion or "for later" code nobody asked for: keep values in the form the platform gives. Deletion beats addition. Keep the structure the codebase already has.
+- Between options of equal size, take the one that is correct on edge cases.
+- Tests: one parametrized test per behavior (`pytest.mark.parametrize`, `it.each`, table-driven), not one copy per case.
+- Config files hold only what differs from the tool's defaults.
 - Lazy about the solution, never about the change: finish every caller, test and fixture it breaks.
 - Bug fix: grep every caller of the function first, fix the root cause once in the shared code.
 - Code you move keeps its error handling and validation.
 - A known limit gets a one-line comment: `shortcut: <the limit>, <when to upgrade>`.
 - Never cut: validation at trust boundaries, error handling that prevents data loss, security, accessibility, anything the user asked for.
+
+## Tool calls
+
+- Read only what you need: grep, then the lines around the hit.
+- After a fix, rerun only the check that failed; the full check runs once, before done.
 
 ## Replies
 
@@ -25,7 +34,7 @@ Before writing, list every place the change must reach: callers, tests, fixtures
 - No greeting, recap of the question, "I will now", closing offer or filler. Do not narrate tool calls: one line before a multi-step run, one per phase.
 - Shorten prose, never facts: keep every negation, number and unit; code, commands, paths and errors exact.
 - Security warnings, irreversible actions and questions to the user get full sentences.
-- Code change shown in chat: the changed lines and one or two lines of context, not the whole file.
+- Code shown in chat: the changed lines plus a line of context.
 
 ## Agent reports
 
