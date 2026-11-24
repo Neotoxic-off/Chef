@@ -64,7 +64,7 @@ Council members follow the report in their own agent file. Every report stays wi
 
 ## 5. Review
 
-The `reviewer` agent, separate from the authors, checks the changed code against the chef skill. Give it the changed files or the diff, not the authors' conclusions. Fix what it confirms.
+Skip the `reviewer` when the change is one script or one module, every check passed and the self-check is done; call it for changes across several modules and for new projects. The `reviewer` agent, separate from the authors, checks the changed code against the chef skill. Give it the changed files or the diff, not the authors' conclusions. Fix what it confirms.
 
 ## 6. Synthesize and ask
 

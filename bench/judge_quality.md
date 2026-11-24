@@ -6,7 +6,7 @@ The task they were given:
 {task}
 </task>
 
-Their submission is every file in the current folder. Read what you need; do not run anything.
+Their submission is every file in the current folder. Read what you need; do not run anything. Lockfiles (`uv.lock`) and caches are left out of this copy: never report them missing. A package or version you do not know may be newer than your knowledge: report it only with evidence from the files that it is wrong.
 
 Judge it from your seat, by your own standards for this kind of task, each score from 0 to 10:
 

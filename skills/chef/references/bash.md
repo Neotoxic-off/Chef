@@ -77,6 +77,8 @@ CI: `shfmt --diff .` (fails on any diff). Locally: `shfmt --write .`.
 - Check that an input can be read with `[[ -r "$file" && ! -d "$file" ]]`, not `-f`: process substitution `<(...)`, named pipes and `/dev/stdin` are readable but not regular files.
 - A failed redirection (`exec 0<"$file"`) prints bash's own error before yours: check first so the message is yours, and keep the redirection's own failure fatal.
 - Map a tool's unexpected exit status (awk, jq) to your own documented error and code, not its message.
+- Feed a file to awk by redirection (`awk '...' < "$file"`): awk reads an argument shaped like `name=value` as a variable assignment, not a file.
+- Keep an awk or sed program inside the script: a separate file found through `$0` or `BASH_SOURCE` breaks when the script is symlinked or run without a slash in its path.
 
 Order before done: `shfmt --write .` then `shellcheck` then `bats test/`.
 

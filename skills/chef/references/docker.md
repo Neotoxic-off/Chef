@@ -30,7 +30,7 @@ trustedRegistries:
 - Exec form for `CMD`/`ENTRYPOINT` (`["app", "--flag"]`) so signals reach the process.
 - Add a `HEALTHCHECK` (or a probe in the orchestrator) that hits a real readiness endpoint.
 - Keep a `.dockerignore` that excludes `.git`, `node_modules`, build output, `.env*` and local secrets.
-- Compose: no top-level `version:` key (obsolete); use `name:` for the project name. Use `depends_on` with `condition: service_healthy` only for a dependency the service needs to start (a database before the app). A monitor (Prometheus) never waits on what it monitors.
+- Compose: no top-level `version:` key (obsolete); use `name:` for the project name. Use `depends_on` with `condition: service_healthy` only for a dependency the service needs to start (a database before the app). A monitor (Prometheus) never waits on what it monitors. A service the app depends on reaches it through configuration the app reads (`REDIS_URL=redis://redis:6379/0` in `environment:`), not through `depends_on` alone.
 
 ```dockerfile
 FROM golang:1.27@sha256:<digest> AS build
