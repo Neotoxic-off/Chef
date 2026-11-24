@@ -4,7 +4,7 @@ setup() {
   cat > "${stub_dir}/claude" <<'EOF'
 #!/usr/bin/env bash
 if [[ "$1" == "--version" ]]; then
-  echo "stub"
+  echo "${STUB_VERSION:-stub}"
   exit 0
 fi
 pwd >>"${STUB_LOG}"
@@ -127,6 +127,15 @@ EOF
   RESUME=1 run bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=/other/plugin
   [ "${status}" -eq 1 ]
   [[ "${output}" == *"kept runs of 'arm none: ', not of none=/other/plugin"* ]]
+  [ ! -s "${STUB_LOG}" ]
+}
+
+@test "RESUME=1 refuses a Claude Code version that differs from the kept runs'" {
+  bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=
+  : >"${STUB_LOG}"
+  STUB_VERSION="2.0.0 (Claude Code)" RESUME=1 run bash "${BATS_TEST_DIRNAME}/../bench/run.sh" "${out_dir}" 1 none=
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"kept runs of Claude Code 'stub', not '2.0.0 (Claude Code)'"* ]]
   [ ! -s "${STUB_LOG}" ]
 }
 

@@ -137,9 +137,17 @@ main() {
     [[ -z "${kept}" || "${kept}" == "arm ${arm%%=*}: ${arm#*=}" ]] ||
       die "RESUME=1: ${out_dir} kept runs of '${kept}', not of ${arm}; use a new out-dir"
   done
+  local version=""
+  version="$(claude --version)"
+  local kept_version=""
+  # The kept runs must come from the same Claude Code: a new release changes thinking and cost for every arm.
+  [[ ! -f "${out_dir}/versions.txt" ]] ||
+    kept_version="$(awk '/^model: / { last = previous } { previous = $0 } END { print last }' "${out_dir}/versions.txt")"
+  [[ -z "${kept_version}" || "${kept_version}" == "${version}" ]] ||
+    die "RESUME=1: ${out_dir} kept runs of Claude Code '${kept_version}', not '${version}'; use a new out-dir"
   mkdir -p "${out_dir}"
   {
-    claude --version
+    printf '%s\n' "${version}"
     printf 'model: %s\n' "${MODEL}"
     for arm in "$@"; do
       printf 'arm %s: %s\n' "${arm%%=*}" "${arm#*=}"
