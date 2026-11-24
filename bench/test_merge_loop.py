@@ -218,3 +218,13 @@ def test_harness_commit_that_times_out_is_unknown(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setattr(subprocess, "run", hanging)
 
     assert merge_loop.harness_commit() == "unknown"
+
+
+def test_summarize_tasks_gives_one_summary_per_task_and_arm(tmp_path: Path) -> None:
+    write_record(tmp_path, finished_record("none", "1"))
+    write_record(tmp_path, finished_record("chef", "1") | {"task": "sql"})
+
+    merged: dict[str, Any] = merge_loop.summarize_tasks([tmp_path])
+
+    assert {task: sorted(arms) for task, arms in merged["tasks"].items()} == {"go": ["none"], "sql": ["chef"]}
+    assert merged["provenance"]["reviewer"] == "r1"

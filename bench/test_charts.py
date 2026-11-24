@@ -235,3 +235,41 @@ def test_time_chart_grows_to_fit_the_legend_under_five_arms() -> None:
     svg: str = charts.time_chart(charts.LIGHT, merge, history)
 
     assert f'height="{legend_bottom}"' in svg
+
+
+def style_loop(merged_first_time: float, total_cost: float, lines: float) -> dict[str, float]:
+    return {"runs": 2.0, "merged_first_time": merged_first_time, "total_cost": total_cost, "lines_to_review": lines}
+
+
+def test_style_gap_is_points_for_acceptance_and_percent_for_amounts() -> None:
+    plain: dict[str, float] = style_loop(0.5, 0.4, 100)
+    chef: dict[str, float] = style_loop(0.8, 0.6, 80)
+    accepted, cost, lines = charts.STYLE_METRICS
+
+    assert round(charts.style_gap(chef, plain, accepted), 6) == 30.0
+    assert round(charts.style_gap(chef, plain, cost), 6) == 50.0
+    assert round(charts.style_gap(chef, plain, lines), 6) == -20.0
+
+
+def test_style_chart_marks_a_gain_in_the_chef_color_and_a_loss_in_grey_with_an_all_contexts_row() -> None:
+    styles: dict[str, Any] = {
+        "tasks": {
+            "python": {
+                "none": style_loop(0.5, 0.4, 100),
+                "chef152": style_loop(1.0, 0.4, 100),
+                "caveman": style_loop(0.0, 0.4, 100),
+            },
+            "sql": {
+                "none": style_loop(0.5, 0.4, 100),
+                "chef152": style_loop(0.5, 0.4, 100),
+                "caveman": style_loop(0.5, 0.4, 100),
+            },
+        }
+    }
+
+    svg: str = charts.style_chart(charts.LIGHT, styles, charts.STYLE_METRICS[0])
+
+    assert ">+50 pt<" in svg and ">-50 pt<" in svg and ">+25 pt<" in svg and ">-25 pt<" in svg
+    assert svg.count(f'fill="{charts.LIGHT.chef}"') == 2
+    assert svg.count(f'fill="{charts.LIGHT.without}"') == 2
+    assert "All contexts" in svg and "Chef 1.5.2 +25, Caveman 4.1 -25" in svg

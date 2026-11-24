@@ -3,6 +3,7 @@
 Usage:
   python bench/merge_loop.py run <out-dir> <loop-dir> <arm>=<plugin-dir or empty> ...
   python bench/merge_loop.py summarize <loop-dir> ... > bench/results/merge.json
+  python bench/merge_loop.py summarize-tasks <loop-dir> ... > bench/results/styles.json
 
 For every run of every listed arm, the workspace is copied into the loop dir. A blind reviewer
 (a fresh `claude -p --restricted` session that sees an anonymized copy) lists the changes it
@@ -277,24 +278,45 @@ def load_records(loop_dirs: list[Path]) -> list[dict[str, Any]]:
     return records
 
 
-def summarize(loop_dirs: list[Path]) -> dict[str, Any]:
-    """The results/merge.json content: one summary per arm, and where the records come from."""
-    records: list[dict[str, Any]] = load_records(loop_dirs)
+def provenance(records: list[dict[str, Any]]) -> dict[str, Any]:
     reviewers: list[str] = sorted({record["reviewer"] for record in records})
     if len(reviewers) > 1:
         raise SystemExit(f"merge_loop: records from different reviewers are not comparable: {', '.join(reviewers)}")
+    return {"reviewer": reviewers[0], "harness": sorted({record["harness"] for record in records})}
+
+
+def summarize(loop_dirs: list[Path]) -> dict[str, Any]:
+    """The results/merge.json content: one summary per arm, and where the records come from."""
+    records: list[dict[str, Any]] = load_records(loop_dirs)
     by_arm: dict[str, list[dict[str, Any]]] = {}
     for record in records:
         by_arm.setdefault(record["arm"], []).append(record)
     return {
-        "provenance": {"reviewer": reviewers[0], "harness": sorted({record["harness"] for record in records})},
+        "provenance": provenance(records),
         "arms": {arm: arm_summary(arm_records) for arm, arm_records in sorted(by_arm.items())},
+    }
+
+
+def summarize_tasks(loop_dirs: list[Path]) -> dict[str, Any]:
+    """One summary per task and arm, for charts that compare arms task by task."""
+    records: list[dict[str, Any]] = load_records(loop_dirs)
+    by_task: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for record in records:
+        by_task.setdefault(record["task"], {}).setdefault(record["arm"], []).append(record)
+    return {
+        "provenance": provenance(records),
+        "tasks": {
+            task: {arm: arm_summary(records) for arm, records in sorted(arms.items())} for task, arms in sorted(by_task.items())
+        },
     }
 
 
 def main(arguments: list[str]) -> None:
     if arguments[0] == "summarize":
         print(json.dumps(summarize([Path(argument) for argument in arguments[1:]]), indent=2))
+        return
+    if arguments[0] == "summarize-tasks":
+        print(json.dumps(summarize_tasks([Path(argument) for argument in arguments[1:]]), indent=2))
         return
     arm_sources: dict[str, str] = dict(argument.split("=", 1) for argument in arguments[3:])
     run_all(Path(arguments[1]), Path(arguments[2]), arm_sources)

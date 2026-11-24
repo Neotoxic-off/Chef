@@ -77,6 +77,8 @@ TASK_NAMES: dict[str, str] = {
     "python": "Python CLI",
     "refactor": "Refactor (Python)",
     "rust": "Rust crate",
+    "sql": "SQL migration",
+    "bash": "Bash script",
     "terraform": "Terraform module",
     "typescript": "TypeScript module",
 }
@@ -619,6 +621,83 @@ def split_chart(theme: Theme) -> str:
     return svg(130, label, body)
 
 
+STYLES: Path = Path(__file__).resolve().parent / "results" / "styles.json"
+STYLE_ARMS: dict[str, str] = {
+    "chef152": "Chef 1.5.2",
+    "nolean": "Chef without lean.md",
+    "caveman": "Caveman 4.1",
+    "ponytail": "Ponytail 5.3",
+}
+STYLE_TASKS: tuple[str, ...] = ("python", "bugfix", "refactor", "docker", "github-actions", "sql", "typescript", "bash")
+STYLE_ALL: str = "All contexts"
+STYLE_CELL_HEIGHT: float = 26.0
+STYLE_ROW_STEP: float = 32.0
+STYLE_CELL_GAP: float = 8.0
+
+
+@dataclass(frozen=True)
+class StyleMetric:
+    key: str
+    title: str
+    unit: str
+    lower_is_better: bool
+
+
+STYLE_METRICS: tuple[StyleMetric, ...] = (
+    StyleMetric("accepted", "First answer accepted: points above or below plain Claude", "pt", False),
+    StyleMetric("cost", "Cost per task, fixes included: % above or below plain Claude", "%", True),
+    StyleMetric("lines", "Code to review: % above or below plain Claude", "%", True),
+)
+
+
+def style_value(loop: dict[str, float], key: str) -> float:
+    return {
+        "accepted": 100 * loop["merged_first_time"],
+        "cost": loop["total_cost"] / loop["runs"],
+        "lines": loop["lines_to_review"],
+    }[key]
+
+
+def style_gap(arm: dict[str, float], plain: dict[str, float], metric: StyleMetric) -> float:
+    """Points for a rate, percent of plain Claude's value for an amount."""
+    if metric.unit == "pt":
+        return style_value(arm, metric.key) - style_value(plain, metric.key)
+    return 100 * (style_value(arm, metric.key) / style_value(plain, metric.key) - 1)
+
+
+def style_cell(theme: Theme, origin: tuple[float, float], width: float, gap: float, metric: StyleMetric) -> list[str]:
+    better: bool = (gap < 0) if metric.lower_is_better else (gap > 0)
+    fill: str = theme.track if round(gap) == 0 else theme.chef if better else theme.without
+    x, y = origin
+    shown: str = f"{gap:+.0f} {metric.unit}" if metric.unit == "pt" else f"{gap:+.0f}%"
+    return [rect(x, y, width, STYLE_CELL_HEIGHT, fill), text(x + width / 2, y + 18, shown, theme.ink, 13, 600, "middle")]
+
+
+def style_chart(theme: Theme, styles: dict[str, Any], metric: StyleMetric) -> str:
+    """One row per context, one column per arm: each cell is the gap to plain Claude; the chef color marks a gain."""
+    tasks: list[str] = [task for task in STYLE_TASKS if "none" in styles["tasks"].get(task, {})]
+    arms: list[str] = [arm for arm in STYLE_ARMS if all(arm in styles["tasks"][task] for task in tasks)]
+    gaps: dict[str, dict[str, float]] = {
+        task: {arm: style_gap(styles["tasks"][task][arm], styles["tasks"][task]["none"], metric) for arm in arms}
+        for task in tasks
+    }
+    gaps[STYLE_ALL] = {arm: statistics.fmean(gaps[task][arm] for task in tasks) for arm in arms}
+    width: float = (WIDTH - LABEL_WIDTH) / len(arms) - STYLE_CELL_GAP
+    body: list[str] = [text(0, 26, metric.title, theme.ink, 18, 600)]
+    body += [
+        text(LABEL_WIDTH + index * (width + STYLE_CELL_GAP) + width / 2, 62, STYLE_ARMS[arm], theme.muted, 13, 600, "middle")
+        for index, arm in enumerate(arms)
+    ]
+    y: float = 76.0
+    for row in [*tasks, STYLE_ALL]:
+        body += [text(0, y + 18, TASK_NAMES.get(row, row), theme.ink, 14, 600)]
+        for index, arm in enumerate(arms):
+            body += style_cell(theme, (LABEL_WIDTH + index * (width + STYLE_CELL_GAP), y), width, gaps[row][arm], metric)
+        y += STYLE_ROW_STEP
+    label: str = f"{metric.title}, all contexts: " + ", ".join(f"{STYLE_ARMS[arm]} {gaps[STYLE_ALL][arm]:+.0f}" for arm in arms)
+    return svg(int(y), label, body)
+
+
 def main() -> None:
     summary: dict[str, Any] = json.loads(SUMMARY.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
@@ -650,6 +729,10 @@ def main() -> None:
             for key in HISTORY_METRICS:
                 (OUT / f"history-{key}{theme.suffix}.svg").write_text(history_chart(theme, history, key), encoding="utf-8")
             (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, latest, history), encoding="utf-8")
+        if STYLES.is_file():
+            styles: dict[str, Any] = json.loads(STYLES.read_text(encoding="utf-8"))
+            for metric in STYLE_METRICS:
+                (OUT / f"styles-{metric.key}{theme.suffix}.svg").write_text(style_chart(theme, styles, metric), encoding="utf-8")
 
 
 if __name__ == "__main__":
