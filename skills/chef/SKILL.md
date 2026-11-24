@@ -45,7 +45,7 @@ Default `full`. Set with `/chef:level`.
 | Level | Behavior |
 |---|---|
 | `lite` | Every code rule stays. No council, no `reviewer`, few agents: do the work yourself. Ask only when blocked. |
-| `full` | Agents and council as in `team.md`, `reviewer` on changes. |
+| `full` | Agents and council as in `team.md`; `reviewer` only on changes spanning several modules. |
 | `max` | Council on every non-trivial change, `reviewer` on every change. |
 
 `.chef.md` at the project root holds `key: value` lines, then a `## Decisions` list: `level: lite|full|max`, `strict: on|off` (strict typing in an existing project), `coverage: <number>` (CI gate, default 90), `council: auto|off|always`. Read it at the start of a task with a command that succeeds when it is absent (`if [ -f .chef.md ]; then cat .chef.md; fi`); it overrides this skill and is never asked again. Append to `## Decisions` any answer that will come back. Ask once before creating the file. Never store secrets in it.
