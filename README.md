@@ -40,6 +40,53 @@ Chef then applies to every coding prompt.
 
 A blind reviewer that never knows chef exists asks for fixes until it would merge. Same tasks, same model (Sonnet 5.5). [How it was measured](bench/README.md).
 
+The model's behavior drifts from day to day: on 2026-11-25, plain Claude pinned to the same Claude Code 2.1.330 thought up to 100 times more than on 2026-11-22 and cost 1.5 to 3.3 times as much. Costs are only compared between arms run on the same day.
+
+### Chef 1.5.2, same day as chef 1.4 (2026-11-25)
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-152-dark.svg">
+    <img src="assets/bench/overview-152.svg" width="880" alt="Same day, 11 tasks of the 1.5 bench. Chef 1.4, 11 runs: first answer accepted 100%, no review round, $0.510 per task with fixes. Chef 1.5.2, 22 runs: 100%, no review round, $0.348 per task.">
+  </picture>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/devops-152-dark.svg">
+    <img src="assets/bench/devops-152.svg" width="880" alt="Same day, 7 DevOps and CI tasks, 14 runs per arm. Plain Claude, chef 1.4 and chef 1.5.2: first answer accepted 100%, no review round; $0.123, $0.331 and $0.260 per task with fixes.">
+  </picture>
+</p>
+
+Chef 1.5.2 costs 32% less than 1.4 on the 11 tasks of the 1.5 bench (cheaper on 10 of them) and 22% less on the DevOps and CI tasks; its first answer comes in 155 s instead of 210 s. Every first answer of both versions was accepted that day, so this bench no longer separates their quality.
+
+Chef against caveman and ponytail, 4 contexts, 2 runs each, same day, as the gap to plain Claude. Chef here is the 1.5.2 skill before the reviewer fix (`ad13bf7`), so its cost is an upper bound. With 2 runs per context, these are trends, not proof.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/styles-accepted-dark.svg">
+    <img src="assets/bench/styles-accepted.svg" width="880" alt="First answer accepted, points above plain Claude, all 4 contexts: chef 1.5.2 +12, chef without lean.md +12, caveman 4.1 +12, ponytail 5.3 0. The gain is on the Python refactor.">
+  </picture>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/styles-cost-dark.svg">
+    <img src="assets/bench/styles-cost.svg" width="880" alt="Cost per task with fixes, percent above or below plain Claude, mean of 4 contexts: chef 1.5.2 +128%, chef without lean.md +115%, caveman 4.1 -17%, ponytail 5.3 -15%.">
+  </picture>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/styles-lines-dark.svg">
+    <img src="assets/bench/styles-lines.svg" width="880" alt="Code to review, percent above or below plain Claude, per context and arm.">
+  </picture>
+</p>
+
+Caveman and ponytail shorten replies and code, so they cost less than plain Claude; chef's extra cost buys the tests, linter and type checker it sets up and runs. `lean.md` cuts the code to review by about a fifth, at the same cost.
+
+### Chef 1.5 bench (2026-11-22)
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-15-dark.svg">

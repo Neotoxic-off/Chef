@@ -1,0 +1,52 @@
+{
+  "provenance": {
+    "reviewer": "6459c25c02d6",
+    "harness": [
+      "v1.5.0-11-gfd80f29"
+    ]
+  },
+  "arms": {
+    "chef14": {
+      "runs": 14.0,
+      "merged_first_time": 1.0,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.0,
+      "first_answer_cost": 4.63,
+      "total_cost": 4.63,
+      "cost_per_merged_run": 0.331,
+      "reviewer_cost": 1.27,
+      "lines_to_review": 298,
+      "first_answer_seconds": 147.5,
+      "first_review_seconds": 23.1,
+      "back_and_forth_seconds": 0.0
+    },
+    "chef152": {
+      "runs": 14.0,
+      "merged_first_time": 1.0,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.0,
+      "first_answer_cost": 3.64,
+      "total_cost": 3.64,
+      "cost_per_merged_run": 0.26,
+      "reviewer_cost": 1.15,
+      "lines_to_review": 299,
+      "first_answer_seconds": 149.2,
+      "first_review_seconds": 23.0,
+      "back_and_forth_seconds": 0.0
+    },
+    "none": {
+      "runs": 14.0,
+      "merged_first_time": 1.0,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.0,
+      "first_answer_cost": 1.72,
+      "total_cost": 1.72,
+      "cost_per_merged_run": 0.123,
+      "reviewer_cost": 0.94,
+      "lines_to_review": 148,
+      "first_answer_seconds": 68.1,
+      "first_review_seconds": 20.1,
+      "back_and_forth_seconds": 0.0
+    }
+  }
+}

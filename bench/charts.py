@@ -288,6 +288,11 @@ STACKS_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4"}
 STACKS_TITLE: str = "Most-used stacks, 9 tasks: Node, React, Bash, SQL, PHP, PowerShell, C, C++, Kotlin"
 RELEASE_15_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef15": "Chef 1.5"}
 RELEASE_15_TITLE: str = "Chef 1.5 bench: 11 tasks, 3 of them held out, 95 runs per arm"
+MERGE_152: Path = Path(__file__).resolve().parent / "results" / "merge-152.json"
+MERGE_152_DEVOPS: Path = Path(__file__).resolve().parent / "results" / "merge-152-devops.json"
+RELEASE_152_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5.2"}
+RELEASE_152_TITLE: str = "Same day, 11 tasks of the 1.5 bench: chef 1.4 against chef 1.5.2"
+DEVOPS_152_TITLE: str = "Same day, 7 DevOps and CI tasks: Docker, Terraform, Helm, Actions, Prometheus, Go, TS"
 
 
 def arm_shades(theme: Theme, arms: list[str]) -> dict[str, str]:
@@ -307,7 +312,8 @@ def overview_chart(
     values: dict[str, dict[str, float]] = {arm: overview_values(merge, arm) for arm in arms}
     tops: dict[str, tuple[float, str]] = {
         "merge": (100.0, "%"),
-        "major": (max(values[arm]["major"] for arm in arms), "%"),
+        # At least 1%: a bench where no arm needed a review round still draws empty bars.
+        "major": (max(1.0, *(values[arm]["major"] for arm in arms)), "%"),
         "cost": (max(values[arm]["cost"] for arm in arms), "$"),
     }
     body: list[str] = [text(0, 26, title, theme.ink, 18, 600)]
@@ -729,6 +735,15 @@ def main() -> None:
             for key in HISTORY_METRICS:
                 (OUT / f"history-{key}{theme.suffix}.svg").write_text(history_chart(theme, history, key), encoding="utf-8")
             (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, latest, history), encoding="utf-8")
+        for source, name, title in (
+            (MERGE_152, "overview-152", RELEASE_152_TITLE),
+            (MERGE_152_DEVOPS, "devops-152", DEVOPS_152_TITLE),
+        ):
+            if source.is_file():
+                arms_152: dict[str, dict[str, float]] = json.loads(source.read_text(encoding="utf-8"))["arms"]
+                (OUT / f"{name}{theme.suffix}.svg").write_text(
+                    overview_chart(theme, arms_152, title, RELEASE_152_ARMS), encoding="utf-8"
+                )
         if STYLES.is_file():
             styles: dict[str, Any] = json.loads(STYLES.read_text(encoding="utf-8"))
             for metric in STYLE_METRICS:

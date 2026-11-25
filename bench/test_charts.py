@@ -114,6 +114,17 @@ def test_overview_chart_takes_its_own_title_and_arm_names() -> None:
     assert "Same 13 tasks" not in svg
 
 
+def test_overview_chart_draws_a_bench_where_no_arm_needed_a_review_round() -> None:
+    merge: dict[str, dict[str, float]] = {
+        "chef14": {"runs": 1.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.5},
+        "chef152": {"runs": 2.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.7},
+    }
+
+    svg: str = charts.overview_chart(charts.LIGHT, merge, charts.RELEASE_152_TITLE, charts.RELEASE_152_ARMS)
+
+    assert "Chef 1.5.2: first answer accepted 100%, 0 review rounds per 100 tasks, $0.350 per task with fixes" in svg
+
+
 def test_break_even_is_the_extra_machine_cost_over_the_rounds_saved() -> None:
     plain: dict[str, float] = {"runs": 10.0, "total_cost": 1.0, "fix_rounds_per_run": 0.5}
     chef: dict[str, float] = {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1}

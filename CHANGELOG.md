@@ -1,7 +1,16 @@
 # Changelog
 
-## Unreleased
+## 1.5.2 (2026-11-25)
 
+Cheaper than 1.4: on the same day, chef 1.5.2 costs 32% less than 1.4 on the 11 tasks of the 1.5 bench and 22% less on 7 DevOps and CI tasks, every first answer of both accepted.
+
+- The `reviewer` runs only on changes spanning several modules. The rule lived in `team.md`, read after the model had already decided from the level table, so single-script runs still called it: it doubled the cost of PowerShell runs and its edge-case tests made a bats run hang.
+- PowerShell: the manifest's `PowerShellVersion` is the oldest version the code needs, not 7.6 (a 7.6 pin was rejected on held-powershell).
+- Bash pitfalls: feed awk files by redirection (`name=value` arguments are assignments); keep awk programs inside the script.
+- Docker: a service the app depends on is wired through configuration the app reads (`REDIS_URL`), not `depends_on` alone.
+- Benchmark: `run.sh` refuses to resume runs made with another Claude Code version; `merge_loop.py summarize-tasks` and the per-context charts against plain Claude; the quality judge is told that lockfiles are left out of its copy and that a package it does not know may be newer than its knowledge (it had flagged `uv.lock` as missing and `httpx2`, which Starlette now asks for, as a typo).
+- Benchmark finding: the model's behavior drifts between days. Plain Claude pinned to Claude Code 2.1.330 thought up to 100 times more on 2026-11-25 than on 2026-11-22; costs are only compared within the same day.
+- Chef against caveman 4.1 and ponytail 5.3 on 4 contexts, 2 runs each: chef and caveman +12 points of first answers accepted over plain Claude, ponytail 0; caveman and ponytail cost 15-17% less than plain Claude, chef more, for its tests and checks.
 - Cheaper container checks, from the 1.5 traces, where they made chef 1.5 cost more than 1.4 on the C, C++, Bash and PowerShell tasks:
   - PowerShell: modules install once into the `chef-pwsh-modules` volume instead of on every check (about 3 s per check instead of about 15 s); files are formatted first; one line per finding and failed test (about 350 characters instead of about 3,300); the lint is retried on PSScriptAnalyzer 1.25.0's `NullReferenceException` race, which failed checks at random.
   - Bash, C, C++: `shfmt -w` and `clang-format -i` fix the files instead of printing diffs; ShellCheck prints one line per finding.
@@ -9,7 +18,7 @@
 - Where chef did worse than plain Claude in the 1.5 bench:
   - PowerShell modules no longer set `$ErrorActionPreference = 'Stop'` at module scope: it turned every `WriteError` into a terminating error and stopped the pipeline at the first bad input (held-powershell, 8 of 10 against 9 of 10 without chef; checked in a container).
   - Bash pitfalls: test readability with `-r` and `! -d`, not `-f` (process substitution and pipes are not regular files); check before a redirection so the error message is yours; map a tool's unexpected exit status to your own (bash, 7 of 10 against 10 of 10 without chef).
-- Docker: hardening (`cap_drop`, `read_only`, `no-new-privileges`) only on the images you build, not on Redis or PostgreSQL; a Dockerfile copies a lockfile only once it exists. Python: dependencies are added with `uv add`, which refuses a name that does not exist (chef 1.5 typed `httpx2`).
+- Docker: hardening (`cap_drop`, `read_only`, `no-new-privileges`) only on the images you build, not on Redis or PostgreSQL; a Dockerfile copies a lockfile only once it exists. Python: dependencies are added with `uv add`, which refuses a name that does not exist.
 
 ## 1.5.0 (2026-11-22)
 
