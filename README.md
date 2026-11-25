@@ -40,113 +40,84 @@ Chef then applies to every coding prompt.
 
 A blind reviewer that never knows chef exists asks for fixes until it would merge. Same tasks, same model (Sonnet 5.5). [How it was measured](bench/README.md).
 
-The model's behavior drifts from day to day: on 2026-11-25, plain Claude pinned to the same Claude Code 2.1.330 thought up to 100 times more than on 2026-11-22 and cost 1.5 to 3.3 times as much. Costs are only compared between arms run on the same day.
-
-### Chef 1.5, same day as chef 1.4 and plain Claude (2026-11-25)
+### Chef 1.6 against 1.5, 1.4 and plain Claude
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-dark.svg">
-    <img src="assets/bench/overview.svg" width="880" alt="Same day, 13 tasks, one run each, a blind reviewer asks for fixes until it merges. Plain Claude: first answer accepted 92%, 15 review rounds per 100 tasks, $0.145 per task with fixes. Chef 1.4: 100%, no review round, $0.375. Chef 1.5: 100%, no review round, $0.270.">
+    <img src="assets/bench/overview.svg" width="880" alt="Plain Claude: first answer accepted 92%, 15 review rounds per 100 tasks, $0.145 per task with fixes; Chef 1.4: first answer accepted 100%, 0 review rounds per 100 tasks, $0.375 per task with fixes; Chef 1.5: first answer accepted 100%, 0 review rounds per 100 tasks, $0.270 per task with fixes; Chef 1.6: first answer accepted 100%, 0 review rounds per 100 tasks, $0.275 per task with fixes">
   </picture>
 </p>
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-152-dark.svg">
-    <img src="assets/bench/overview-152.svg" width="880" alt="Same day, 11 tasks of the 1.5 bench. Plain Claude, 11 runs: first answer accepted 82%, 18 review rounds per 100 tasks, $0.208 per task with fixes. Chef 1.4, 11 runs: 100%, no review round, $0.510. Chef 1.5, 22 runs: 100%, no review round, $0.348.">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-11-dark.svg">
+    <img src="assets/bench/overview-11.svg" width="880" alt="Plain Claude: first answer accepted 94%, 6 review rounds per 100 tasks, $0.198 per task with fixes; Chef 1.4: first answer accepted 100%, 0 review rounds per 100 tasks, $0.510 per task with fixes; Chef 1.5: first answer accepted 98%, 2 review rounds per 100 tasks, $0.344 per task with fixes; Chef 1.6: first answer accepted 100%, 0 review rounds per 100 tasks, $0.329 per task with fixes">
   </picture>
 </p>
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/devops-152-dark.svg">
-    <img src="assets/bench/devops-152.svg" width="880" alt="Same day, 7 DevOps and CI tasks, 14 runs per arm. Plain Claude, chef 1.4 and chef 1.5: first answer accepted 100%, no review round; $0.123, $0.331 and $0.260 per task with fixes.">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/devops-dark.svg">
+    <img src="assets/bench/devops.svg" width="880" alt="Plain Claude: first answer accepted 100%, 0 review rounds per 100 tasks, $0.123 per task with fixes; Chef 1.4: first answer accepted 100%, 0 review rounds per 100 tasks, $0.331 per task with fixes; Chef 1.5: first answer accepted 100%, 0 review rounds per 100 tasks, $0.260 per task with fixes; Chef 1.6: first answer accepted 100%, 0 review rounds per 100 tasks, $0.244 per task with fixes">
   </picture>
 </p>
 
-Chef 1.5 costs 28% less than 1.4 on the 13 older tasks, 32% less on the 11 tasks of the 1.5 bench (cheaper on 10 of them) and 22% less on the DevOps and CI tasks; on the 11 tasks its first answer comes in 155 s instead of 210 s. Every first answer of both versions was accepted that day, against 92% and 82% for plain Claude, so these benches no longer separate 1.4 from 1.5 on quality.
+| | Plain Claude | Chef 1.4 | Chef 1.5 | Chef 1.6 |
+|---|---|---|---|---|
+| First answer accepted, 13 / 11 / 7 tasks | 92% / 94% / 100% | 100% / 100% / 100% | 100% / 98% / 100% | **100% / 100% / 100%** |
+| Cost per task, fixes included, 13 / 11 / 7 tasks | $0.145 / $0.198 / $0.123 | $0.375 / $0.510 / $0.331 | $0.270 / $0.344 / $0.260 | $0.275 / **$0.329** / **$0.244** |
+| Time to a merged change, 13 tasks | 90 s | 172 s | 138 s | 144 s |
+| Code quality, 32 languages, 0 to 10 | 8.0 | | | **8.5** |
 
-The same 11 tasks again that evening, 2 runs per arm: plain Claude's first answer was accepted 22 times of 22 and chef 1.5's 21 of 22, and both passed every hidden test. On these tasks and that day, chef cost 1.76 times as much as plain Claude for no measured gain.
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-152-evening-dark.svg">
-    <img src="assets/bench/overview-152-evening.svg" width="880" alt="Same day, evening, 11 tasks of the 1.5 bench, 22 runs per arm. Plain Claude: first answer accepted 100%, no review round, $0.193 per task with fixes. Chef 1.5: 96%, 5 review rounds per 100 tasks, $0.339.">
-  </picture>
-</p>
-
-### Chef 1.6: three tries, none released (2026-11-25)
-
-The goal of 1.6 was to cost at most 1.3 times as much as plain Claude while keeping the quality of 1.5. Three tries ran the same evening as the chart above:
-
-- **Try A:** every check in one call, and all failures fixed in one batch before a single rerun. It also read the skill files in one batch, printed `.chef.md` from the prompt hook, and checked RAM only before Docker.
-- **Try B:** try A, plus one test per public behavior and per error path the task names.
-- **Try C:** a skill a third smaller, with the detailed rules read only on larger changes, and no new tool config files on small tasks.
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/tries-16-dark.svg">
-    <img src="assets/bench/tries-16.svg" width="880" alt="Same evening, 11 tasks, 22 runs per arm. Plain Claude: first answer accepted 100%, $0.193 per task with fixes. Chef 1.5: 96%, $0.339. 1.6 try A: 100%, $0.334. 1.6 try B: 100%, $0.329. 1.6 try C: 96%, $0.339. Every arm passed all 22 hidden tests.">
-  </picture>
-</p>
-
-| | Plain Claude | Chef 1.5 | Try A | Try B | Try C |
-|---|---|---|---|---|---|
-| First answer accepted | 100% | 96% | 100% | 100% | 96% |
-| Cost per task, fixes included | $0.193 | $0.339 | $0.334 | $0.329 | $0.339 |
-| Cost against plain Claude | 1.00× | 1.76× | 1.73× | 1.70× | 1.76× |
-| Tool calls per run | 7.9 | 15.8 | 16.0 | 16.0 | 13.9 |
-| Tests written per run | 5.3 | 14.0 | 16.7 | 15.1 | 14.8 |
-
-All three cost the same as 1.5 to within 3%. The extra cost comes from the work chef asks for, about three times the tests plus the linter and type checker, which takes twice the turns. It does not come from how the skill is worded or how long it is. Getting to 1.3 times plain Claude would mean fewer tests or checks, so 1.6 was stopped and 1.5 stays the current version.
+Chef 1.6 had every first answer accepted on all three benches, like 1.4 and unlike 1.5 (one miss on the 11 tasks). It costs 4% less than 1.5 on the 11 tasks and 6% less on the DevOps and CI tasks, and 2% more on the 13 older tasks; against 1.4 it costs 26% to 36% less. Against plain Claude it costs 1.7 to 2 times as much per task, and takes about 1.6 times as long to a merged change.
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/time-dark.svg">
-    <img src="assets/bench/time.svg" width="880" alt="Agent time per task until merged, mean of 13 runs on the 13 tasks, same day. Plain Claude: first answer 65 s, first review 20 s, fixes and new reviews 4 s, 8% sent back. Chef 1.4: 148 s, 24 s, 0 s, none sent back. Chef 1.5: 114 s, 24 s, 0 s, none sent back. Median time of the first answer by version on the Python, Docker and Prometheus tasks: 0.8 45 s, 0.9 55 s, 0.10 46 s, 1.0 45 s, 1.1 50 s, 1.2 41 s, 1.3 41 s, 1.4 47 s, 1.5 93 s; plain Claude 46 s on 2026-11-25.">
+    <img src="assets/bench/time.svg" width="880" alt="Plain Claude: first answer 65 s, first review 20 s, fixes and new reviews 4 s, 8% sent back; Chef 1.4: first answer 148 s, first review 24 s, fixes and new reviews 0 s, 0% sent back; Chef 1.5: first answer 114 s, first review 24 s, fixes and new reviews 0 s, 0% sent back; Chef 1.6: first answer 114 s, first review 30 s, fixes and new reviews 0 s, 0% sent back. First answer by version, as a multiple of plain Claude&#x27;s: 0.8 3.0×, 0.9 3.7×, 0.10 3.1×, 1.0 3.0×, 1.1 3.3×, 1.2 2.7×, 1.3 2.7×, 1.4 3.1×, 1.5 2.0×, 1.6 1.8×.">
   </picture>
 </p>
 
-Chef 1.5 is the cheaper option once a human review round costs more than $0.83.
+Chef 1.6 is the cheaper option once a human review round costs more than $0.86.
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/break-even-dark.svg">
-    <img src="assets/bench/break-even.svg" width="880" alt="Machine cost per task plus a human reviewer's cost per review round, from $0 to $20, on the 13 tasks, same day. Chef 1.5 costs less once a round costs more than $0.83; at $10 per round, plain Claude $11.65 and chef 1.5 $10.27 per task (12% less).">
+    <img src="assets/bench/break-even.svg" width="880" alt="Machine cost per task plus a human reviewer&#x27;s cost per review round. Chef 1.6 costs less once a round costs more than $0.86; at $10 per round, plain Claude $11.65 and chef 1.6 $10.27 per task, 12% less.">
   </picture>
 </p>
 
-Chef against caveman and ponytail, same day. Chef here is the 1.5 skill before its reviewer fix (`ad13bf7`), so its cost is an upper bound. With 2 runs per task, these are trends, not proof.
+Chef against caveman and ponytail, 4 tasks, 2 runs each: trends, not proof.
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/styles-dark.svg">
-    <img src="assets/bench/styles.svg" width="880" alt="Same day, 4 tasks, 2 runs each. Plain Claude: first answer accepted 88%, $0.233 per task, 270 lines to review. Chef 1.5: 100%, $0.389, 419 lines. Chef without lean.md: 100%, $0.374, 510 lines. Caveman 4.1: 100%, $0.165, 251 lines. Ponytail 5.3: 88%, $0.208, 229 lines.">
+    <img src="assets/bench/styles.svg" width="880" alt="Same day, 4 tasks (Bash, TypeScript bug fix, Python CLI, Python refactor), 2 runs each. Plain Claude: first answer accepted 88%, $0.233 per task, 270 lines to review; Chef 1.5: first answer accepted 100%, $0.389 per task, 419 lines to review; Chef 1.6: first answer accepted 100%, $0.324 per task, 408 lines to review; Caveman 4.1: first answer accepted 100%, $0.165 per task, 251 lines to review; Ponytail 5.3: first answer accepted 88%, $0.208 per task, 229 lines to review">
   </picture>
 </p>
 
-Caveman and ponytail shorten replies and code, so they cost less than plain Claude; chef's extra cost buys the tests, linter and type checker it sets up and runs. `lean.md` cuts the code to review by about a fifth, at the same cost.
+Caveman and ponytail shorten replies and code, so they cost less than plain Claude; chef's extra cost buys the tests, linter and type checker it sets up and runs. Chef 1.6 costs 17% less than 1.5 here.
 
-### Code quality per language (2026-11-22)
+### Code quality per language
 
-Code quality per language: one task for each of the 32 most-used references, the mean of a blind reviewer's scores for quality, clarity, maintainability and functionality.
+One task for each of the 32 most-used references, the mean of a blind reviewer's scores for quality, clarity, maintainability and functionality. Chef 1.6 scores 8.5 against 8.0 for plain Claude, higher on 24 of the 32 languages and lower on 3.
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/quality-dark.svg">
-    <img src="assets/bench/quality.svg" width="880" alt="Code quality per language, 0 to 10, by a blind reviewer, without chef and with chef 1.5. All 32: 7.1 and 7.9. The biggest gains: GitHub Actions 4.8 and 7.5, Bash 6.8 and 8.2, Ruby 5.8 and 7.2.">
+    <img src="assets/bench/quality.svg" width="880" alt="Code quality per language, 0 to 10, without chef then with chef 1.6. All: 8.0 to 8.5. C# 7.8 to 9.2; FastAPI 7.0 to 8.5; Redis 6.5 to 8.0; Angular 7.8 to 9.0; GitHub Actions 7.8 to 8.8; Python 7.2 to 8.2; React 7.8 to 8.8; TypeScript 8.0 to 9.0; MongoDB 7.2 to 8.0; Rails 7.8 to 8.5; Terraform 8.2 to 9.0; Bash 7.5 to 8.0; Django 8.0 to 8.5; PowerShell 7.8 to 8.2; Ruby 8.0 to 8.5; SQL 8.0 to 8.5; C++ 8.2 to 8.5; Docker 8.0 to 8.2; Kotlin 8.8 to 9.0; Next.js 8.0 to 8.2; PHP 8.8 to 9.0; PostgreSQL 8.0 to 8.2; Spring Boot 8.8 to 9.0; Vue 8.0 to 8.2; C 8.8 to 8.8; Java 8.8 to 8.8; Kubernetes 8.0 to 8.0; Rust 8.8 to 8.8; Swift 8.8 to 8.8; ASP.NET Core 8.5 to 8.2; Go 8.8 to 8.5; Laravel 7.2 to 6.5">
   </picture>
 </p>
 
 ### Across versions
 
-Each version ran on its own day, so the costs are not comparable from one point to the next. The 1.5 point is its latest patch; it and plain Claude ran on 2026-11-25, a day the model thought far more than before (see above): plain Claude cost $0.137 per task that day, against $0.059 when the earlier versions ran.
+Cost per task as a multiple of plain Claude's, on the three tasks every version ran (Python CLI, Dockerfile + compose, Prometheus).
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/history-cost-dark.svg">
-    <img src="assets/bench/history-cost.svg" width="880" alt="Chef across versions, median cost per task: 0.8 $0.167, 0.9 $0.184, 0.10 $0.180, 1.0 $0.155, 1.1 $0.145, 1.2 $0.156, 1.3 $0.169, 1.4 $0.173, 1.5 $0.272; plain Claude $0.137 on 2026-11-25, the day of the 1.5 point.">
+    <img src="assets/bench/history-cost.svg" width="880" alt="Chef across versions: cost per task, as a multiple of plain Claude&#x27;s, on python, docker, prometheus: 0.8 2.8×, 0.9 3.1×, 0.10 3.1×, 1.0 2.6×, 1.1 2.5×, 1.2 2.6×, 1.3 2.9×, 1.4 2.9×, 1.5 2.0×, 1.6 1.9×. Plain Claude: 1.0×.">
   </picture>
 </p>
 

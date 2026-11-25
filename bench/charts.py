@@ -13,9 +13,8 @@ from typing import Any
 OUT: Path = Path(__file__).resolve().parent.parent / "assets" / "bench"
 SUMMARY: Path = Path(__file__).resolve().parent / "results" / "summary.json"
 HISTORY: Path = Path(__file__).resolve().parent / "results" / "history.json"
-MERGE_13_152: Path = Path(__file__).resolve().parent / "results" / "merge-13-152.json"
+MERGE_13: Path = Path(__file__).resolve().parent / "results" / "merge-13.json"
 QUALITY: Path = Path(__file__).resolve().parent / "results" / "quality.json"
-MERGE_15: Path = Path(__file__).resolve().parent / "results" / "merge-15.json"
 FONT: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 WIDTH: int = 880
 
@@ -139,7 +138,7 @@ def rows_chart(theme: Theme, chart: Chart, rows: list[tuple[str, dict[str, float
 
 
 # The chef arm of results/quality.json and its name in the chart.
-QUALITY_CHEF: tuple[str, str] = ("chef15", "chef 1.5")
+QUALITY_CHEF: tuple[str, str] = ("chef16", "chef 1.6")
 QUALITY_NAMES: dict[str, str] = {
     "aspnetcore": "ASP.NET Core", "bash": "Bash", "c": "C", "ci": "GitHub Actions", "cpp": "C++", "csharp": "C#",
     "django": "Django", "docker": "Docker", "fastapi": "FastAPI", "go": "Go", "java": "Java", "kotlin": "Kotlin",
@@ -259,11 +258,11 @@ OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
     ("Cost per task, fixes included", "cost"),
 )
 # The newest chef arm is the one the break-even chart and the README headline compare with plain Claude.
-# The overview, break-even and time charts compare these on the same-day 13-task bench (results/merge-13-152.json).
-LATEST_CHEF: tuple[str, str] = ("chef152", "Chef 1.5")
-PREVIOUS_CHEF: tuple[str, str] = ("chef14", "Chef 1.4")
+# The overview, break-even and time charts compare these on the same-day 13-task bench (results/merge-13.json).
+LATEST_CHEF: tuple[str, str] = ("chef16", "Chef 1.6")
+PREVIOUS_CHEF: tuple[str, str] = ("chef152", "Chef 1.5")
 # The 13-task bench, every arm reviewed with the 1.2 loop.
-OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5"}
+OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5", "chef16": "Chef 1.6"}
 PANEL_WIDTH: float = 150.0
 PANEL_STEP: float = 230.0
 
@@ -288,24 +287,10 @@ def overview_cell(theme: Theme, x: float, y: float, value: float, scale: tuple[f
 
 
 OVERVIEW_TITLE: str = "Same day, 13 tasks, a blind reviewer asks for fixes until it merges"
-RELEASE_15_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef15": "Chef 1.5"}
-RELEASE_15_TITLE: str = "Chef 1.5 bench: 11 tasks, 3 of them held out, 95 runs per arm"
-MERGE_152: Path = Path(__file__).resolve().parent / "results" / "merge-152.json"
-MERGE_152_DEVOPS: Path = Path(__file__).resolve().parent / "results" / "merge-152-devops.json"
-MERGE_152_EVENING: Path = Path(__file__).resolve().parent / "results" / "merge-152-evening.json"
-MERGE_16: Path = Path(__file__).resolve().parent / "results" / "merge-16.json"
-RELEASE_152_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5"}
-RELEASE_152_TITLE: str = "Same day, 11 tasks of the 1.5 bench: chef 1.4 against chef 1.5"
-DEVOPS_152_TITLE: str = "Same day, 7 DevOps and CI tasks: Docker, Terraform, Helm, Actions, Prometheus, Go, TS"
-EVENING_152_TITLE: str = "Same day, evening: 11 tasks of the 1.5 bench, 2 runs each"
-TRIES_16_TITLE: str = "Same evening, 11 tasks, 2 runs each: three 1.6 tries against chef 1.5"
-TRIES_16_ARMS: dict[str, str] = {
-    "none": "Plain Claude",
-    "chef152": "Chef 1.5",
-    "chef16a": "1.6 try A",
-    "chef16b": "1.6 try B",
-    "chef16c": "1.6 try C",
-}
+MERGE_11: Path = Path(__file__).resolve().parent / "results" / "merge-11.json"
+MERGE_DEVOPS: Path = Path(__file__).resolve().parent / "results" / "merge-devops.json"
+BENCH_11_TITLE: str = "Same day, 11 tasks of the 1.5 bench, 3 of them held out"
+DEVOPS_TITLE: str = "Same day, 7 DevOps and CI tasks: Docker, Terraform, Helm, Actions, Prometheus, Go, TS"
 
 
 def arm_shades(theme: Theme, arms: list[str]) -> dict[str, str]:
@@ -325,8 +310,8 @@ def overview_chart(
     values: dict[str, dict[str, float]] = {arm: overview_values(merge, arm) for arm in arms}
     tops: dict[str, tuple[float, str]] = {
         "merge": (100.0, "%"),
-        # At least 1%: a bench where no arm needed a review round still draws empty bars.
-        "major": (max(1.0, *(values[arm]["major"] for arm in arms)), "%"),
+        # Rounds per 100 tasks on a 0-100 scale, so 5 rounds draw a short bar, not a full one.
+        "major": (max(100.0, *(values[arm]["major"] for arm in arms)), "%"),
         "cost": (max(values[arm]["cost"] for arm in arms), "$"),
     }
     body: list[str] = [text(0, 26, title, theme.ink, 18, 600)]
@@ -383,7 +368,7 @@ def same_reviewer_segments(versions: list[dict[str, Any]], points: list[tuple[fl
     return segments
 
 
-HISTORY_SHOWN: dict[str, str] = {"$": "${:.3f}", "%": "{:.0f}%", "s": "{:.0f} s"}
+HISTORY_SHOWN: dict[str, str] = {"$": "${:.3f}", "%": "{:.0f}%", "s": "{:.0f} s", "×": "{:.1f}×"}
 REVIEWED_KEY: str = "merge"
 
 
@@ -394,6 +379,12 @@ def minor_releases(history: dict[str, Any]) -> dict[str, Any]:
         minor: str = ".".join(entry["version"].split(".")[:2])
         latest[minor] = {**entry, "version": minor}
     return {**history, "versions": list(latest.values())}
+
+
+def relative_to_plain(history: dict[str, Any], key: str) -> dict[str, Any]:
+    """Each version's value divided by plain Claude's on the bench day it is paired with (`plain_<key>`), plain at 1."""
+    versions: list[dict[str, Any]] = [{**entry, key: entry[key] / entry[f"plain_{key}"]} for entry in history["versions"]]
+    return {**history, "versions": versions, "baseline": {**history["baseline"], key: 1.0}}
 
 
 def baseline_marks(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[str]:
@@ -443,7 +434,7 @@ def history_panel(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[s
 
 
 HISTORY_METRICS: dict[str, tuple[str, str]] = {
-    "cost": ("Chef across versions: cost per task (median)", "$"),
+    "cost": ("Chef across versions: cost per task, as a multiple of plain Claude's", "×"),
     "merge": ("Chef across versions: a blind reviewer would merge it as is", "%"),
 }
 
@@ -451,6 +442,8 @@ HISTORY_METRICS: dict[str, tuple[str, str]] = {
 def history_chart(theme: Theme, history: dict[str, Any], key: str) -> str:
     """One metric of chef by version, cost or blind-review quality, on the tasks every version ran."""
     title, unit = HISTORY_METRICS[key]
+    if unit == "×":
+        history = relative_to_plain(history, key)
     values: list[float] = [entry[key] for entry in history["versions"]] + [history["baseline"][key]]
     top: float = 100.0 if unit == "%" else 1.2 * max(values)
     body: list[str] = [text(0, 26, title, theme.ink, 18, 600)]
@@ -512,9 +505,9 @@ def break_even_line(theme: Theme, loop: dict[str, float], color: str, top: float
     return [
         f'<line x1="{start[0]:.1f}" y1="{start[1]:.1f}" x2="{end[0]:.1f}" y2="{end[1]:.1f}" stroke="{color}" stroke-width="2.5"/>',
         f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5" fill="{color}"/>',
-        text(x - 10, y + 4, f"${example:.2f}", theme.ink, 12, 600, "end")
+        text(x - 10, y - 8, f"${example:.2f}", theme.ink, 12, 600, "end")
         if label_left
-        else text(x + 10, y + 4, f"${example:.2f}", theme.ink, 12, 600),
+        else text(x + 10, y + 16, f"${example:.2f}", theme.ink, 12, 600),
     ]
 
 
@@ -522,18 +515,13 @@ def break_even_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
     """When chef's extra machine cost is paid back by the review rounds it saves a human reviewer."""
     plain: dict[str, float] = merge["none"]
     chef: dict[str, float] = merge[LATEST_CHEF[0]]
-    previous: dict[str, float] | None = merge.get(PREVIOUS_CHEF[0])
-    loops: list[dict[str, float]] = [plain, chef] if previous is None else [plain, previous, chef]
-    top: float = max(cost_with_reviews(loop, ROUND_COST_MAX) for loop in loops)
+    top: float = max(cost_with_reviews(loop, ROUND_COST_MAX) for loop in (plain, chef))
     threshold: float = break_even(plain, chef)
     saving: float = 1 - cost_with_reviews(chef, ROUND_COST_EXAMPLE) / cost_with_reviews(plain, ROUND_COST_EXAMPLE)
     body: list[str] = [text(0, 26, "Cost per task once the reviewer's time counts", theme.ink, 18, 600)]
     body += break_even_axes(theme, top)
-    body += break_even_line(theme, plain, theme.without, top)
+    body += break_even_line(theme, plain, theme.without, top, label_left=True)
     notes: list[tuple[str, str]] = [(theme.without, f"Plain Claude: {1 + plain['fix_rounds_per_run']:.2f} reviews per task")]
-    if previous is not None:
-        body += break_even_line(theme, previous, theme.old, top, label_left=True)
-        notes.append((theme.old, f"{PREVIOUS_CHEF[1]}: {1 + previous['fix_rounds_per_run']:.2f} reviews per task"))
     body += break_even_line(theme, chef, theme.chef, top)
     notes.append((theme.chef, f"{LATEST_CHEF[1]}: {1 + chef['fix_rounds_per_run']:.2f} reviews per task"))
     for index, (color, note) in enumerate(notes):
@@ -560,13 +548,7 @@ def break_even_chart(theme: Theme, merge: dict[str, dict[str, float]]) -> str:
     return svg(int(PLOT_BOTTOM + 50), label, body)
 
 
-TIME_ARMS: dict[str, str] = {
-    "none": "Plain Claude",
-    "chef11": "Chef 1.1",
-    "chef12": "Chef 1.2",
-    PREVIOUS_CHEF[0]: PREVIOUS_CHEF[1],
-    LATEST_CHEF[0]: LATEST_CHEF[1],
-}
+TIME_ARMS: dict[str, str] = OVERVIEW_ARMS
 TIME_STEPS: tuple[tuple[str, str], ...] = (
     ("first_answer_seconds", "First answer"),
     ("first_review_seconds", "First review"),
@@ -616,9 +598,14 @@ def time_bars(theme: Theme, merge: dict[str, dict[str, float]]) -> list[str]:
 
 def time_chart(theme: Theme, merge: dict[str, dict[str, float]], history: dict[str, Any]) -> str:
     """Where an agent's time goes until the reviewer merges, and the first answer's time by version."""
-    seconds_top: float = 1.2 * max(max(entry["seconds"] for entry in history["versions"]), history["baseline"]["seconds"])
+    history = relative_to_plain(history, "seconds")
+    seconds_top: float = 1.2 * max(entry["seconds"] for entry in history["versions"])
     panel: Panel = Panel(
-        40.0 + HISTORY_PANEL_WIDTH + HISTORY_PANEL_GAP, "First answer by version (median)", "seconds", seconds_top, "s"
+        40.0 + HISTORY_PANEL_WIDTH + HISTORY_PANEL_GAP,
+        "First answer by version, times plain Claude's",
+        "seconds",
+        seconds_top,
+        "×",
     )
     body: list[str] = [text(0, 26, "Time to a merged change", theme.ink, 18, 600)]
     body += time_bars(theme, merge) + history_panel(theme, panel, history)
@@ -629,8 +616,8 @@ def time_chart(theme: Theme, merge: dict[str, dict[str, float]], history: dict[s
         for arm in TIME_ARMS
         if arm in merge
     )
-    versions: str = ", ".join(f"{entry['version']} {entry['seconds']:.0f} s" for entry in history["versions"])
-    label: str = f"{arms}. First answer by version: {versions}; plain Claude {history['baseline']['seconds']:.0f} s."
+    versions: str = ", ".join(f"{entry['version']} {entry['seconds']:.1f}×" for entry in history["versions"])
+    label: str = f"{arms}. First answer by version, as a multiple of plain Claude's: {versions}."
     rows: int = sum(1 for arm in TIME_ARMS if arm in merge)
     legend_bottom: float = HISTORY_TOP + rows * TIME_ROW_STEP + 24
     return svg(int(max(HISTORY_TOP + HISTORY_PANEL_HEIGHT + 40, legend_bottom)), label, body)
@@ -653,7 +640,7 @@ STYLES: Path = Path(__file__).resolve().parent / "results" / "styles.json"
 STYLE_ARMS: dict[str, str] = {
     "none": "Plain Claude",
     "chef152": "Chef 1.5",
-    "nolean": "Chef, no lean.md",
+    "chef16": "Chef 1.6",
     "caveman": "Caveman 4.1",
     "ponytail": "Ponytail 5.3",
 }
@@ -680,7 +667,7 @@ def style_chart(theme: Theme, styles: dict[str, Any]) -> str:
     tasks: list[str] = [task for task, arms in styles["tasks"].items() if all(arm in arms for arm in STYLE_ARMS)]
     values: dict[str, dict[str, float]] = {arm: style_values(styles, arm, tasks) for arm in STYLE_ARMS}
     tops: dict[str, float] = {"accepted": 100.0} | {key: max(values[arm][key] for arm in STYLE_ARMS) for key in ("cost", "lines")}
-    colors: dict[str, str] = {"none": theme.without, "chef152": theme.chef, "nolean": theme.old}
+    colors: dict[str, str] = {"none": theme.without, "chef16": theme.chef, "chef152": theme.old}
     body: list[str] = [text(0, 26, STYLE_TITLE, theme.ink, 18, 600)]
     for index, (panel_title, hint, _, _) in enumerate(STYLE_PANELS):
         x: float = LABEL_WIDTH + index * PANEL_STEP
@@ -704,17 +691,12 @@ def main() -> None:
     summary: dict[str, Any] = json.loads(SUMMARY.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
     for theme in (LIGHT, DARK):
-        latest: dict[str, dict[str, float]] = json.loads(MERGE_13_152.read_text(encoding="utf-8"))["arms"]
+        latest: dict[str, dict[str, float]] = json.loads(MERGE_13.read_text(encoding="utf-8"))["arms"]
         (OUT / f"overview{theme.suffix}.svg").write_text(overview_chart(theme, latest), encoding="utf-8")
         (OUT / f"break-even{theme.suffix}.svg").write_text(break_even_chart(theme, latest), encoding="utf-8")
         (OUT / f"cost{theme.suffix}.svg").write_text(cost_chart(theme, summary), encoding="utf-8")
         (OUT / f"pairwise{theme.suffix}.svg").write_text(pairwise_chart(theme, summary), encoding="utf-8")
         (OUT / f"cost-split{theme.suffix}.svg").write_text(split_chart(theme), encoding="utf-8")
-        if MERGE_15.is_file():
-            release: dict[str, dict[str, float]] = json.loads(MERGE_15.read_text(encoding="utf-8"))["arms"]
-            (OUT / f"overview-15{theme.suffix}.svg").write_text(
-                overview_chart(theme, release, RELEASE_15_TITLE, RELEASE_15_ARMS), encoding="utf-8"
-            )
         if QUALITY.is_file():
             quality: dict[str, Any] = json.loads(QUALITY.read_text(encoding="utf-8"))
             (OUT / f"quality{theme.suffix}.svg").write_text(quality_chart(theme, quality), encoding="utf-8")
@@ -723,15 +705,9 @@ def main() -> None:
             for key in HISTORY_METRICS:
                 (OUT / f"history-{key}{theme.suffix}.svg").write_text(history_chart(theme, history, key), encoding="utf-8")
             (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, latest, history), encoding="utf-8")
-        for source, name, title, names in (
-            (MERGE_152, "overview-152", RELEASE_152_TITLE, RELEASE_152_ARMS),
-            (MERGE_152_DEVOPS, "devops-152", DEVOPS_152_TITLE, RELEASE_152_ARMS),
-            (MERGE_152_EVENING, "overview-152-evening", EVENING_152_TITLE, RELEASE_152_ARMS),
-            (MERGE_16, "tries-16", TRIES_16_TITLE, TRIES_16_ARMS),
-        ):
-            if source.is_file():
-                arms_152: dict[str, dict[str, float]] = json.loads(source.read_text(encoding="utf-8"))["arms"]
-                (OUT / f"{name}{theme.suffix}.svg").write_text(overview_chart(theme, arms_152, title, names), encoding="utf-8")
+        for source, name, title in ((MERGE_11, "overview-11", BENCH_11_TITLE), (MERGE_DEVOPS, "devops", DEVOPS_TITLE)):
+            bench_arms: dict[str, dict[str, float]] = json.loads(source.read_text(encoding="utf-8"))["arms"]
+            (OUT / f"{name}{theme.suffix}.svg").write_text(overview_chart(theme, bench_arms, title), encoding="utf-8")
         if STYLES.is_file():
             styles: dict[str, Any] = json.loads(STYLES.read_text(encoding="utf-8"))
             (OUT / f"styles{theme.suffix}.svg").write_text(style_chart(theme, styles), encoding="utf-8")

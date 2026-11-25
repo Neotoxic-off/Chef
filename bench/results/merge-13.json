@@ -49,6 +49,20 @@
       "first_answer_seconds": 114.5,
       "first_review_seconds": 23.7,
       "back_and_forth_seconds": 0.0
+    },
+    "chef16": {
+      "runs": 13.0,
+      "merged_first_time": 1.0,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.0,
+      "first_answer_cost": 3.57,
+      "total_cost": 3.57,
+      "cost_per_merged_run": 0.275,
+      "reviewer_cost": 1.37,
+      "lines_to_review": 331,
+      "first_answer_seconds": 114.0,
+      "first_review_seconds": 29.5,
+      "back_and_forth_seconds": 0.0
     }
   }
 }

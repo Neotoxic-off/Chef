@@ -2,7 +2,8 @@
   "provenance": {
     "reviewer": "6459c25c02d6",
     "harness": [
-      "v1.5.0-8-gad13bf7-dirty"
+      "v1.5.0-8-gad13bf7-dirty",
+      "v1.5.2-5-gd87b6ab-dirty"
     ]
   },
   "tasks": {
@@ -33,6 +34,20 @@
         "lines_to_review": 264,
         "first_answer_seconds": 306.5,
         "first_review_seconds": 36.2,
+        "back_and_forth_seconds": 0.0
+      },
+      "chef16": {
+        "runs": 2.0,
+        "merged_first_time": 1.0,
+        "merged_in_the_end": 1.0,
+        "fix_rounds_per_run": 0.0,
+        "first_answer_cost": 0.64,
+        "total_cost": 0.64,
+        "cost_per_merged_run": 0.318,
+        "reviewer_cost": 0.29,
+        "lines_to_review": 232,
+        "first_answer_seconds": 124.2,
+        "first_review_seconds": 43.5,
         "back_and_forth_seconds": 0.0
       },
       "nolean": {
@@ -107,6 +122,20 @@
         "first_review_seconds": 21.6,
         "back_and_forth_seconds": 0.0
       },
+      "chef16": {
+        "runs": 2.0,
+        "merged_first_time": 1.0,
+        "merged_in_the_end": 1.0,
+        "fix_rounds_per_run": 0.0,
+        "first_answer_cost": 0.35,
+        "total_cost": 0.35,
+        "cost_per_merged_run": 0.177,
+        "reviewer_cost": 0.26,
+        "lines_to_review": 380,
+        "first_answer_seconds": 35.5,
+        "first_review_seconds": 24.9,
+        "back_and_forth_seconds": 0.0
+      },
       "nolean": {
         "runs": 2.0,
         "merged_first_time": 1.0,
@@ -179,6 +208,20 @@
         "first_review_seconds": 32.0,
         "back_and_forth_seconds": 0.0
       },
+      "chef16": {
+        "runs": 2.0,
+        "merged_first_time": 1.0,
+        "merged_in_the_end": 1.0,
+        "fix_rounds_per_run": 0.0,
+        "first_answer_cost": 0.51,
+        "total_cost": 0.51,
+        "cost_per_merged_run": 0.255,
+        "reviewer_cost": 0.19,
+        "lines_to_review": 354,
+        "first_answer_seconds": 86.9,
+        "first_review_seconds": 22.3,
+        "back_and_forth_seconds": 0.0
+      },
       "nolean": {
         "runs": 2.0,
         "merged_first_time": 1.0,
@@ -249,6 +292,20 @@
         "lines_to_review": 675,
         "first_answer_seconds": 224.7,
         "first_review_seconds": 34.0,
+        "back_and_forth_seconds": 0.0
+      },
+      "chef16": {
+        "runs": 2.0,
+        "merged_first_time": 1.0,
+        "merged_in_the_end": 1.0,
+        "fix_rounds_per_run": 0.0,
+        "first_answer_cost": 1.09,
+        "total_cost": 1.09,
+        "cost_per_merged_run": 0.546,
+        "reviewer_cost": 0.35,
+        "lines_to_review": 664,
+        "first_answer_seconds": 237.2,
+        "first_review_seconds": 36.6,
         "back_and_forth_seconds": 0.0
       },
       "nolean": {

@@ -1,0 +1,65 @@
+{
+  "provenance": {
+    "reviewer": "6459c25c02d6",
+    "date": "2026-11-25",
+    "pooled": "morning and evening runs of the same day"
+  },
+  "arms": {
+    "chef14": {
+      "runs": 11.0,
+      "merged_first_time": 1.0,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.0,
+      "first_answer_cost": 5.61,
+      "total_cost": 5.61,
+      "cost_per_merged_run": 0.51,
+      "reviewer_cost": 1.21,
+      "lines_to_review": 385,
+      "first_answer_seconds": 210.4,
+      "first_review_seconds": 29.5,
+      "back_and_forth_seconds": 0.0
+    },
+    "chef152": {
+      "runs": 44.0,
+      "merged_first_time": 0.977,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.02,
+      "first_answer_cost": 14.86,
+      "total_cost": 15.12,
+      "cost_per_merged_run": 0.344,
+      "reviewer_cost": 5.16,
+      "lines_to_review": 373,
+      "first_answer_seconds": 151.6,
+      "first_review_seconds": 29.4,
+      "back_and_forth_seconds": 2.9
+    },
+    "chef16": {
+      "runs": 22.0,
+      "merged_first_time": 1.0,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.0,
+      "first_answer_cost": 7.24,
+      "total_cost": 7.24,
+      "cost_per_merged_run": 0.329,
+      "reviewer_cost": 2.37,
+      "lines_to_review": 346,
+      "first_answer_seconds": 131.2,
+      "first_review_seconds": 34.8,
+      "back_and_forth_seconds": 0.0
+    },
+    "none": {
+      "runs": 33.0,
+      "merged_first_time": 0.939,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.06,
+      "first_answer_cost": 6.19,
+      "total_cost": 6.53,
+      "cost_per_merged_run": 0.198,
+      "reviewer_cost": 3.42,
+      "lines_to_review": 270,
+      "first_answer_seconds": 68.9,
+      "first_review_seconds": 27.4,
+      "back_and_forth_seconds": 5.5
+    }
+  }
+}

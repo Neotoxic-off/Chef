@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'chef: if this prompt involves writing, fixing, debugging, refactoring, reviewing, testing or building code, config, scripts, infrastructure or CI, invoke the chef:chef skill before your first edit or command (once per session; skip if already loaded) and follow it, including in the briefs you give agents.'",
+            "command": "echo 'chef: if this prompt involves writing, fixing, debugging, refactoring, reviewing, testing or building code, config, scripts, infrastructure or CI, invoke the chef:chef skill before your first edit or command (once per session; skip if already loaded) and follow it, including in the briefs you give agents.'; if [ -f \"${CLAUDE_PROJECT_DIR:-.}/.chef.md\" ]; then echo 'chef: .chef.md'; cat \"${CLAUDE_PROJECT_DIR:-.}/.chef.md\"; fi",
             "timeout": 30
           }
         ]

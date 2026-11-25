@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.0 (2026-11-25)
+
+Every first answer accepted on all three same-day benches (13, 11 and 7 tasks), and cheaper than 1.5 on two of them: 4% less on the 11 tasks of the 1.5 bench, 6% less on DevOps and CI, 2% more on the 13 older tasks. Code quality on 32 languages: 8.5 against 8.0 for plain Claude, from a blind reviewer.
+
+- Checks run in one call; every failure is fixed in one batch, then the check reruns once.
+- The first tool call reads `lean.md`, the stack references and the project files in one batch.
+- `.chef.md` is printed by the prompt hook, so the model no longer reads it itself.
+- Tests: one unit test per public behavior and per error path the task names, each branch on a larger change; edge cases parametrized in one test where the language allows.
+- The CI coverage gate and mutation testing follow "Scale the setup": only when the project already has them or the user asks.
+- The RAM and CPU check runs only before the first Docker build or container test suite.
+- README: every chart compares chef 1.6 with 1.5, 1.4 and plain Claude, versions shown as X.Y; the version chart shows cost as a multiple of plain Claude's; the quality chart shows Java's logo.
+
 ## 1.5.2 (2026-11-25)
 
 Cheaper than 1.4: on the same day, chef 1.5.2 costs 32% less than 1.4 on the 11 tasks of the 1.5 bench and 22% less on 7 DevOps and CI tasks, every first answer of both accepted.

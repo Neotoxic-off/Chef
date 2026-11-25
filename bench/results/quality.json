@@ -1,5 +1,5 @@
 {
-  "reviewer": "8d9b99524234",
+  "reviewer": "97aedd903d00",
   "criteria": [
     "quality",
     "clarity",
@@ -7,231 +7,151 @@
     "functionality"
   ],
   "arms": {
-    "chef13": {
-      "quality": 7.75,
-      "clarity": 8.72,
-      "maintainability": 7.38,
-      "functionality": 7.75,
-      "mergeable": 0.09,
-      "reviews": 32.0
-    },
-    "chef14": {
-      "quality": 7.62,
-      "clarity": 8.59,
-      "maintainability": 7.47,
-      "functionality": 7.69,
-      "mergeable": 0.09,
-      "reviews": 32.0
-    },
-    "chef15": {
-      "quality": 7.59,
-      "clarity": 8.72,
-      "maintainability": 7.53,
-      "functionality": 7.69,
-      "mergeable": 0.16,
+    "chef16": {
+      "quality": 8.38,
+      "clarity": 8.78,
+      "maintainability": 8.16,
+      "functionality": 8.62,
+      "mergeable": 0.56,
       "reviews": 32.0
     },
     "none": {
-      "quality": 7.09,
-      "clarity": 8.19,
-      "maintainability": 5.47,
-      "functionality": 7.75,
-      "mergeable": 0.03,
+      "quality": 8.06,
+      "clarity": 8.72,
+      "maintainability": 6.66,
+      "functionality": 8.59,
+      "mergeable": 0.38,
       "reviews": 32.0
     }
   },
   "tasks": {
     "angular": {
-      "chef13": 8.0,
-      "chef15": 8.0,
-      "none": 7.25,
-      "chef14": 8.0
+      "chef16": 9.0,
+      "none": 7.75
     },
     "aspnetcore": {
-      "none": 7.25,
-      "chef14": 8.25,
-      "chef13": 7.0,
-      "chef15": 7.75
+      "chef16": 8.25,
+      "none": 8.5
     },
     "bash": {
-      "chef15": 8.25,
-      "chef14": 8.25,
-      "chef13": 7.25,
-      "none": 6.75
+      "none": 7.5,
+      "chef16": 8.0
     },
     "c": {
-      "none": 7.0,
-      "chef15": 8.25,
-      "chef13": 7.5,
-      "chef14": 7.5
+      "chef16": 8.75,
+      "none": 8.75
     },
     "ci": {
-      "chef14": 7.0,
-      "chef13": 7.5,
-      "none": 4.75,
-      "chef15": 7.5
+      "chef16": 8.75,
+      "none": 7.75
     },
     "cpp": {
-      "none": 6.75,
-      "chef14": 7.25,
-      "chef15": 7.25,
-      "chef13": 8.25
-    },
-    "csharp": {
-      "chef14": 9.0,
-      "none": 8.0,
-      "chef13": 8.0,
-      "chef15": 8.25
-    },
-    "django": {
-      "chef13": 7.75,
-      "none": 7.25,
-      "chef15": 7.75,
-      "chef14": 7.75
-    },
-    "docker": {
-      "none": 7.25,
-      "chef14": 5.25,
-      "chef15": 4.75,
-      "chef13": 5.25
-    },
-    "fastapi": {
-      "none": 7.0,
-      "chef13": 8.0,
-      "chef15": 8.25,
-      "chef14": 8.0
-    },
-    "go": {
-      "none": 7.5,
-      "chef15": 8.25,
-      "chef13": 8.25,
-      "chef14": 8.25
-    },
-    "java": {
-      "none": 8.25,
-      "chef15": 8.25,
-      "chef13": 8.5,
-      "chef14": 8.75
-    },
-    "kotlin": {
-      "chef15": 8.5,
-      "chef13": 8.25,
-      "chef14": 8.25,
-      "none": 7.25
-    },
-    "kubernetes": {
-      "chef14": 8.0,
-      "none": 8.0,
-      "chef13": 8.0,
-      "chef15": 8.0
-    },
-    "laravel": {
-      "chef14": 7.75,
-      "none": 7.0,
-      "chef13": 8.25,
-      "chef15": 8.25
-    },
-    "mongodb": {
-      "none": 7.25,
-      "chef13": 8.25,
-      "chef14": 8.25,
-      "chef15": 8.0
-    },
-    "nextjs": {
-      "chef14": 8.25,
-      "none": 7.25,
-      "chef15": 7.5,
-      "chef13": 8.25
-    },
-    "php": {
-      "chef14": 8.5,
-      "chef13": 8.75,
-      "chef15": 8.5,
+      "chef16": 8.5,
       "none": 8.25
     },
+    "csharp": {
+      "chef16": 9.25,
+      "none": 7.75
+    },
+    "django": {
+      "none": 8.0,
+      "chef16": 8.5
+    },
+    "docker": {
+      "chef16": 8.25,
+      "none": 8.0
+    },
+    "fastapi": {
+      "chef16": 8.5,
+      "none": 7.0
+    },
+    "go": {
+      "chef16": 8.5,
+      "none": 8.75
+    },
+    "java": {
+      "chef16": 8.75,
+      "none": 8.75
+    },
+    "kotlin": {
+      "chef16": 9.0,
+      "none": 8.75
+    },
+    "kubernetes": {
+      "chef16": 8.0,
+      "none": 8.0
+    },
+    "laravel": {
+      "chef16": 6.5,
+      "none": 7.25
+    },
+    "mongodb": {
+      "chef16": 8.0,
+      "none": 7.25
+    },
+    "nextjs": {
+      "none": 8.0,
+      "chef16": 8.25
+    },
+    "php": {
+      "none": 8.75,
+      "chef16": 9.0
+    },
     "postgres": {
-      "chef13": 8.0,
-      "chef14": 8.0,
-      "none": 6.75,
-      "chef15": 7.25
+      "none": 8.0,
+      "chef16": 8.25
     },
     "powershell": {
-      "chef14": 7.75,
-      "none": 6.5,
-      "chef13": 8.0,
-      "chef15": 7.25
+      "chef16": 8.25,
+      "none": 7.75
     },
     "python": {
-      "chef14": 8.0,
-      "chef15": 8.0,
-      "chef13": 8.75,
-      "none": 7.5
+      "none": 7.25,
+      "chef16": 8.25
     },
     "rails": {
-      "none": 6.25,
-      "chef14": 8.25,
-      "chef13": 8.25,
-      "chef15": 7.5
+      "none": 7.75,
+      "chef16": 8.5
     },
     "react": {
-      "chef15": 8.0,
-      "chef13": 8.25,
-      "chef14": 8.0,
-      "none": 6.75
+      "none": 7.75,
+      "chef16": 8.75
     },
     "redis": {
-      "none": 6.5,
-      "chef13": 7.25,
-      "chef14": 7.0,
-      "chef15": 7.25
+      "chef16": 8.0,
+      "none": 6.5
     },
     "ruby": {
-      "none": 5.75,
-      "chef13": 6.75,
-      "chef14": 7.25,
-      "chef15": 7.25
+      "none": 8.0,
+      "chef16": 8.5
     },
     "rust": {
-      "chef15": 8.25,
-      "none": 7.25,
-      "chef14": 8.25,
-      "chef13": 8.25
+      "none": 8.75,
+      "chef16": 8.75
     },
     "spring-boot": {
-      "chef13": 8.25,
-      "none": 7.25,
-      "chef14": 8.25,
-      "chef15": 8.5
+      "none": 8.75,
+      "chef16": 9.0
     },
     "sql": {
-      "chef15": 8.25,
-      "chef13": 7.25,
-      "none": 7.0,
-      "chef14": 7.25
+      "none": 8.0,
+      "chef16": 8.5
     },
     "swift": {
-      "none": 7.75,
-      "chef15": 8.5,
-      "chef13": 8.0,
-      "chef14": 6.25
+      "chef16": 8.75,
+      "none": 8.75
     },
     "terraform": {
-      "none": 7.5,
-      "chef14": 8.25,
-      "chef15": 8.25,
-      "chef13": 8.25
+      "none": 8.25,
+      "chef16": 9.0
     },
     "typescript": {
-      "chef15": 9.0,
-      "none": 7.75,
-      "chef13": 8.75,
-      "chef14": 8.0
+      "chef16": 9.0,
+      "none": 8.0
     },
     "vue": {
-      "chef15": 7.75,
-      "chef14": 8.25,
-      "none": 7.5,
-      "chef13": 7.75
+      "chef16": 8.25,
+      "none": 8.0
     }
   }
 }
