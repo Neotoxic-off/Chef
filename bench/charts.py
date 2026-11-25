@@ -255,10 +255,10 @@ OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
 )
 # The newest chef arm is the one the break-even chart and the README headline compare with plain Claude.
 # The overview, break-even and time charts compare these on the same-day 13-task bench (results/merge-13-152.json).
-LATEST_CHEF: tuple[str, str] = ("chef152", "Chef 1.5.2")
+LATEST_CHEF: tuple[str, str] = ("chef152", "Chef 1.5")
 PREVIOUS_CHEF: tuple[str, str] = ("chef14", "Chef 1.4")
 # The 13-task bench, every arm reviewed with the 1.2 loop.
-OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5.2"}
+OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5"}
 PANEL_WIDTH: float = 150.0
 PANEL_STEP: float = 230.0
 
@@ -287,8 +287,8 @@ RELEASE_15_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4",
 RELEASE_15_TITLE: str = "Chef 1.5 bench: 11 tasks, 3 of them held out, 95 runs per arm"
 MERGE_152: Path = Path(__file__).resolve().parent / "results" / "merge-152.json"
 MERGE_152_DEVOPS: Path = Path(__file__).resolve().parent / "results" / "merge-152-devops.json"
-RELEASE_152_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5.2"}
-RELEASE_152_TITLE: str = "Same day, 11 tasks of the 1.5 bench: chef 1.4 against chef 1.5.2"
+RELEASE_152_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5"}
+RELEASE_152_TITLE: str = "Same day, 11 tasks of the 1.5 bench: chef 1.4 against chef 1.5"
 DEVOPS_152_TITLE: str = "Same day, 7 DevOps and CI tasks: Docker, Terraform, Helm, Actions, Prometheus, Go, TS"
 
 
@@ -369,6 +369,15 @@ def same_reviewer_segments(versions: list[dict[str, Any]], points: list[tuple[fl
 
 HISTORY_SHOWN: dict[str, str] = {"$": "${:.3f}", "%": "{:.0f}%", "s": "{:.0f} s"}
 REVIEWED_KEY: str = "merge"
+
+
+def minor_releases(history: dict[str, Any]) -> dict[str, Any]:
+    """One point per major.minor version, labelled X.Y: the latest patch of that minor stands for it."""
+    latest: dict[str, dict[str, Any]] = {}
+    for entry in history["versions"]:
+        minor: str = ".".join(entry["version"].split(".")[:2])
+        latest[minor] = {**entry, "version": minor}
+    return {**history, "versions": list(latest.values())}
 
 
 def baseline_marks(theme: Theme, panel: Panel, history: dict[str, Any]) -> list[str]:
@@ -627,7 +636,7 @@ def split_chart(theme: Theme) -> str:
 STYLES: Path = Path(__file__).resolve().parent / "results" / "styles.json"
 STYLE_ARMS: dict[str, str] = {
     "none": "Plain Claude",
-    "chef152": "Chef 1.5.2",
+    "chef152": "Chef 1.5",
     "nolean": "Chef, no lean.md",
     "caveman": "Caveman 4.1",
     "ponytail": "Ponytail 5.3",
@@ -694,7 +703,7 @@ def main() -> None:
             quality: dict[str, Any] = json.loads(QUALITY.read_text(encoding="utf-8"))
             (OUT / f"quality{theme.suffix}.svg").write_text(quality_chart(theme, quality), encoding="utf-8")
         if HISTORY.is_file():
-            history: dict[str, Any] = json.loads(HISTORY.read_text(encoding="utf-8"))
+            history: dict[str, Any] = minor_releases(json.loads(HISTORY.read_text(encoding="utf-8")))
             for key in HISTORY_METRICS:
                 (OUT / f"history-{key}{theme.suffix}.svg").write_text(history_chart(theme, history, key), encoding="utf-8")
             (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, latest, history), encoding="utf-8")

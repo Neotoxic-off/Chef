@@ -96,7 +96,7 @@ def test_overview_chart_draws_the_latest_chef_in_the_chef_color_and_the_previous
     svg: str = charts.overview_chart(charts.LIGHT, merge)
 
     assert "Chef 1.4: first answer accepted 100%, 0 review rounds per 100 tasks, $0.200 per task with fixes" in svg
-    assert "Chef 1.5.2: first answer accepted 100%, 0 review rounds per 100 tasks, $0.150 per task with fixes" in svg
+    assert "Chef 1.5: first answer accepted 100%, 0 review rounds per 100 tasks, $0.150 per task with fixes" in svg
     assert charts.LIGHT.chef in svg
     assert charts.LIGHT.old in svg
 
@@ -122,7 +122,7 @@ def test_overview_chart_draws_a_bench_where_no_arm_needed_a_review_round() -> No
 
     svg: str = charts.overview_chart(charts.LIGHT, merge, charts.RELEASE_152_TITLE, charts.RELEASE_152_ARMS)
 
-    assert "Chef 1.5.2: first answer accepted 100%, 0 review rounds per 100 tasks, $0.350 per task with fixes" in svg
+    assert "Chef 1.5: first answer accepted 100%, 0 review rounds per 100 tasks, $0.350 per task with fixes" in svg
 
 
 def test_break_even_is_the_extra_machine_cost_over_the_rounds_saved() -> None:
@@ -141,7 +141,7 @@ def test_break_even_chart_labels_the_threshold_and_the_example_round() -> None:
     svg: str = charts.break_even_chart(charts.LIGHT, merge)
 
     assert "costs less once a round costs more than $0.25" in svg
-    assert "plain Claude $15.10 and chef 1.5.2 $11.20 per task, 26% less" in svg
+    assert "plain Claude $15.10 and chef 1.5 $11.20 per task, 26% less" in svg
     assert "Chef 1.4" not in svg
 
 
@@ -267,3 +267,15 @@ def test_style_chart_shows_each_setup_with_its_mean_over_the_tasks_every_setup_r
     assert "Caveman 4.1: first answer accepted 50%, $0.150 per task, 75 lines to review" in svg
     assert "Plain Claude: first answer accepted 100%, $0.200 per task, 100 lines to review" in svg
     assert ">75 lines<" in svg and ">lower is better<" in svg
+
+
+def test_minor_releases_keeps_the_latest_patch_of_each_minor_labelled_major_minor() -> None:
+    history: dict[str, Any] = {
+        "versions": [{"version": "1.4.0", "cost": 0.3}, {"version": "1.5.0", "cost": 0.2}, {"version": "1.5.2", "cost": 0.1}],
+        "baseline": {"cost": 0.05},
+    }
+
+    minor: dict[str, Any] = charts.minor_releases(history)
+
+    assert minor["versions"] == [{"version": "1.4", "cost": 0.3}, {"version": "1.5", "cost": 0.1}]
+    assert minor["baseline"] == {"cost": 0.05}
