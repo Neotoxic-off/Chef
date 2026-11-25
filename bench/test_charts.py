@@ -15,11 +15,11 @@ def test_quality_chart_draws_a_tile_per_language_with_its_icon_biggest_gain_firs
     scores: dict[str, float] = {"quality": 5.5, "clarity": 6.0, "maintainability": 4.5, "functionality": 7.0}
     quality: dict[str, Any] = {
         "criteria": ["quality", "clarity", "maintainability", "functionality"],
-        "arms": {"none": scores, "chef152": {name: value + 3 for name, value in scores.items()}},
+        "arms": {"none": scores, "chef15": {name: value + 3 for name, value in scores.items()}},
         "tasks": {
-            "go": {"none": 5.0, "chef152": 8.2},
-            "csharp": {"none": 6.0, "chef152": 8.5},
-            "cpp": {"none": 7.0, "chef152": 7.0},
+            "go": {"none": 5.0, "chef15": 8.2},
+            "csharp": {"none": 6.0, "chef15": 8.5},
+            "cpp": {"none": 7.0, "chef15": 7.0},
         },
     }
 
@@ -89,14 +89,14 @@ def test_overview_chart_lists_each_looped_arm() -> None:
 def test_overview_chart_draws_the_latest_chef_in_the_chef_color_and_the_previous_one_in_the_old_color() -> None:
     merge: dict[str, dict[str, float]] = {
         "none": {"runs": 2.0, "merged_first_time": 0.5, "fix_rounds_per_run": 0.5, "total_cost": 0.2},
-        "chef13": {"runs": 2.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.4},
-        "chef14": {"runs": 2.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.3},
+        "chef14": {"runs": 2.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.4},
+        "chef152": {"runs": 2.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.3},
     }
 
     svg: str = charts.overview_chart(charts.LIGHT, merge)
 
-    assert "Chef 1.3: first answer accepted 100%, 0 review rounds per 100 tasks, $0.200 per task with fixes" in svg
-    assert "Chef 1.4: first answer accepted 100%, 0 review rounds per 100 tasks, $0.150 per task with fixes" in svg
+    assert "Chef 1.4: first answer accepted 100%, 0 review rounds per 100 tasks, $0.200 per task with fixes" in svg
+    assert "Chef 1.5.2: first answer accepted 100%, 0 review rounds per 100 tasks, $0.150 per task with fixes" in svg
     assert charts.LIGHT.chef in svg
     assert charts.LIGHT.old in svg
 
@@ -107,11 +107,11 @@ def test_overview_chart_takes_its_own_title_and_arm_names() -> None:
         "chef14": {"runs": 2.0, "merged_first_time": 1.0, "fix_rounds_per_run": 0.0, "total_cost": 0.4},
     }
 
-    svg: str = charts.overview_chart(charts.LIGHT, merge, charts.STACKS_TITLE, charts.STACKS_ARMS)
+    svg: str = charts.overview_chart(charts.LIGHT, merge, charts.DEVOPS_152_TITLE, charts.RELEASE_152_ARMS)
 
-    assert charts.STACKS_TITLE in svg
+    assert charts.DEVOPS_152_TITLE in svg
     assert "Chef 1.4: first answer accepted 100%" in svg
-    assert "Same 13 tasks" not in svg
+    assert charts.OVERVIEW_TITLE not in svg
 
 
 def test_overview_chart_draws_a_bench_where_no_arm_needed_a_review_round() -> None:
@@ -135,13 +135,13 @@ def test_break_even_is_the_extra_machine_cost_over_the_rounds_saved() -> None:
 def test_break_even_chart_labels_the_threshold_and_the_example_round() -> None:
     merge: dict[str, dict[str, float]] = {
         "none": {"runs": 10.0, "total_cost": 1.0, "fix_rounds_per_run": 0.5},
-        "chef15": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
+        "chef152": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
     }
 
     svg: str = charts.break_even_chart(charts.LIGHT, merge)
 
     assert "costs less once a round costs more than $0.25" in svg
-    assert "plain Claude $15.10 and chef 1.5 $11.20 per task, 26% less" in svg
+    assert "plain Claude $15.10 and chef 1.5.2 $11.20 per task, 26% less" in svg
     assert "Chef 1.4" not in svg
 
 
@@ -149,7 +149,7 @@ def test_break_even_chart_draws_chef_14_beside_the_latest_chef() -> None:
     merge: dict[str, dict[str, float]] = {
         "none": {"runs": 10.0, "total_cost": 1.0, "fix_rounds_per_run": 0.5},
         "chef14": {"runs": 10.0, "total_cost": 2.5, "fix_rounds_per_run": 0.2},
-        "chef15": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
+        "chef152": {"runs": 10.0, "total_cost": 2.0, "fix_rounds_per_run": 0.1},
     }
 
     svg: str = charts.break_even_chart(charts.LIGHT, merge)
@@ -239,7 +239,7 @@ def test_time_chart_grows_to_fit_the_legend_under_five_arms() -> None:
         "first_review_seconds": 10,
         "back_and_forth_seconds": 10,
     }
-    merge: dict[str, dict[str, float]] = dict.fromkeys(("none", "chef11", "chef12", "chef14", "chef15"), steps)
+    merge: dict[str, dict[str, float]] = dict.fromkeys(("none", "chef11", "chef12", "chef14", "chef152"), steps)
     history: dict[str, Any] = {"versions": [{"version": "1.4.0", "seconds": 40.0}], "baseline": {"seconds": 15.0}}
     legend_bottom: int = int(charts.HISTORY_TOP + 5 * charts.TIME_ROW_STEP + 24)
 

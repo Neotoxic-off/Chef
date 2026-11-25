@@ -13,8 +13,7 @@ from typing import Any
 OUT: Path = Path(__file__).resolve().parent.parent / "assets" / "bench"
 SUMMARY: Path = Path(__file__).resolve().parent / "results" / "summary.json"
 HISTORY: Path = Path(__file__).resolve().parent / "results" / "history.json"
-STACKS: Path = Path(__file__).resolve().parent / "results" / "merge-stacks.json"
-MERGE: Path = Path(__file__).resolve().parent / "results" / "merge.json"
+MERGE_13_152: Path = Path(__file__).resolve().parent / "results" / "merge-13-152.json"
 QUALITY: Path = Path(__file__).resolve().parent / "results" / "quality.json"
 MERGE_15: Path = Path(__file__).resolve().parent / "results" / "merge-15.json"
 FONT: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
@@ -140,7 +139,7 @@ def rows_chart(theme: Theme, chart: Chart, rows: list[tuple[str, dict[str, float
 
 
 # The chef arm of results/quality.json and its name in the chart.
-QUALITY_CHEF: tuple[str, str] = ("chef152", "chef 1.5.2")
+QUALITY_CHEF: tuple[str, str] = ("chef15", "chef 1.5")
 QUALITY_NAMES: dict[str, str] = {
     "aspnetcore": "ASP.NET Core", "bash": "Bash", "c": "C", "ci": "GitHub Actions", "cpp": "C++", "csharp": "C#",
     "django": "Django", "docker": "Docker", "fastapi": "FastAPI", "go": "Go", "java": "Java", "kotlin": "Kotlin",
@@ -255,11 +254,11 @@ OVERVIEW_PANELS: tuple[tuple[str, str], ...] = (
     ("Cost per task, fixes included", "cost"),
 )
 # The newest chef arm is the one the break-even chart and the README headline compare with plain Claude.
-# The break-even and time charts compare these two on the latest bench (results/merge-15.json).
-LATEST_CHEF: tuple[str, str] = ("chef15", "Chef 1.5")
+# The overview, break-even and time charts compare these on the same-day 13-task bench (results/merge-13-152.json).
+LATEST_CHEF: tuple[str, str] = ("chef152", "Chef 1.5.2")
 PREVIOUS_CHEF: tuple[str, str] = ("chef14", "Chef 1.4")
-# The 13-task bench (results/merge.json), every arm reviewed with the 1.2 loop.
-OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef13": "Chef 1.3", "chef14": "Chef 1.4", "chef15": "Chef 1.5"}
+# The 13-task bench, every arm reviewed with the 1.2 loop.
+OVERVIEW_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5.2"}
 PANEL_WIDTH: float = 150.0
 PANEL_STEP: float = 230.0
 
@@ -283,9 +282,7 @@ def overview_cell(theme: Theme, x: float, y: float, value: float, scale: tuple[f
     ]
 
 
-OVERVIEW_TITLE: str = "Same 13 tasks, same model, a blind reviewer asks for fixes until it merges"
-STACKS_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4"}
-STACKS_TITLE: str = "Most-used stacks, 9 tasks: Node, React, Bash, SQL, PHP, PowerShell, C, C++, Kotlin"
+OVERVIEW_TITLE: str = "Same day, 13 tasks, a blind reviewer asks for fixes until it merges"
 RELEASE_15_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef15": "Chef 1.5"}
 RELEASE_15_TITLE: str = "Chef 1.5 bench: 11 tasks, 3 of them held out, 95 runs per arm"
 MERGE_152: Path = Path(__file__).resolve().parent / "results" / "merge-152.json"
@@ -682,16 +679,8 @@ def main() -> None:
     summary: dict[str, Any] = json.loads(SUMMARY.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
     for theme in (LIGHT, DARK):
-        merge: dict[str, dict[str, float]] = json.loads(MERGE.read_text(encoding="utf-8"))["arms"]
-        latest: dict[str, dict[str, float]] = (
-            json.loads(MERGE_15.read_text(encoding="utf-8"))["arms"] if MERGE_15.is_file() else merge
-        )
-        (OUT / f"overview{theme.suffix}.svg").write_text(overview_chart(theme, merge), encoding="utf-8")
-        if STACKS.is_file():
-            stacks: dict[str, dict[str, float]] = json.loads(STACKS.read_text(encoding="utf-8"))["arms"]
-            (OUT / f"stacks{theme.suffix}.svg").write_text(
-                overview_chart(theme, stacks, STACKS_TITLE, STACKS_ARMS), encoding="utf-8"
-            )
+        latest: dict[str, dict[str, float]] = json.loads(MERGE_13_152.read_text(encoding="utf-8"))["arms"]
+        (OUT / f"overview{theme.suffix}.svg").write_text(overview_chart(theme, latest), encoding="utf-8")
         (OUT / f"break-even{theme.suffix}.svg").write_text(break_even_chart(theme, latest), encoding="utf-8")
         (OUT / f"cost{theme.suffix}.svg").write_text(cost_chart(theme, summary), encoding="utf-8")
         (OUT / f"pairwise{theme.suffix}.svg").write_text(pairwise_chart(theme, summary), encoding="utf-8")

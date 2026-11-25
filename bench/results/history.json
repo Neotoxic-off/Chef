@@ -76,13 +76,22 @@
       "reviews": 9,
       "seconds": 41.4,
       "reviewer": "1.1-copy"
+    },
+    {
+      "version": "1.5.2",
+      "cost": 0.272,
+      "merge": 88.9,
+      "reviews": 9,
+      "seconds": 92.7,
+      "reviewer": "1.1-copy"
     }
   ],
   "baseline": {
-    "cost": 0.059,
-    "merge": 44.4,
+    "cost": 0.137,
+    "merge": 88.9,
     "reviews": 9,
-    "seconds": 15.0,
-    "reviewer": "1.1-copy"
+    "seconds": 45.8,
+    "reviewer": "1.1-copy",
+    "date": "2026-11-25"
   }
 }

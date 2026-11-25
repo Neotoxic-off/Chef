@@ -2,7 +2,8 @@
   "provenance": {
     "reviewer": "6459c25c02d6",
     "harness": [
-      "v1.5.0-11-gfd80f29"
+      "v1.5.0-11-gfd80f29",
+      "v1.5.2-1-g8f300d6-dirty"
     ]
   },
   "arms": {
@@ -33,6 +34,20 @@
       "first_answer_seconds": 155.0,
       "first_review_seconds": 25.8,
       "back_and_forth_seconds": 0.0
+    },
+    "none": {
+      "runs": 11.0,
+      "merged_first_time": 0.818,
+      "merged_in_the_end": 1.0,
+      "fix_rounds_per_run": 0.18,
+      "first_answer_cost": 1.95,
+      "total_cost": 2.29,
+      "cost_per_merged_run": 0.208,
+      "reviewer_cost": 1.35,
+      "lines_to_review": 277,
+      "first_answer_seconds": 66.5,
+      "first_review_seconds": 32.2,
+      "back_and_forth_seconds": 16.4
     }
   }
 }
