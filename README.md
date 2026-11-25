@@ -42,35 +42,7 @@ A blind reviewer that never knows chef exists asks for fixes until it would merg
 
 ### Chef 1.6 against 1.5, 1.4 and plain Claude
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-dark.svg">
-    <img src="assets/bench/overview.svg" width="880" alt="Plain Claude: first answer accepted 92%, 15 review rounds per 100 tasks, $0.145 per task with fixes; Chef 1.4: first answer accepted 100%, 0 review rounds per 100 tasks, $0.375 per task with fixes; Chef 1.5: first answer accepted 100%, 0 review rounds per 100 tasks, $0.270 per task with fixes; Chef 1.6: first answer accepted 100%, 0 review rounds per 100 tasks, $0.275 per task with fixes">
-  </picture>
-</p>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-11-dark.svg">
-    <img src="assets/bench/overview-11.svg" width="880" alt="Plain Claude: first answer accepted 94%, 6 review rounds per 100 tasks, $0.198 per task with fixes; Chef 1.4: first answer accepted 100%, 0 review rounds per 100 tasks, $0.510 per task with fixes; Chef 1.5: first answer accepted 98%, 2 review rounds per 100 tasks, $0.344 per task with fixes; Chef 1.6: first answer accepted 100%, 0 review rounds per 100 tasks, $0.329 per task with fixes">
-  </picture>
-</p>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/devops-dark.svg">
-    <img src="assets/bench/devops.svg" width="880" alt="Plain Claude: first answer accepted 100%, 0 review rounds per 100 tasks, $0.123 per task with fixes; Chef 1.4: first answer accepted 100%, 0 review rounds per 100 tasks, $0.331 per task with fixes; Chef 1.5: first answer accepted 100%, 0 review rounds per 100 tasks, $0.260 per task with fixes; Chef 1.6: first answer accepted 100%, 0 review rounds per 100 tasks, $0.244 per task with fixes">
-  </picture>
-</p>
-
-| | Plain Claude | Chef 1.4 | Chef 1.5 | Chef 1.6 |
-|---|---|---|---|---|
-| First answer accepted, 13 / 11 / 7 tasks | 92% / 94% / 100% | 100% / 100% / 100% | 100% / 98% / 100% | **100% / 100% / 100%** |
-| Cost per task, fixes included, 13 / 11 / 7 tasks | $0.145 / $0.198 / $0.123 | $0.375 / $0.510 / $0.331 | $0.270 / $0.344 / $0.260 | $0.275 / **$0.329** / **$0.244** |
-| Time to a merged change, 13 tasks | 90 s | 172 s | 138 s | 144 s |
-| Code quality, 32 languages, 0 to 10 | 8.0 | | | **8.5** |
-
-Chef 1.6 had every first answer accepted on all three benches, like 1.4 and unlike 1.5 (one miss on the 11 tasks). It costs 4% less than 1.5 on the 11 tasks and 6% less on the DevOps and CI tasks, and 2% more on the 13 older tasks; against 1.4 it costs 26% to 36% less. Against plain Claude it costs 1.7 to 2 times as much per task, and takes about 1.6 times as long to a merged change.
+Chef 1.6 had every first answer accepted on the 13, 11 and 7-task benches, like 1.4 and unlike 1.5 (one miss on the 11 tasks). It costs 4% less than 1.5 on the 11 tasks and 6% less on the DevOps and CI tasks, and 2% more on the 13 older tasks; against 1.4 it costs 26% to 36% less. Against plain Claude it costs 1.7 to 2 times as much per task, and takes about 1.6 times as long to a merged change.
 
 <p align="center">
   <picture>
