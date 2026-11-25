@@ -287,9 +287,11 @@ RELEASE_15_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4",
 RELEASE_15_TITLE: str = "Chef 1.5 bench: 11 tasks, 3 of them held out, 95 runs per arm"
 MERGE_152: Path = Path(__file__).resolve().parent / "results" / "merge-152.json"
 MERGE_152_DEVOPS: Path = Path(__file__).resolve().parent / "results" / "merge-152-devops.json"
+MERGE_152_EVENING: Path = Path(__file__).resolve().parent / "results" / "merge-152-evening.json"
 RELEASE_152_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5"}
 RELEASE_152_TITLE: str = "Same day, 11 tasks of the 1.5 bench: chef 1.4 against chef 1.5"
 DEVOPS_152_TITLE: str = "Same day, 7 DevOps and CI tasks: Docker, Terraform, Helm, Actions, Prometheus, Go, TS"
+EVENING_152_TITLE: str = "Same day, evening: 11 tasks of the 1.5 bench, 2 runs each"
 
 
 def arm_shades(theme: Theme, arms: list[str]) -> dict[str, str]:
@@ -710,6 +712,7 @@ def main() -> None:
         for source, name, title in (
             (MERGE_152, "overview-152", RELEASE_152_TITLE),
             (MERGE_152_DEVOPS, "devops-152", DEVOPS_152_TITLE),
+            (MERGE_152_EVENING, "overview-152-evening", EVENING_152_TITLE),
         ):
             if source.is_file():
                 arms_152: dict[str, dict[str, float]] = json.loads(source.read_text(encoding="utf-8"))["arms"]

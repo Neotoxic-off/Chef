@@ -67,6 +67,15 @@ The model's behavior drifts from day to day: on 2026-11-25, plain Claude pinned 
 
 Chef 1.5 costs 28% less than 1.4 on the 13 older tasks, 32% less on the 11 tasks of the 1.5 bench (cheaper on 10 of them) and 22% less on the DevOps and CI tasks; on the 11 tasks its first answer comes in 155 s instead of 210 s. Every first answer of both versions was accepted that day, against 92% and 82% for plain Claude, so these benches no longer separate 1.4 from 1.5 on quality.
 
+The same 11 tasks again that evening, 2 runs per arm: plain Claude's first answer was accepted 22 times of 22 and chef 1.5's 21 of 22, and both passed every hidden test. On these tasks and that day, chef cost 1.76 times as much as plain Claude for no measured gain.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/overview-152-evening-dark.svg">
+    <img src="assets/bench/overview-152-evening.svg" width="880" alt="Same day, evening, 11 tasks of the 1.5 bench, 22 runs per arm. Plain Claude: first answer accepted 100%, no review round, $0.193 per task with fixes. Chef 1.5: 96%, 5 review rounds per 100 tasks, $0.339.">
+  </picture>
+</p>
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/bench/time-dark.svg">
