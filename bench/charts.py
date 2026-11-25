@@ -152,6 +152,7 @@ QUALITY_NAMES: dict[str, str] = {
 
 ICONS: Path = Path(__file__).resolve().parent / "icons.json"
 # Simple Icons has no C#, PowerShell or plain SQL logo: those tiles show these letters instead.
+# Its Java entry is gone (trademark), so java comes from devicon at its own 128-unit viewbox.
 MONOGRAMS: dict[str, str] = {"csharp": "C#", "powershell": "PS", "sql": "SQL"}
 TILE_COLUMNS: int = 4
 TILE_WIDTH: float = WIDTH / TILE_COLUMNS
@@ -159,9 +160,13 @@ TILE_HEIGHT: float = 64.0
 TILES_TOP: float = 132.0
 
 
-def icon(theme: Theme, x: float, y: float, task: str, paths: dict[str, str]) -> list[str]:
+def icon(theme: Theme, x: float, y: float, task: str, icons: dict[str, Any]) -> list[str]:
+    """The task's logo drawn 24 units wide, scaled from its own viewbox when it is not 24."""
+    paths: dict[str, str] = icons["paths"]
     if task in paths:
-        return [f'<path transform="translate({x:.1f} {y:.1f})" d="{paths[task]}" fill="{theme.ink}"/>']
+        scale: float = icons["viewbox"] / icons.get("viewboxes", {}).get(task, icons["viewbox"])
+        place: str = f"translate({x:.1f} {y:.1f})" + (f" scale({scale:g})" if scale != 1 else "")
+        return [f'<path transform="{place}" d="{paths[task]}" fill="{theme.ink}"/>']
     return [text(x + 12, y + 17, MONOGRAMS.get(task, task[:3].upper()), theme.ink, 12, 700, "middle")]
 
 
@@ -180,7 +185,7 @@ def quality_tile(theme: Theme, origin: tuple[float, float], name: str, scores: t
 def quality_chart(theme: Theme, quality: dict[str, Any]) -> str:
     """One tile per language: its icon, the score without chef, then with the latest chef; biggest gain first."""
     chef, chef_name = QUALITY_CHEF
-    paths: dict[str, str] = json.loads(ICONS.read_text(encoding="utf-8"))["paths"]
+    icons: dict[str, Any] = json.loads(ICONS.read_text(encoding="utf-8"))
     criteria: list[str] = quality["criteria"]
     mean: dict[str, float] = {arm: statistics.fmean(quality["arms"][arm][name] for name in criteria) for arm in ("none", chef)}
     tasks: list[tuple[str, dict[str, float]]] = sorted(
@@ -195,7 +200,7 @@ def quality_chart(theme: Theme, quality: dict[str, Any]) -> str:
     for index, (task, scores) in enumerate(tasks):
         x: float = (index % TILE_COLUMNS) * TILE_WIDTH
         y: float = TILES_TOP + (index // TILE_COLUMNS) * TILE_HEIGHT
-        body += icon(theme, x, y + 2, task, paths)
+        body += icon(theme, x, y + 2, task, icons)
         body += quality_tile(theme, (x, y + 8), QUALITY_NAMES.get(task, task), (scores["none"], scores[chef]))
     rows: int = -(-len(tasks) // TILE_COLUMNS)
     label: str = (
@@ -288,10 +293,19 @@ RELEASE_15_TITLE: str = "Chef 1.5 bench: 11 tasks, 3 of them held out, 95 runs p
 MERGE_152: Path = Path(__file__).resolve().parent / "results" / "merge-152.json"
 MERGE_152_DEVOPS: Path = Path(__file__).resolve().parent / "results" / "merge-152-devops.json"
 MERGE_152_EVENING: Path = Path(__file__).resolve().parent / "results" / "merge-152-evening.json"
+MERGE_16: Path = Path(__file__).resolve().parent / "results" / "merge-16.json"
 RELEASE_152_ARMS: dict[str, str] = {"none": "Plain Claude", "chef14": "Chef 1.4", "chef152": "Chef 1.5"}
 RELEASE_152_TITLE: str = "Same day, 11 tasks of the 1.5 bench: chef 1.4 against chef 1.5"
 DEVOPS_152_TITLE: str = "Same day, 7 DevOps and CI tasks: Docker, Terraform, Helm, Actions, Prometheus, Go, TS"
 EVENING_152_TITLE: str = "Same day, evening: 11 tasks of the 1.5 bench, 2 runs each"
+TRIES_16_TITLE: str = "Same evening, 11 tasks, 2 runs each: three 1.6 tries against chef 1.5"
+TRIES_16_ARMS: dict[str, str] = {
+    "none": "Plain Claude",
+    "chef152": "Chef 1.5",
+    "chef16a": "1.6 try A",
+    "chef16b": "1.6 try B",
+    "chef16c": "1.6 try C",
+}
 
 
 def arm_shades(theme: Theme, arms: list[str]) -> dict[str, str]:
@@ -709,16 +723,15 @@ def main() -> None:
             for key in HISTORY_METRICS:
                 (OUT / f"history-{key}{theme.suffix}.svg").write_text(history_chart(theme, history, key), encoding="utf-8")
             (OUT / f"time{theme.suffix}.svg").write_text(time_chart(theme, latest, history), encoding="utf-8")
-        for source, name, title in (
-            (MERGE_152, "overview-152", RELEASE_152_TITLE),
-            (MERGE_152_DEVOPS, "devops-152", DEVOPS_152_TITLE),
-            (MERGE_152_EVENING, "overview-152-evening", EVENING_152_TITLE),
+        for source, name, title, names in (
+            (MERGE_152, "overview-152", RELEASE_152_TITLE, RELEASE_152_ARMS),
+            (MERGE_152_DEVOPS, "devops-152", DEVOPS_152_TITLE, RELEASE_152_ARMS),
+            (MERGE_152_EVENING, "overview-152-evening", EVENING_152_TITLE, RELEASE_152_ARMS),
+            (MERGE_16, "tries-16", TRIES_16_TITLE, TRIES_16_ARMS),
         ):
             if source.is_file():
                 arms_152: dict[str, dict[str, float]] = json.loads(source.read_text(encoding="utf-8"))["arms"]
-                (OUT / f"{name}{theme.suffix}.svg").write_text(
-                    overview_chart(theme, arms_152, title, RELEASE_152_ARMS), encoding="utf-8"
-                )
+                (OUT / f"{name}{theme.suffix}.svg").write_text(overview_chart(theme, arms_152, title, names), encoding="utf-8")
         if STYLES.is_file():
             styles: dict[str, Any] = json.loads(STYLES.read_text(encoding="utf-8"))
             (OUT / f"styles{theme.suffix}.svg").write_text(style_chart(theme, styles), encoding="utf-8")

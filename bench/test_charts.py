@@ -279,3 +279,13 @@ def test_minor_releases_keeps_the_latest_patch_of_each_minor_labelled_major_mino
 
     assert minor["versions"] == [{"version": "1.4", "cost": 0.3}, {"version": "1.5", "cost": 0.1}]
     assert minor["baseline"] == {"cost": 0.05}
+
+
+def test_icon_scales_a_logo_drawn_on_another_viewbox_to_24_units() -> None:
+    icons: dict[str, Any] = {"paths": {"java": "M0 0h128", "go": "M0 0h24"}, "viewbox": 24, "viewboxes": {"java": 128}}
+
+    java: list[str] = charts.icon(charts.LIGHT, 10.0, 20.0, "java", icons)
+    go: list[str] = charts.icon(charts.LIGHT, 10.0, 20.0, "go", icons)
+
+    assert 'transform="translate(10.0 20.0) scale(0.1875)"' in java[0]
+    assert 'transform="translate(10.0 20.0)"' in go[0]
