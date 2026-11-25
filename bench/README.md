@@ -2,6 +2,14 @@
 
 How chef was measured, task by task. The short version is in the [main README](../README.md).
 
+## Chef 1.5.2 bench, same day (2026-11-25)
+
+The model's behavior drifts between days: plain Claude pinned to Claude Code 2.1.330 thought up to 100 times more on 2026-11-25 than on 2026-11-22 (C++ task: 26 thinking tokens and $0.067, then 3,264 and $0.225), so costs from different days are never compared. Every arm below ran on 2026-11-25 with Claude Code 2.1.330 (a copy of that version first in `PATH`, for runs, fixes and judges), reviewed with the merge loop (reviewer `6459c25c02d6`). `run.sh` now refuses to resume an out-dir made with another Claude Code version.
+
+- The 11 tasks of the 1.5 bench: chef 1.4 one run each, chef 1.5.2 two runs each. First answer accepted 11 of 11 and 22 of 22; cost per task with fixes $0.510 and $0.348 (32% less, cheaper on 10 of 11); mean first answer 210 s and 155 s. Results: [`results/merge-152.json`](results/merge-152.json).
+- 7 DevOps and CI tasks (Docker, Terraform, Helm, GitHub Actions, Prometheus, Go, TypeScript), two runs per arm: plain Claude, chef 1.4 and chef 1.5.2 all accepted 14 of 14; $0.123, $0.331 and $0.260 per task. Results: [`results/merge-152-devops.json`](results/merge-152-devops.json).
+- Chef against caveman 4.1 and ponytail 5.3 (their plugin dirs as arms), plus chef without `lean.md`, on Bash, the TypeScript bug fix, the Python CLI and the Python refactor, two runs each on Claude Code 2.1.331. Chef here is `ad13bf7`, before the reviewer fix. [`merge_loop.py summarize-tasks`](merge_loop.py) gives one summary per task and arm; the charts show the gap to plain Claude. Results: [`results/styles.json`](results/styles.json).
+
 ## Chef 1.5 bench
 
 11 tasks: the 8 most-used stacks of 1.4 kept at 10 runs per arm (Bash, C, C++, PowerShell, React, and the three held-out tasks below), plus Rust, Python and Node at 5 runs; Kotlin, Node at 10, PHP and SQL were dropped to fit the time. Plain Claude, chef 1.4 (`v1.4.0`) and chef 1.5 all ran on Claude Code 2.1.330, reviewed with the merge loop (reviewer `6459c25c02d6`, the same as the 1.4 stacks run). First answer accepted: 58%, 75%, 87% of 95 runs; fix rounds per task 0.53, 0.33, 0.15; cost per task with fixes $0.145, $0.278, $0.294; median first answer 21 s, 65 s, 94 s. Chef 1.5 against 1.4: Fisher exact test p = 0.041; against plain Claude p < 0.0001. Results: [`results/merge-15.json`](results/merge-15.json).

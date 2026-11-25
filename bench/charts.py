@@ -139,7 +139,8 @@ def rows_chart(theme: Theme, chart: Chart, rows: list[tuple[str, dict[str, float
     return svg(int(y), chart.label, body)
 
 
-QUALITY_ARMS: tuple[tuple[str, str], ...] = (("none", "Without chef"), ("chef15", "With chef 1.5"))
+# The chef arm of results/quality.json and its name in the chart.
+QUALITY_CHEF: tuple[str, str] = ("chef152", "chef 1.5.2")
 QUALITY_NAMES: dict[str, str] = {
     "aspnetcore": "ASP.NET Core", "bash": "Bash", "c": "C", "ci": "GitHub Actions", "cpp": "C++", "csharp": "C#",
     "django": "Django", "docker": "Docker", "fastapi": "FastAPI", "go": "Go", "java": "Java", "kotlin": "Kotlin",
@@ -178,30 +179,29 @@ def quality_tile(theme: Theme, origin: tuple[float, float], name: str, scores: t
 
 
 def quality_chart(theme: Theme, quality: dict[str, Any]) -> str:
-    """One tile per language: its icon, the score without chef, then with chef 1.5; biggest gain first."""
+    """One tile per language: its icon, the score without chef, then with the latest chef; biggest gain first."""
+    chef, chef_name = QUALITY_CHEF
     paths: dict[str, str] = json.loads(ICONS.read_text(encoding="utf-8"))["paths"]
     criteria: list[str] = quality["criteria"]
-    mean: dict[str, float] = {
-        arm: statistics.fmean(quality["arms"][arm][name] for name in criteria) for arm in ("none", "chef15")
-    }
+    mean: dict[str, float] = {arm: statistics.fmean(quality["arms"][arm][name] for name in criteria) for arm in ("none", chef)}
     tasks: list[tuple[str, dict[str, float]]] = sorted(
-        quality["tasks"].items(), key=lambda item: item[1]["chef15"] - item[1]["none"], reverse=True
+        quality["tasks"].items(), key=lambda item: item[1][chef] - item[1]["none"], reverse=True
     )
     body: list[str] = [
-        text(0, 26, "Code quality per language, without chef → with chef 1.5", theme.ink, 18, 600),
+        text(0, 26, f"Code quality per language, without chef → with {chef_name}", theme.ink, 18, 600),
         text(0, 50, f"0 to 10 from a blind reviewer: the mean of {', '.join(criteria)}", theme.muted, 13),
         text(0, 92, f"All {len(tasks)} languages", theme.ink, 16, 600),
-        *quality_tile(theme, (150.0, 70.0), "", (mean["none"], mean["chef15"])),
+        *quality_tile(theme, (150.0, 70.0), "", (mean["none"], mean[chef])),
     ]
     for index, (task, scores) in enumerate(tasks):
         x: float = (index % TILE_COLUMNS) * TILE_WIDTH
         y: float = TILES_TOP + (index // TILE_COLUMNS) * TILE_HEIGHT
         body += icon(theme, x, y + 2, task, paths)
-        body += quality_tile(theme, (x, y + 8), QUALITY_NAMES.get(task, task), (scores["none"], scores["chef15"]))
+        body += quality_tile(theme, (x, y + 8), QUALITY_NAMES.get(task, task), (scores["none"], scores[chef]))
     rows: int = -(-len(tasks) // TILE_COLUMNS)
     label: str = (
-        f"Code quality per language, 0 to 10, without chef then with chef 1.5. All: {mean['none']:.1f} to {mean['chef15']:.1f}. "
-        + "; ".join(f"{QUALITY_NAMES.get(task, task)} {scores['none']:.1f} to {scores['chef15']:.1f}" for task, scores in tasks)
+        f"Code quality per language, 0 to 10, without chef then with {chef_name}. All: {mean['none']:.1f} to {mean[chef]:.1f}. "
+        + "; ".join(f"{QUALITY_NAMES.get(task, task)} {scores['none']:.1f} to {scores[chef]:.1f}" for task, scores in tasks)
     )
     return svg(int(TILES_TOP + rows * TILE_HEIGHT), label, body)
 
@@ -275,7 +275,7 @@ def overview_values(merge: dict[str, dict[str, float]], arm: str) -> dict[str, f
 
 def overview_cell(theme: Theme, x: float, y: float, value: float, scale: tuple[float, str, str]) -> list[str]:
     top, unit, color = scale
-    shown: str = {"%": f"{value:.0f}%", "$": f"${value:.3f}"}[unit]
+    shown: str = {"%": f"{value:.0f}%", "$": f"${value:.3f}", "lines": f"{value:.0f} lines"}[unit]
     return [
         rect(x, y, PANEL_WIDTH, 16, theme.track),
         rect(x, y, max(PANEL_WIDTH * value / top, 1.0), 16, color),
@@ -629,79 +629,53 @@ def split_chart(theme: Theme) -> str:
 
 STYLES: Path = Path(__file__).resolve().parent / "results" / "styles.json"
 STYLE_ARMS: dict[str, str] = {
+    "none": "Plain Claude",
     "chef152": "Chef 1.5.2",
-    "nolean": "Chef without lean.md",
+    "nolean": "Chef, no lean.md",
     "caveman": "Caveman 4.1",
     "ponytail": "Ponytail 5.3",
 }
-STYLE_TASKS: tuple[str, ...] = ("python", "bugfix", "refactor", "docker", "github-actions", "sql", "typescript", "bash")
-STYLE_ALL: str = "All contexts"
-STYLE_CELL_HEIGHT: float = 26.0
-STYLE_ROW_STEP: float = 32.0
-STYLE_CELL_GAP: float = 8.0
-
-
-@dataclass(frozen=True)
-class StyleMetric:
-    key: str
-    title: str
-    unit: str
-    lower_is_better: bool
-
-
-STYLE_METRICS: tuple[StyleMetric, ...] = (
-    StyleMetric("accepted", "First answer accepted: points above or below plain Claude", "pt", False),
-    StyleMetric("cost", "Cost per task, fixes included: % above or below plain Claude", "%", True),
-    StyleMetric("lines", "Code to review: % above or below plain Claude", "%", True),
+STYLE_PANELS: tuple[tuple[str, str, str, str], ...] = (
+    ("First answer accepted", "higher is better", "accepted", "%"),
+    ("Cost per task, fixes included", "lower is better", "cost", "$"),
+    ("Code to review", "lower is better", "lines", "lines"),
 )
+STYLE_TITLE: str = "Same day, 4 tasks (Bash, TypeScript bug fix, Python CLI, Python refactor), 2 runs each"
 
 
-def style_value(loop: dict[str, float], key: str) -> float:
+def style_values(styles: dict[str, Any], arm: str, tasks: list[str]) -> dict[str, float]:
+    """Each arm's mean over the tasks every arm ran: accepted share, cost per task with fixes, lines to review."""
+    loops: list[dict[str, float]] = [styles["tasks"][task][arm] for task in tasks]
     return {
-        "accepted": 100 * loop["merged_first_time"],
-        "cost": loop["total_cost"] / loop["runs"],
-        "lines": loop["lines_to_review"],
-    }[key]
-
-
-def style_gap(arm: dict[str, float], plain: dict[str, float], metric: StyleMetric) -> float:
-    """Points for a rate, percent of plain Claude's value for an amount."""
-    if metric.unit == "pt":
-        return style_value(arm, metric.key) - style_value(plain, metric.key)
-    return 100 * (style_value(arm, metric.key) / style_value(plain, metric.key) - 1)
-
-
-def style_cell(theme: Theme, origin: tuple[float, float], width: float, gap: float, metric: StyleMetric) -> list[str]:
-    better: bool = (gap < 0) if metric.lower_is_better else (gap > 0)
-    fill: str = theme.track if round(gap) == 0 else theme.chef if better else theme.without
-    x, y = origin
-    shown: str = f"{gap:+.0f} {metric.unit}" if metric.unit == "pt" else f"{gap:+.0f}%"
-    return [rect(x, y, width, STYLE_CELL_HEIGHT, fill), text(x + width / 2, y + 18, shown, theme.ink, 13, 600, "middle")]
-
-
-def style_chart(theme: Theme, styles: dict[str, Any], metric: StyleMetric) -> str:
-    """One row per context, one column per arm: each cell is the gap to plain Claude; the chef color marks a gain."""
-    tasks: list[str] = [task for task in STYLE_TASKS if "none" in styles["tasks"].get(task, {})]
-    arms: list[str] = [arm for arm in STYLE_ARMS if all(arm in styles["tasks"][task] for task in tasks)]
-    gaps: dict[str, dict[str, float]] = {
-        task: {arm: style_gap(styles["tasks"][task][arm], styles["tasks"][task]["none"], metric) for arm in arms}
-        for task in tasks
+        "accepted": statistics.fmean(100 * loop["merged_first_time"] for loop in loops),
+        "cost": statistics.fmean(loop["total_cost"] / loop["runs"] for loop in loops),
+        "lines": statistics.fmean(loop["lines_to_review"] for loop in loops),
     }
-    gaps[STYLE_ALL] = {arm: statistics.fmean(gaps[task][arm] for task in tasks) for arm in arms}
-    width: float = (WIDTH - LABEL_WIDTH) / len(arms) - STYLE_CELL_GAP
-    body: list[str] = [text(0, 26, metric.title, theme.ink, 18, 600)]
-    body += [
-        text(LABEL_WIDTH + index * (width + STYLE_CELL_GAP) + width / 2, 62, STYLE_ARMS[arm], theme.muted, 13, 600, "middle")
-        for index, arm in enumerate(arms)
-    ]
-    y: float = 76.0
-    for row in [*tasks, STYLE_ALL]:
-        body += [text(0, y + 18, TASK_NAMES.get(row, row), theme.ink, 14, 600)]
-        for index, arm in enumerate(arms):
-            body += style_cell(theme, (LABEL_WIDTH + index * (width + STYLE_CELL_GAP), y), width, gaps[row][arm], metric)
-        y += STYLE_ROW_STEP
-    label: str = f"{metric.title}, all contexts: " + ", ".join(f"{STYLE_ARMS[arm]} {gaps[STYLE_ALL][arm]:+.0f}" for arm in arms)
-    return svg(int(y), label, body)
+
+
+def style_chart(theme: Theme, styles: dict[str, Any]) -> str:
+    """One row per setup, one bar per measure, the value printed next to it."""
+    tasks: list[str] = [task for task, arms in styles["tasks"].items() if all(arm in arms for arm in STYLE_ARMS)]
+    values: dict[str, dict[str, float]] = {arm: style_values(styles, arm, tasks) for arm in STYLE_ARMS}
+    tops: dict[str, float] = {"accepted": 100.0} | {key: max(values[arm][key] for arm in STYLE_ARMS) for key in ("cost", "lines")}
+    colors: dict[str, str] = {"none": theme.without, "chef152": theme.chef, "nolean": theme.old}
+    body: list[str] = [text(0, 26, STYLE_TITLE, theme.ink, 18, 600)]
+    for index, (panel_title, hint, _, _) in enumerate(STYLE_PANELS):
+        x: float = LABEL_WIDTH + index * PANEL_STEP
+        body += [text(x, 60, panel_title, theme.muted, 13, 600), text(x, 77, hint, theme.muted, 12)]
+    y: float = 92.0
+    for arm, name in STYLE_ARMS.items():
+        body += [text(0, y + 13, name, theme.ink, 15, 600)]
+        for index, (_, _, key, unit) in enumerate(STYLE_PANELS):
+            scale: tuple[float, str, str] = (tops[key], unit, colors.get(arm, theme.older))
+            body += overview_cell(theme, LABEL_WIDTH + index * PANEL_STEP, y, values[arm][key], scale)
+        y += 34
+    label: str = f"{STYLE_TITLE}. " + "; ".join(
+        f"{name}: first answer accepted {values[arm]['accepted']:.0f}%, ${values[arm]['cost']:.3f} per task, "
+        f"{values[arm]['lines']:.0f} lines to review"
+        for arm, name in STYLE_ARMS.items()
+    )
+    return svg(int(y + 6), label, body)
 
 
 def main() -> None:
@@ -746,8 +720,7 @@ def main() -> None:
                 )
         if STYLES.is_file():
             styles: dict[str, Any] = json.loads(STYLES.read_text(encoding="utf-8"))
-            for metric in STYLE_METRICS:
-                (OUT / f"styles-{metric.key}{theme.suffix}.svg").write_text(style_chart(theme, styles, metric), encoding="utf-8")
+            (OUT / f"styles{theme.suffix}.svg").write_text(style_chart(theme, styles), encoding="utf-8")
 
 
 if __name__ == "__main__":

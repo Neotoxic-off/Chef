@@ -33,7 +33,7 @@ Chef then applies to every coding prompt.
 - **Types and pins:** every signature typed; dependencies, images and actions pinned.
 - **Knows your stack:** 127 references (34 languages, frameworks, infra, CI).
 - **Asks before guessing**, and remembers your answers in `.chef.md`. Your explicit instruction wins, never over security.
-- **Brings a council** of agents for design decisions, and a reviewer for changes.
+- **Brings a council** of agents for design decisions, and a reviewer for changes spanning several modules.
 - **Talks less:** short replies, the smallest complete change ([`lean.md`](skills/chef/lean.md), adapted from [ponytail](https://github.com/DietrichGebert/ponytail), MIT).
 
 ## Results
@@ -60,26 +60,12 @@ The model's behavior drifts from day to day: on 2026-11-25, plain Claude pinned 
 
 Chef 1.5.2 costs 32% less than 1.4 on the 11 tasks of the 1.5 bench (cheaper on 10 of them) and 22% less on the DevOps and CI tasks; its first answer comes in 155 s instead of 210 s. Every first answer of both versions was accepted that day, so this bench no longer separates their quality.
 
-Chef against caveman and ponytail, 4 contexts, 2 runs each, same day, as the gap to plain Claude. Chef here is the 1.5.2 skill before the reviewer fix (`ad13bf7`), so its cost is an upper bound. With 2 runs per context, these are trends, not proof.
+Chef against caveman and ponytail, same day. Chef here is the 1.5.2 skill before the reviewer fix (`ad13bf7`), so its cost is an upper bound. With 2 runs per task, these are trends, not proof.
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/styles-accepted-dark.svg">
-    <img src="assets/bench/styles-accepted.svg" width="880" alt="First answer accepted, points above plain Claude, all 4 contexts: chef 1.5.2 +12, chef without lean.md +12, caveman 4.1 +12, ponytail 5.3 0. The gain is on the Python refactor.">
-  </picture>
-</p>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/styles-cost-dark.svg">
-    <img src="assets/bench/styles-cost.svg" width="880" alt="Cost per task with fixes, percent above or below plain Claude, mean of 4 contexts: chef 1.5.2 +128%, chef without lean.md +115%, caveman 4.1 -17%, ponytail 5.3 -15%.">
-  </picture>
-</p>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/styles-lines-dark.svg">
-    <img src="assets/bench/styles-lines.svg" width="880" alt="Code to review, percent above or below plain Claude, per context and arm.">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/bench/styles-dark.svg">
+    <img src="assets/bench/styles.svg" width="880" alt="Same day, 4 tasks, 2 runs each. Plain Claude: first answer accepted 88%, $0.233 per task, 270 lines to review. Chef 1.5.2: 100%, $0.389, 419 lines. Chef without lean.md: 100%, $0.374, 510 lines. Caveman 4.1: 100%, $0.165, 251 lines. Ponytail 5.3: 88%, $0.208, 229 lines.">
   </picture>
 </p>
 
@@ -128,7 +114,7 @@ Code quality per language: one task for each of the 32 most-used references, the
   </picture>
 </p>
 
-### Earlier benches
+### Earlier benches (up to chef 1.5, each run on its own day)
 
 <p align="center">
   <picture>

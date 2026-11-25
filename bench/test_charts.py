@@ -15,11 +15,11 @@ def test_quality_chart_draws_a_tile_per_language_with_its_icon_biggest_gain_firs
     scores: dict[str, float] = {"quality": 5.5, "clarity": 6.0, "maintainability": 4.5, "functionality": 7.0}
     quality: dict[str, Any] = {
         "criteria": ["quality", "clarity", "maintainability", "functionality"],
-        "arms": {"none": scores, "chef15": {name: value + 3 for name, value in scores.items()}},
+        "arms": {"none": scores, "chef152": {name: value + 3 for name, value in scores.items()}},
         "tasks": {
-            "go": {"none": 5.0, "chef15": 8.2},
-            "csharp": {"none": 6.0, "chef15": 8.5},
-            "cpp": {"none": 7.0, "chef15": 7.0},
+            "go": {"none": 5.0, "chef152": 8.2},
+            "csharp": {"none": 6.0, "chef152": 8.5},
+            "cpp": {"none": 7.0, "chef152": 7.0},
         },
     }
 
@@ -252,35 +252,18 @@ def style_loop(merged_first_time: float, total_cost: float, lines: float) -> dic
     return {"runs": 2.0, "merged_first_time": merged_first_time, "total_cost": total_cost, "lines_to_review": lines}
 
 
-def test_style_gap_is_points_for_acceptance_and_percent_for_amounts() -> None:
-    plain: dict[str, float] = style_loop(0.5, 0.4, 100)
-    chef: dict[str, float] = style_loop(0.8, 0.6, 80)
-    accepted, cost, lines = charts.STYLE_METRICS
-
-    assert round(charts.style_gap(chef, plain, accepted), 6) == 30.0
-    assert round(charts.style_gap(chef, plain, cost), 6) == 50.0
-    assert round(charts.style_gap(chef, plain, lines), 6) == -20.0
-
-
-def test_style_chart_marks_a_gain_in_the_chef_color_and_a_loss_in_grey_with_an_all_contexts_row() -> None:
+def test_style_chart_shows_each_setup_with_its_mean_over_the_tasks_every_setup_ran() -> None:
+    loops: dict[str, dict[str, float]] = {arm: style_loop(1.0, 0.4, 100) for arm in charts.STYLE_ARMS}
     styles: dict[str, Any] = {
         "tasks": {
-            "python": {
-                "none": style_loop(0.5, 0.4, 100),
-                "chef152": style_loop(1.0, 0.4, 100),
-                "caveman": style_loop(0.0, 0.4, 100),
-            },
-            "sql": {
-                "none": style_loop(0.5, 0.4, 100),
-                "chef152": style_loop(0.5, 0.4, 100),
-                "caveman": style_loop(0.5, 0.4, 100),
-            },
+            "python": loops | {"caveman": style_loop(0.0, 0.2, 50)},
+            "bash": loops,
+            "sql": {"none": style_loop(0.5, 0.4, 100)},
         }
     }
 
-    svg: str = charts.style_chart(charts.LIGHT, styles, charts.STYLE_METRICS[0])
+    svg: str = charts.style_chart(charts.LIGHT, styles)
 
-    assert ">+50 pt<" in svg and ">-50 pt<" in svg and ">+25 pt<" in svg and ">-25 pt<" in svg
-    assert svg.count(f'fill="{charts.LIGHT.chef}"') == 2
-    assert svg.count(f'fill="{charts.LIGHT.without}"') == 2
-    assert "All contexts" in svg and "Chef 1.5.2 +25, Caveman 4.1 -25" in svg
+    assert "Caveman 4.1: first answer accepted 50%, $0.150 per task, 75 lines to review" in svg
+    assert "Plain Claude: first answer accepted 100%, $0.200 per task, 100 lines to review" in svg
+    assert ">75 lines<" in svg and ">lower is better<" in svg
